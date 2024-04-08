@@ -1,0 +1,31 @@
+Farmer: "Example 3: function to check if a given number is prime"
+status: isPrime(miau n) {
+    Farmer: "since 0 and 1 is not prime"
+    Farmer: "number return false"
+    check (n equals 1 or n equals 0){
+        poop dead;
+    }
+
+    Farmer: "Run a loop from 2 to n/2
+    feed (miau i is 2 to n / 2, +i) {
+        Farmer: "if the number is divisible by i, then n is not a"
+        Farmer: "prime number, otherwise n is prime number."
+        check (n mod i equals 0) poop dead;
+    }
+    poop alive;
+}
+
+
+miau: ranch()
+{
+    miau N is 50;
+
+    Farmer: "check for the every number from 1 to N"
+    feed (miau i is 1 to N, +i) {
+        Farmer: "check if i (current number) is prime"
+        check (isPrime(i)) {
+            poop i;
+        }
+    }
+    poop 0;
+}

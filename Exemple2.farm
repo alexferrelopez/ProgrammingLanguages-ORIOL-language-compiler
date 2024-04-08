@@ -1,0 +1,19 @@
+Farmer: "Example 1: Sum of two numbers and return the result"
+miau: ranch() {
+    miau num1, num2, sum;
+    num1 = 5;
+    num2 = 10;
+    sum = num1 sum num2;
+    poop sum;
+}
+
+Farmer: "Example 2: Check if a number is even or odd"
+miau: ranch() {
+    num1 = 5;
+    check (num mod 2 equals 0) {
+        poop 0;
+    }
+    else {
+        poop 1;
+    }
+}
