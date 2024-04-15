@@ -1,3 +1,4 @@
+import FrontEnd.LexicalAnalyzer;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -86,13 +87,13 @@ class LexicalAnalyzerTest {
     private ArrayList<String> getWords() {
         ArrayList<String> words = new ArrayList<>();
         LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("Exemple1.farm");
-        String nextWord;
-        do {
-            nextWord = lexicalAnalyzer.getNextWord();
-            if (nextWord != null) {
-                words.add(nextWord);
-            }
-        } while (nextWord != null);
+//        String nextWord;
+//        do {
+//            nextWord = lexicalAnalyzer.getNextWord();
+//            if (nextWord != null) {
+//                words.add(nextWord);
+//            }
+//        } while (nextWord != null);
         return words;
     }
 }
