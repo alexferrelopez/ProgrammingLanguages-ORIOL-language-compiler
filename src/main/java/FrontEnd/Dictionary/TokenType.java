@@ -1,3 +1,5 @@
+package FrontEnd.Dictionary;
+
 public enum TokenType {
     // OPERADORS BINARIS
     GT, LT, NEQ, EQ, OR, AND,
