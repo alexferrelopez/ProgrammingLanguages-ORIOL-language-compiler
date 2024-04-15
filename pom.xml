@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
+        <!-- JUnit Jupiter API for writing and executing JUnit 5 tests -->
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -17,6 +18,15 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- JUnit 4 library to ensure compatibility with JUnit Vintage -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version> <!-- Ensure this version is at least 4.12 or later -->
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JavaCC Dependency -->
         <!-- https://mvnrepository.com/artifact/net.java.dev.javacc/javacc -->
         <dependency>
             <groupId>net.java.dev.javacc</groupId>
@@ -24,9 +34,35 @@
             <version>7.0.13</version>
         </dependency>
 
+        <!-- JetBrains Annotations for improved code analysis -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>13.0</version>
+        </dependency>
+
+        <!-- JUnit Jupiter Engine to run JUnit 5 tests -->
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit Vintage Engine to support running JUnit 3/4 tests -->
+        <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <properties>
+        <!-- Configure compiler plugin for Java 19 -->
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
