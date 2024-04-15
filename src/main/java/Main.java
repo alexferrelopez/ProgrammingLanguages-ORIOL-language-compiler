@@ -25,5 +25,6 @@ public class Main {
         // ---- FRONT END ---- //
         LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath);
         RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer);
+        recursiveDescentLLParser.startCodeAnalysis();
     }
 }
