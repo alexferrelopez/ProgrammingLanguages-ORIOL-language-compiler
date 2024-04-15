@@ -16,6 +16,14 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/net.java.dev.javacc/javacc -->
+        <dependency>
+            <groupId>net.java.dev.javacc</groupId>
+            <artifactId>javacc</artifactId>
+            <version>7.0.13</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
