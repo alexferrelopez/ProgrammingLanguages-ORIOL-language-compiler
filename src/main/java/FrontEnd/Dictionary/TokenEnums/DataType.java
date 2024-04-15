@@ -6,9 +6,9 @@ public enum DataType implements TokenType {
 	// Enum constants (special symbols)
 	INTEGER("miau"),
 	FLOAT("oink"),
+	BOOLEAN("status"),
 	CHAR("moo"),
 	STRING("quack"),
-	BOOLEAN("status"),
 	VOID("void");
 
 	// Instance field (regex pattern) for each enum constant

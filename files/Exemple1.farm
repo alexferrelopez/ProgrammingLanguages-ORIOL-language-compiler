@@ -7,6 +7,10 @@ oink : sumRange ( oink numA , oink numB , oink increment ) {
         numB is tmp ;
     }
 
+    moo c is 'a' ;
+    moo text is "hola" ;
+    moo text2 is 'adeu' ;
+
     feed ( oink i is numA to numB , i is i sum increment ) {
         result is result sum i ;
     }

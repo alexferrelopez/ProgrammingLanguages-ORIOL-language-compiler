@@ -4,10 +4,12 @@ import FrontEnd.RecursiveDescentLLParser;
 public class Main {
 
     private final static int EXPECTED_NUM_ARGS = 1;
-    private final static String TOO_MANY_ARGS_ERROR = "There are too many arguments! Select only ono code to compile.";
-    private final static String NO_ARGS_ERROR = "No input file handled! There is no code selected to compile.";
-    private final static String INVALID_EXTENSION_ERROR = "Invalid format of the code to compile.";
     private final static String FILE_EXTENSION = ".farm";
+
+    // Public constants to check in the tests.
+    public final static String TOO_MANY_ARGS_ERROR = "There are too many arguments! Select only ono code to compile.";
+    public final static String NO_ARGS_ERROR = "No input file handled! There is no code selected to compile.";
+    public final static String INVALID_EXTENSION_ERROR = "Invalid format of the code to compile.";
 
     public static void main(String[] args) {
         checkValidArguments(args);

@@ -11,6 +11,7 @@ public enum ReservedSymbol implements TokenType {
 	DO("do"),
 	TO("to"),
 	RETURN("poop"),
+	EOF("EOF"),
 	MAIN("ranch"),
 	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern()),	// Farmer: VALOR_STRING
 	AARON("/aaron/i"),
