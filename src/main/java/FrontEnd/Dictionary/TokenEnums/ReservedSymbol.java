@@ -17,7 +17,7 @@ public enum ReservedSymbol implements TokenType {
 	ORIOL("/oriol/i"),
 	ALEXIA("/al(e|è)xia/i"),
 	GEMMA("/gemma/i"),
-	ALEX("/(a|à)lex/i"),;
+	ALEX("/(a|à)lex/i");
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;

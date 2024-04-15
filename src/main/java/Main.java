@@ -6,11 +6,24 @@ public class Main {
     private final static int EXPECTED_NUM_ARGS = 1;
     private final static String TOO_MANY_ARGS_ERROR = "There are too many arguments! Select only ono code to compile.";
     private final static String NO_ARGS_ERROR = "No input file handled! There is no code selected to compile.";
+    private final static String INVALID_EXTENSION_ERROR = "Invalid format of the code to compile.";
+    private final static String FILE_EXTENSION = ".farm";
 
     public static void main(String[] args) {
+        checkValidArguments(args);
+    }
+
+    private static void checkValidArguments(String[] args) {
         if (args.length == EXPECTED_NUM_ARGS) {
             String codeFilePath = args[EXPECTED_NUM_ARGS - 1];
-            startCompiler(codeFilePath);
+
+            // Check if the extension of the file is .farm.
+            if (codeFilePath.endsWith(FILE_EXTENSION)) {
+                startCompiler(codeFilePath);
+            }
+            else {
+                System.out.println(INVALID_EXTENSION_ERROR);
+            }
         }
         else if (args.length > EXPECTED_NUM_ARGS){
             System.out.println(TOO_MANY_ARGS_ERROR);

@@ -4,15 +4,15 @@ import FrontEnd.Dictionary.TokenType;
 
 public enum SpecialSymbol implements TokenType {
 	// Enum constants (special symbols)
-	PO("("),
-	PT(")"),
+	PO("\\("),
+	PT("\\)"),
 	COMMA(","),
 	PUNT_COMMA(";"),
-	CO("{"),
-	CT("}"),
+	CO("\\{"),
+	CT("\\}"),
 	DOS_PUNTS(":"),
-	BRACKET_O("["),
-	BRACKET_C("]"),
+	BRACKET_O("\\["),
+	BRACKET_C("\\]"),
 	IS("is");
 
 	// Instance field (regex pattern) for each enum constant
