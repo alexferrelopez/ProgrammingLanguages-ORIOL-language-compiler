@@ -41,5 +41,8 @@ dist/
 nbdist/
 .nb-gradle/
 
+# Ensure pom.xml is not ignored
+!pom.xml
+
 # XML files
 *.xml
