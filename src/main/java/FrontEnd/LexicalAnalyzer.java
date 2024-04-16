@@ -68,7 +68,7 @@ public class LexicalAnalyzer {
 
     private Token getToken(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
-        List<Class<? extends Enum<?>>> enumClasses = Arrays.asList(
+        List<Class<? extends Enum<? extends TokenType>>> enumClasses = Arrays.asList(
                 // The order of the list is important, since the first match will be the selected one.
                 // "moo" has to be determined as "DATA_TYPE", not "VARIABLE".
                 ReservedSymbol.class,
@@ -82,10 +82,9 @@ public class LexicalAnalyzer {
         // Loop through each enum class to see if the word is found in any enum.
         TokenType tokenType = null;
 
-        for (Class<?> enumClass : enumClasses) {
-            @SuppressWarnings("unchecked")  // Safe cast because we know our list only contains enums implementing TokenType
-            Class<? extends Enum<? extends TokenType>> safeEnumClass = (Class<? extends Enum<? extends TokenType>>) enumClass;
-            tokenType = Tokenizer.convertStringIntoEnum(safeEnumClass, word);
+        // Our enums list only contains enums implementing TokenType
+        for (Class<? extends Enum<? extends TokenType>> enumClass : enumClasses) {
+            tokenType = Tokenizer.convertStringIntoEnum(enumClass, word);
             if (tokenType != null) {
                 break;
             }
