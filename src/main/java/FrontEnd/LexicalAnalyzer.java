@@ -77,8 +77,8 @@ public class LexicalAnalyzer {
                 DataType.values(),
                 SpecialSymbol.values(),
                 MathOperator.values(),
-                ValueSymbol.values(),
-                BinaryOperator.values()
+                BinaryOperator.values(),
+                ValueSymbol.values()
         )
         .flatMap(Arrays::stream)
         .collect(Collectors.toList());
