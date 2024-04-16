@@ -11,6 +11,8 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LexicalAnalyzer {
     /**
@@ -68,33 +70,33 @@ public class LexicalAnalyzer {
 
     private Token getToken(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
-        List<Class<? extends Enum<? extends TokenType>>> enumClasses = Arrays.asList(
+        List<TokenType> enumValues = Stream.of(
                 // The order of the list is important, since the first match will be the selected one.
                 // "moo" has to be determined as "DATA_TYPE", not "VARIABLE".
-                ReservedSymbol.class,
-                DataType.class,
-                SpecialSymbol.class,
-                MathOperator.class,
-                ValueSymbol.class,
-                BinaryOperator.class
-        );
+                ReservedSymbol.values(),
+                DataType.values(),
+                SpecialSymbol.values(),
+                MathOperator.values(),
+                ValueSymbol.values(),
+                BinaryOperator.values()
+        )
+        .flatMap(Arrays::stream)
+        .collect(Collectors.toList());
 
         // Loop through each enum class to see if the word is found in any enum.
         TokenType tokenType = null;
 
         // Our enums list only contains enums implementing TokenType
-        for (Class<? extends Enum<? extends TokenType>> enumClass : enumClasses) {
-            tokenType = Tokenizer.convertStringIntoEnum(enumClass, word);
+        for (TokenType enumConstant : enumValues) {
+            tokenType = Tokenizer.convertStringIntoTokenType(enumConstant, word);
+
+            // Check if the current token is valid (different to null)
             if (tokenType != null) {
-                break;
+                return new Token(tokenType, word);
             }
         }
 
-        if (tokenType != null) {
-            return new Token(tokenType, word);
-        }
-
-        // No match found in any enum
+        // No match found in any enum = throw exception.
         throw new InvalidTokenException();
     }
 }
