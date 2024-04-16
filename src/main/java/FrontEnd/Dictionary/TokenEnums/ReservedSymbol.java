@@ -14,11 +14,11 @@ public enum ReservedSymbol implements TokenType {
 	EOF("EOF"),
 	MAIN("ranch"),
 	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern()),	// Farmer: VALOR_STRING
-	AARON("/aaron/i"),
-	ORIOL("/oriol/i"),
-	ALEXIA("/al(e|è)xia/i"),
-	GEMMA("/gemma/i"),
-	ALEX("/(a|à)lex/i");
+	AARON("(?i)aaron"),											// Regex pattern case insensitive by adding (?i)
+	ORIOL("(?i)oriol"),
+	ALEXIA("(?i)al(e|è)xia"),
+	GEMMA("(?i)gemma"),
+	ALEX("(?i)(a|à)lex");
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;

@@ -1,6 +1,10 @@
 oink : sumRange ( oink numA , oink numB , oink increment ) {
     oink result is 0.0 ;
 
+    miau aAROn is 3 ;
+    miau gEmMa is 0 ;
+    miau ORIol is 4 ;
+
     check ( numA bigger numB ) {
         oink tmp is numA ;
         numA is numB ;
