@@ -11,7 +11,7 @@ public enum ValueSymbol implements TokenType {
 	VALUE_TRUE("alive"),
 	VALUE_FALSE("dead"),
 	VALUE_CHAR("'(" + "[a-zA-Z.,_]|\\s" + ")'"),									// ‘Caràcter’ - The backslash (\s) needs to be escaped in Java strings.
-	VALUE_STRING("(\"|')(" + "[a-zA-Z.,_]|\\s" + ")+(\"|')");						// (“ + ')CaràcterCaràcter+(“ + ')
+	VALUE_STRING("(\"|')(" + "[a-zA-Z.,_]|\\s" + ")+(\"|')");					// (“ + ')CaràcterCaràcter+(“ + ')
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;
