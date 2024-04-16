@@ -13,7 +13,7 @@ public class Token {
      */
     public Token(TokenType type) {
         this.type = type;
-        this.lexeme = type.getPattern();
+        this.lexeme = getLexemeWithoutRegex(type.getPattern());     // Avoid having "\\" in the lexeme because of Regex.
     }
 
     /**
@@ -24,7 +24,7 @@ public class Token {
     public Token(TokenType type, @Nullable String lexeme) {
         this.type = type;
         if (lexeme == null) {
-            this.lexeme = type.getPattern();
+            this.lexeme = getLexemeWithoutRegex(type.getPattern()); // Avoid having "\\" in the lexeme because of Regex.
         }
         else {
             this.lexeme = lexeme;
@@ -35,6 +35,17 @@ public class Token {
         return this.type == ReservedSymbol.EOF;
     }
 
+    private String getLexemeWithoutRegex(String lexeme) {
+        return lexeme.replace("\\", "");
+	}
+
+    public String getLexeme() {
+        return lexeme;
+    }
+
+    public TokenType getType() {
+        return type;
+    }
     @Override
     public String toString() {
         return type + " " + lexeme; // Just for debug purpose.

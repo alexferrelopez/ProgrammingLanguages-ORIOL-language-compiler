@@ -1,7 +1,6 @@
 package FrontEnd;
 
 import FrontEnd.Dictionary.Token;
-import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
 public class RecursiveDescentLLParser {
@@ -16,23 +15,16 @@ public class RecursiveDescentLLParser {
 	}
 
 	private void lexicalAnalysis() {
-		try {
-			lexicalAnalyzer.openCodeFile();
-
-			// Get all the tokens from the grammar.
-			Token token = null;
-			do {
-				try {
-					token = lexicalAnalyzer.getNextToken();
-				} catch (InvalidTokenException e) {
-					// Do something
-					System.out.println(e.getMessage());
-					break;
-				}
-			} while (!token.isEOF());
-
-		} catch (InvalidFileException e) {
-			System.out.println(e.getMessage());
-		}
+		// Get all the tokens from the grammar.
+		Token token;
+		do {
+			try {
+				token = lexicalAnalyzer.getNextToken();
+			} catch (InvalidTokenException e) {
+				// Do something
+				System.out.println(e.getMessage());
+				break;
+			}
+		} while (!token.isEOF());
 	}
 }

@@ -18,54 +18,50 @@ public class LexicalAnalyzer {
     /**
      * Lexical Analyzer / Scanner
      **/
-    private final String codeFilePath;
-    private File codeFile;
-    private Scanner codeFileScanner;
+    private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private final static Token EOF = new Token(ReservedSymbol.EOF);
 
-    public LexicalAnalyzer(String codeFilePath) {
-        this.codeFilePath = codeFilePath;
+    // Constructor for file path (directInput = false) or direct string input (useful for testing).
+    public LexicalAnalyzer(String sourceCode, boolean isDirectInput) {
+        if (isDirectInput) {
+            this.codeScanner = new Scanner(sourceCode);
+        }
+        else {
+			try {
+				openCodeFile(new File(sourceCode));
+			} catch (InvalidFileException e) {
+                System.out.println(e.getMessage());
+			}
+		}
     }
 
-    // Code by https://stackoverflow.com/a/811860
-    public void openCodeFile() throws InvalidFileException {
-        // Open the file and check if it exists.
-        checkFileExists();
-    }
-
-    private void checkFileExists() throws InvalidFileException {
-        // Get file instance based on the argument passed to the program.
-        codeFile = new File(this.codeFilePath);
-
-        // Check if file exists.
+    private void openCodeFile(File codeFile) throws InvalidFileException {
         if (!codeFile.exists()) {
-            throw new InvalidFileException();
+            throw new InvalidFileException("File does not exist.");
         }
 
         try {
-            codeFileScanner = new Scanner(codeFile);
+            this.codeScanner = new Scanner(codeFile);
         } catch (FileNotFoundException e) {
             throw new InvalidFileException("LEXIC: File access issues");
         }
     }
 
+    // Code by https://stackoverflow.com/a/811860
     public Token getNextToken() throws InvalidTokenException {
-        Token token = null;
-
         // Read the next word until EOF (end of file).
-        if (codeFileScanner.hasNext()) {
-            String word = codeFileScanner.next();
+        if (codeScanner.hasNext()) {
+            String word = codeScanner.next();
             System.out.print("Word read: " + word + " | ");
 
-            token = getToken(word);
+            Token token = getToken(word);
             System.out.println(token);
+            return token;
         }
         else {
             // End of the file reached.
-            token = EOF;
+            return EOF;
         }
-
-        return token;
     }
 
     private Token getToken(String word) throws InvalidTokenException {
@@ -84,7 +80,7 @@ public class LexicalAnalyzer {
         .collect(Collectors.toList());
 
         // Loop through each enum class to see if the word is found in any enum.
-        TokenType tokenType = null;
+        TokenType tokenType;
 
         // Our enums list only contains enums implementing TokenType
         for (TokenType enumConstant : enumValues) {
@@ -96,7 +92,7 @@ public class LexicalAnalyzer {
             }
         }
 
-        // No match found in any enum = throw exception.
-        throw new InvalidTokenException();
+        // No match found in any enum's regex = throw exception.
+        throw new InvalidTokenException("Invalid token found: " + word);
     }
 }
