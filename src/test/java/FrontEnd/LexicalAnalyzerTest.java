@@ -2,15 +2,26 @@ package FrontEnd;
 
 import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
+import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
-import org.junit.jupiter.api.Assertions;
+import jdk.jfr.Description;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.stream.Stream;
 
 class LexicalAnalyzerTest {
+
+	private final static String TEST_FILE_NAME = "test_sourceCode_tokenizer";
+	private final static String TEST_FILE_EXT = ".farm";
+	private final static String TEST_FILE_DIR = "java.io.tmpdir";
+
+	private File tempFile;
 
     private static Stream<Arguments> provideTokensForTesting() {
         return Stream.of(
@@ -214,21 +225,71 @@ class LexicalAnalyzerTest {
         );
     }
 
+	@BeforeEach
+	// Create a file a private constant.
+	void setUp() throws IOException {
+		// Create a temporary file before each test (prefix, suffix, and directory for the temp file)
+		tempFile = File.createTempFile(TEST_FILE_NAME, TEST_FILE_EXT, new File(System.getProperty(TEST_FILE_DIR)));
+
+		// Ensure the file is initially empty and ready for use
+		if (tempFile.exists()) {
+			tempFile.delete();
+		}
+		tempFile.createNewFile();
+	}
+
+	@AfterEach
+	// Clear the file and remove it.
+	void tearDown() {
+		// Delete the temporary file after each test
+		if (tempFile.exists()) {
+			tempFile.delete();
+		}
+	}
+
     @ParameterizedTest
     @MethodSource("provideTokensForTesting")
-    public void test_tokenizer(String sourceCode, Token[] expectedTokens) {
-        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(sourceCode, true);
+	@DisplayName("Tokenizer: Convert words into tokens.")
+	@Description("Test that all the words from the source code file are properly converted into a Token.")
+    public void test_tokenizeWords(String sourceCode, Token[] expectedTokens) {
+		try {
+			// Write the source code to the file
+			try (FileWriter writer = new FileWriter(tempFile)) {
+				writer.write(sourceCode);
+			}
 
-        for (Token expectedToken : expectedTokens) {
-			try {
+			// Now pass the file to the LexicalAnalyzer
+			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());
+			lexicalAnalyzer.openCodeFile();
+
+			for (Token expectedToken : expectedTokens) {
 				// Check if the read token is the same as the next one.
 				Token currentToken = lexicalAnalyzer.getNextToken();
-				//Assertions.assertEquals(currentToken.toString(), expectedToken.toString());
-				Assertions.assertEquals(expectedToken.getType(), currentToken.getType());
-				Assertions.assertEquals(expectedToken.getLexeme(), currentToken.getLexeme());
-			} catch (InvalidTokenException e) {
-				throw new RuntimeException(e);
+				Assertions.assertEquals(expectedToken.getType(), currentToken.getType(), "The token type must be the same.");
+				Assertions.assertEquals(expectedToken.getLexeme(), currentToken.getLexeme(), "The lexeme must be the same.");
 			}
-        }
-    }
+		} catch (IOException | InvalidTokenException | InvalidFileException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Test
+	@DisplayName("Check file non-existence handling.")
+	@Description("Test that checks if a file that does not exist is handled properly.")
+	public void test_checkFileNotExists() {
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp");
+
+		// Asserts that the operation throws the specified exception
+		Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
+	}
+
+	@Test
+	@DisplayName("Check file existence handling.")
+	@Description("Test that checks if a file that exists is handled properly.")
+	public void test_checkFileExists() {
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());	// tempFile is created always before the test (@BeforeEach)
+
+		// Asserts that the operation does not throw any exception
+		Assertions.assertDoesNotThrow(lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should not throw any exception for existent files.");
+	}
 }

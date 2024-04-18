@@ -18,35 +18,36 @@ public class LexicalAnalyzer {
     /**
      * Lexical Analyzer / Scanner
      **/
+    private final String codePath;
     private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private final static Token EOF = new Token(ReservedSymbol.EOF);
 
-    // Constructor for file path (directInput = false) or direct string input (useful for testing).
-    public LexicalAnalyzer(String sourceCode, boolean isDirectInput) {
-        if (isDirectInput) {
-            this.codeScanner = new Scanner(sourceCode);
-        }
-        else {
-			try {
-				openCodeFile(new File(sourceCode));
-			} catch (InvalidFileException e) {
-                System.out.println(e.getMessage());
-			}
-		}
+    // Constructor for file path.
+    public LexicalAnalyzer(String codeFilePath) {
+        this.codePath = codeFilePath;
     }
 
-    private void openCodeFile(File codeFile) throws InvalidFileException {
+    public void openCodeFile() throws InvalidFileException {
+        // Open the file and check if it exists.
+        checkFileExists();
+    }
+
+    private void checkFileExists() throws InvalidFileException {
+        // Get file instance based on the argument passed to the program.
+        File codeFile = new File(this.codePath);
+
+        // Check if file exists.
         if (!codeFile.exists()) {
-            throw new InvalidFileException("File does not exist.");
+            throw new InvalidFileException();
         }
 
         try {
-            this.codeScanner = new Scanner(codeFile);
+            codeScanner = new Scanner(codeFile);
         } catch (FileNotFoundException e) {
             throw new InvalidFileException("LEXIC: File access issues");
         }
     }
-
+    
     // Code by https://stackoverflow.com/a/811860
     public Token getNextToken() throws InvalidTokenException {
         // Read the next word until EOF (end of file).

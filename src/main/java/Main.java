@@ -38,7 +38,7 @@ public class Main {
 
     private static void startCompiler(String codeFilePath) {
         // ---- FRONT END ---- //
-        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath, false);
+        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath);
         RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer);
         recursiveDescentLLParser.startCodeAnalysis();
     }
