@@ -27,6 +27,7 @@ hs_err_pid*
 *.ipr
 *.iws
 .idea/
+target/
 
 # Eclipse specific files
 .classpath
@@ -40,6 +41,9 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+
+# Ensure pom.xml is not ignored
+!pom.xml
 
 # XML files
 *.xml

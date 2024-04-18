@@ -1,0 +1,31 @@
+oink : sumRange ( oink numA , oink numB , oink increment ) {
+    oink result is 0.0 ;
+
+    miau aAROn is 3 ;
+    miau gEmMa is 0 ;
+    miau ORIol is 4 ;
+
+    check ( numA bigger numB ) {
+        oink tmp is numA ;
+        numA is numB ;
+        numB is tmp ;
+    }
+
+    moo c is 'a' ;
+    moo text is "hola" ;
+    moo text2 is 'adeu' ;
+
+    feed ( oink i is numA to numB , i is i sum increment ) {
+        result is result sum i ;
+    }
+
+    poop result ;
+}
+
+miau : ranch ( ) {
+    oink a is 3.23 ;
+    oink b is 4.5 ;
+    oink c is 0.2 ;
+    oink total is sumRange ( a , b , c ) ;
+    poop 0 ;
+}
