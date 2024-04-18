@@ -20,7 +20,7 @@ public class RecursiveDescentLLParser {
 			lexicalAnalyzer.openCodeFile();
 
 			// Get all the tokens from the grammar.
-			Token token = null;
+			Token token;
 			do {
 				try {
 					token = lexicalAnalyzer.getNextToken();
@@ -30,7 +30,6 @@ public class RecursiveDescentLLParser {
 					break;
 				}
 			} while (!token.isEOF());
-
 		} catch (InvalidFileException e) {
 			System.out.println(e.getMessage());
 		}
