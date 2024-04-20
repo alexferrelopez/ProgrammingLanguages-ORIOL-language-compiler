@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Grammar {
-    private final String GRAMMAR_PATH = "gramatica2.txt";
+    private final String GRAMMAR_PATH = "src/test/resources/gramatica.txt";
     private HashMap<NoTerminal, LinkedList<LinkedList<TermiNoTerm>>> grammar = new HashMap<>();
     private LinkedList<NoTerminal> noTerminalList = new LinkedList<>();
 
