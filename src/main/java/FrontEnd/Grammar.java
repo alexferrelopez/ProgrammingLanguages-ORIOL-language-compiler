@@ -2,16 +2,14 @@ package FrontEnd;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 
 public class Grammar {
     private final String GRAMMAR_PATH = "src/test/resources/gramatica.txt";
-    private HashMap<NoTerminal, LinkedList<LinkedList<TermiNoTerm>>> grammar = new HashMap<>();
-    private LinkedList<NoTerminal> noTerminalList = new LinkedList<>();
+    private Map<NoTerminal, List<List<TermiNoTerm>>> grammar = new HashMap<>();
+    private List<NoTerminal> noTerminalList = new LinkedList<>();
 
-    public HashMap<NoTerminal, LinkedList<LinkedList<TermiNoTerm>>> getGrammar(){
+    public Map<NoTerminal, List<List<TermiNoTerm>>> getGrammar(){
         return this.grammar;
     }
 
@@ -106,13 +104,11 @@ public class Grammar {
             while (sc.hasNextLine()) {
                 String data = sc.nextLine();
                 String[] hashMapSeparator = data.split("::=");
-                LinkedList<LinkedList<TermiNoTerm>> termINoTermList = new LinkedList<>();
+                List<List<TermiNoTerm>> termINoTermList = new LinkedList<>();
                 NoTerminal nt = getNoTerminal(hashMapSeparator[0], isFirst);
                 isFirst = false;
                 this.grammar.put(nt, termINoTermList);
                 getDreta(nt, hashMapSeparator[1]);
-
-                //System.out.println("Esquera: " + f[0] + " Dreta: " + f[1]);
             }
             sc.close();
         } catch (FileNotFoundException e) {
