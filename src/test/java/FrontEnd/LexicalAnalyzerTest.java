@@ -259,7 +259,7 @@ class LexicalAnalyzerTest {
 			}
 
 			// Now pass the file to the LexicalAnalyzer
-			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());
+			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath(), null);
 			lexicalAnalyzer.openCodeFile();
 
 			for (Token expectedToken : expectedTokens) {
@@ -277,7 +277,7 @@ class LexicalAnalyzerTest {
 	@DisplayName("Check file non-existence handling.")
 	@Description("Test that checks if a file that does not exist is handled properly.")
 	public void test_checkFileNotExists() {
-		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp");
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp", null);
 
 		// Asserts that the operation throws the specified exception
 		Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
@@ -287,7 +287,7 @@ class LexicalAnalyzerTest {
 	@DisplayName("Check file existence handling.")
 	@Description("Test that checks if a file that exists is handled properly.")
 	public void test_checkFileExists() {
-		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());	// tempFile is created always before the test (@BeforeEach)
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath(), null);	// tempFile is created always before the test (@BeforeEach)
 
 		// Asserts that the operation does not throw any exception
 		Assertions.assertDoesNotThrow(lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should not throw any exception for existent files.");
