@@ -6,6 +6,8 @@ import FrontEnd.Exceptions.InvalidTokenException;
 
 public class RecursiveDescentLLParser {
 	private final LexicalAnalyzer lexicalAnalyzer;
+	private final ErrorHandler errorHandler = new ErrorHandler();
+
 
 	public RecursiveDescentLLParser(LexicalAnalyzer lexicalAnalyzer) {
 		this.lexicalAnalyzer = lexicalAnalyzer;
