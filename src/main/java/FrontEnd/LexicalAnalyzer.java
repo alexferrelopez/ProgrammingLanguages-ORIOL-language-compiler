@@ -4,6 +4,7 @@ import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
 import FrontEnd.Dictionary.TokenType;
 import FrontEnd.Dictionary.Tokenizer;
+import FrontEnd.ErrorHandlers.LexicalErrorHandler;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
@@ -21,7 +22,7 @@ public class LexicalAnalyzer {
     private final String codePath;
     private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private final static Token EOF = new Token(ReservedSymbol.EOF);
-    private final LexicalErrorHandler errorHandler = new ErrorHandler();
+    private final LexicalErrorHandler errorHandler = new LexicalErrorHandler();
 
     // Constructor for file path.
     public LexicalAnalyzer(String codeFilePath) {
