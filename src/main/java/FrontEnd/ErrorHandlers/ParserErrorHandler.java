@@ -3,7 +3,7 @@ package FrontEnd.ErrorHandlers;
 import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
 import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
 
-public class ParserErrorHandler extends ErrorHandler<ParserErrorType, ParserWarningType> {
+public class ParserErrorHandler extends AbstractErrorHandler<ParserErrorType, ParserWarningType> {
     @Override
     public String reportError(ParserErrorType errorType) {
         return "";

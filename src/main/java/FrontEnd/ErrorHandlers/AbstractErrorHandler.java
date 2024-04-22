@@ -3,11 +3,11 @@ package FrontEnd.ErrorHandlers;
 import FrontEnd.ErrorHandlers.ErrorTypes.ErrorType;
 import FrontEnd.ErrorHandlers.WarningTypes.WarningType;
 
-abstract class ErrorHandler<T extends ErrorType, K extends WarningType> {
+abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
     private int errorCount;
     private int warningCount;
 
-    public ErrorHandler() {
+    public AbstractErrorHandler() {
         this.errorCount = 0;
         this.warningCount = 0;
     }
