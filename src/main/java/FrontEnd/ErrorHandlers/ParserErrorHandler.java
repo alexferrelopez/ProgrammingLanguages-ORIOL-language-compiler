@@ -8,7 +8,7 @@ import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
  */
 public class ParserErrorHandler extends AbstractErrorHandler<ParserErrorType, ParserWarningType> {
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportError(ParserErrorType errorType) {
@@ -17,7 +17,7 @@ public class ParserErrorHandler extends AbstractErrorHandler<ParserErrorType, Pa
     }
 
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportWarning(ParserWarningType warningType) {

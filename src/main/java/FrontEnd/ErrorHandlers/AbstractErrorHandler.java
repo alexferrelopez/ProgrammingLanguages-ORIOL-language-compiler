@@ -8,7 +8,7 @@ import FrontEnd.ErrorHandlers.WarningTypes.WarningType;
  * @param <T> Any class that interfaces with ErrorType
  * @param <K> Any class that interfaces with WarningType
  */
-abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
+public abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
     private int errorCount;
     private int warningCount;
 

@@ -1,3 +1,13 @@
+import FrontEnd.ErrorHandlers.AbstractErrorHandler;
+import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
+import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
+import FrontEnd.ErrorHandlers.ErrorTypes.SemanticErrorType;
+import FrontEnd.ErrorHandlers.LexicalErrorHandler;
+import FrontEnd.ErrorHandlers.ParserErrorHandler;
+import FrontEnd.ErrorHandlers.SemanticErrorHandler;
+import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
+import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
+import FrontEnd.ErrorHandlers.WarningTypes.SemanticWarningType;
 import FrontEnd.LexicalAnalyzer;
 import FrontEnd.RecursiveDescentLLParser;
 
@@ -37,9 +47,14 @@ public class Main {
     }
 
     private static void startCompiler(String codeFilePath) {
+        // ---- ERROR HANDLING ---- //
+        AbstractErrorHandler<LexicalErrorType, LexicalWarningType> lexicalErrorHandler = new LexicalErrorHandler();
+        AbstractErrorHandler<ParserErrorType, ParserWarningType> parserErrorHandler = new ParserErrorHandler();
+        AbstractErrorHandler<SemanticErrorType, SemanticWarningType> semanticErrorHandler = new SemanticErrorHandler();
+
         // ---- FRONT END ---- //
-        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath);
-        RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer);
+        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
+        RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer, parserErrorHandler);
         recursiveDescentLLParser.startCodeAnalysis();
     }
 }

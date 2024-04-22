@@ -8,7 +8,7 @@ import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
  */
 public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, LexicalWarningType> {
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportError(LexicalErrorType errorType) {
@@ -17,7 +17,7 @@ public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, 
     }
 
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportWarning(LexicalWarningType warningType) {

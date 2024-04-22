@@ -8,7 +8,7 @@ import FrontEnd.ErrorHandlers.WarningTypes.SemanticWarningType;
  */
 public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType, SemanticWarningType> {
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportError(SemanticErrorType errorType) {
@@ -16,7 +16,7 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
     }
 
     /**
-     * See parent class.
+     * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
     public String reportWarning(SemanticWarningType warningType) {
