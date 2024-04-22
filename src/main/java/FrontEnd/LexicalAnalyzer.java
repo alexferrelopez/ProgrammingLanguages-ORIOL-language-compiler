@@ -21,7 +21,7 @@ public class LexicalAnalyzer {
     private final String codePath;
     private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private final static Token EOF = new Token(ReservedSymbol.EOF);
-    private final ErrorHandler errorHandler = new ErrorHandler();
+    private final LexicalErrorHandler errorHandler = new ErrorHandler();
 
     // Constructor for file path.
     public LexicalAnalyzer(String codeFilePath) {
