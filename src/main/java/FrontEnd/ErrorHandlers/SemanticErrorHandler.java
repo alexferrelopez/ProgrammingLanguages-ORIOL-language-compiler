@@ -12,6 +12,7 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
      */
     @Override
     public String reportError(SemanticErrorType errorType) {
+        addError();
         return "";
     }
 
@@ -20,6 +21,7 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
      */
     @Override
     public String reportWarning(SemanticWarningType warningType) {
+        addWarning();
         return "";
     }
 }
