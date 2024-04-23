@@ -4,10 +4,15 @@ import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
 import FrontEnd.Dictionary.TokenType;
 import FrontEnd.Dictionary.Tokenizer;
+import FrontEnd.ErrorHandlers.AbstractErrorHandler;
+import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
+import FrontEnd.ErrorHandlers.LexicalErrorHandler;
+import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -21,10 +26,12 @@ public class LexicalAnalyzer {
     private final String codePath;
     private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private final static Token EOF = new Token(ReservedSymbol.EOF);
+    private final LexicalErrorHandler errorHandler;
 
     // Constructor for file path.
-    public LexicalAnalyzer(String codeFilePath) {
+    public LexicalAnalyzer(String codeFilePath, AbstractErrorHandler<LexicalErrorType, LexicalWarningType> errorHandler) {
         this.codePath = codeFilePath;
+        this.errorHandler = (LexicalErrorHandler) errorHandler;
     }
 
     public void openCodeFile() throws InvalidFileException {

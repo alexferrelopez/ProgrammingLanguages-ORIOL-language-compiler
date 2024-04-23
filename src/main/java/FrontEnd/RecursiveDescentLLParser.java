@@ -1,14 +1,21 @@
 package FrontEnd;
 
 import FrontEnd.Dictionary.Token;
+import FrontEnd.ErrorHandlers.AbstractErrorHandler;
+import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
+import FrontEnd.ErrorHandlers.ParserErrorHandler;
+import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
 public class RecursiveDescentLLParser {
 	private final LexicalAnalyzer lexicalAnalyzer;
+	private final ParserErrorHandler errorHandler;
 
-	public RecursiveDescentLLParser(LexicalAnalyzer lexicalAnalyzer) {
+
+	public RecursiveDescentLLParser(LexicalAnalyzer lexicalAnalyzer, AbstractErrorHandler<ParserErrorType, ParserWarningType> parserErrorHandler) {
 		this.lexicalAnalyzer = lexicalAnalyzer;
+		this.errorHandler = (ParserErrorHandler) parserErrorHandler;
 	}
 
 	public void startCodeAnalysis() {
