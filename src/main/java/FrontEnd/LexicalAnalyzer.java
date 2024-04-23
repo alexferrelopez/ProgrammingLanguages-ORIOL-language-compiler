@@ -4,10 +4,10 @@ import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
 import FrontEnd.Dictionary.TokenType;
 import FrontEnd.Dictionary.Tokenizer;
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
-import FrontEnd.ErrorHandlers.LexicalErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.LexicalErrorType;
+import ErrorHandlers.LexicalErrorHandler;
+import ErrorHandlers.WarningTypes.LexicalWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 

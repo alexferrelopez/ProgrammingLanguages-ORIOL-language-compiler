@@ -1,13 +1,13 @@
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
-import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
-import FrontEnd.ErrorHandlers.ErrorTypes.SemanticErrorType;
-import FrontEnd.ErrorHandlers.LexicalErrorHandler;
-import FrontEnd.ErrorHandlers.ParserErrorHandler;
-import FrontEnd.ErrorHandlers.SemanticErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
-import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
-import FrontEnd.ErrorHandlers.WarningTypes.SemanticWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.LexicalErrorType;
+import ErrorHandlers.ErrorTypes.ParserErrorType;
+import ErrorHandlers.ErrorTypes.SemanticErrorType;
+import ErrorHandlers.LexicalErrorHandler;
+import ErrorHandlers.ParserErrorHandler;
+import ErrorHandlers.SemanticErrorHandler;
+import ErrorHandlers.WarningTypes.LexicalWarningType;
+import ErrorHandlers.WarningTypes.ParserWarningType;
+import ErrorHandlers.WarningTypes.SemanticWarningType;
 import FrontEnd.LexicalAnalyzer;
 import FrontEnd.RecursiveDescentLLParser;
 

@@ -1,7 +1,7 @@
-package FrontEnd.ErrorHandlers;
+package ErrorHandlers;
 
-import FrontEnd.ErrorHandlers.ErrorTypes.SemanticErrorType;
-import FrontEnd.ErrorHandlers.WarningTypes.SemanticWarningType;
+import ErrorHandlers.WarningTypes.SemanticWarningType;
+import ErrorHandlers.ErrorTypes.SemanticErrorType;
 
 /**
  * Error handler for semantic errors, extends error enums to give accurate error and warning messages.

@@ -1,4 +1,4 @@
-package FrontEnd.ErrorHandlers.WarningTypes;
+package ErrorHandlers.WarningTypes;
 
 /**
  * Enum for different types of lexical warnings

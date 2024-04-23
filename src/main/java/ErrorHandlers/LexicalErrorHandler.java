@@ -1,7 +1,7 @@
-package FrontEnd.ErrorHandlers;
+package ErrorHandlers;
 
-import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
-import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
+import ErrorHandlers.ErrorTypes.LexicalErrorType;
+import ErrorHandlers.WarningTypes.LexicalWarningType;
 
 /**
  * Error handler for lexical errors, extends error enums to give accurate error and warning messages.
@@ -13,7 +13,12 @@ public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, 
     @Override
     public String reportError(LexicalErrorType errorType) {
         addError();
-        return "";
+        switch (errorType) {
+            case UNKNOWN_TOKEN_ERROR:
+                return "Unknown token error";
+            default:
+                return "Unknown error";
+        }
     }
 
     /**

@@ -1,10 +1,10 @@
 package FrontEnd;
 
 import FrontEnd.Dictionary.Token;
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
-import FrontEnd.ErrorHandlers.ParserErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.ParserErrorType;
+import ErrorHandlers.ParserErrorHandler;
+import ErrorHandlers.WarningTypes.ParserWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 

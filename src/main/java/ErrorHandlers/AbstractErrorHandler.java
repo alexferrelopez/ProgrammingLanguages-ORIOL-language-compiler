@@ -1,7 +1,7 @@
-package FrontEnd.ErrorHandlers;
+package ErrorHandlers;
 
-import FrontEnd.ErrorHandlers.ErrorTypes.ErrorType;
-import FrontEnd.ErrorHandlers.WarningTypes.WarningType;
+import ErrorHandlers.ErrorTypes.ErrorType;
+import ErrorHandlers.WarningTypes.WarningType;
 
 /**
  * Abstract class for error handling

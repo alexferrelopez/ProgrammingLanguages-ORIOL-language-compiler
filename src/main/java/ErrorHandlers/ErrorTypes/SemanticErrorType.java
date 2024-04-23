@@ -1,4 +1,4 @@
-package FrontEnd.ErrorHandlers.ErrorTypes;
+package ErrorHandlers.ErrorTypes;
 
 /**
  * Enum for semantic errors

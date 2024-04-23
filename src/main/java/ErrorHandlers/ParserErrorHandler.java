@@ -1,7 +1,8 @@
-package FrontEnd.ErrorHandlers;
+package ErrorHandlers;
 
-import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
-import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
+import ErrorHandlers.ErrorTypes.ParserErrorType;
+import ErrorHandlers.WarningTypes.ParserWarningType;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 /**
  * Error handler for the parser, extends error enums to give accurate error and warning messages.
@@ -13,6 +14,9 @@ public class ParserErrorHandler extends AbstractErrorHandler<ParserErrorType, Pa
     @Override
     public String reportError(ParserErrorType errorType) {
         addError();
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        levenshteinDistance.apply("a", "b");
+        levenshteinDistance.getThreshold();
         return "";
     }
 
