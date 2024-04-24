@@ -1,15 +1,15 @@
 package FrontEnd;
 
-public class NoTerminal extends TermiNoTerm{
+public class NonTerminalSymbol extends AbstractSymbol {
 
-    private boolean isAxioma;
+    private final boolean isAxioma;
 
-    public NoTerminal(String name, boolean isAxioma) {
+    public NonTerminalSymbol(String name, boolean isAxioma) {
         super(name, false);
         this.isAxioma = isAxioma;
     }
 
-    public NoTerminal(String name){
+    public NonTerminalSymbol(String name){
         super(name, false);
         this.isAxioma= false;
     }
