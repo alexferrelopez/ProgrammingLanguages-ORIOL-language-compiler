@@ -1,4 +1,8 @@
 package FrontEnd.SymbolTable;
 
-public class Scope {
+public enum Scope {
+	GLOBAL,
+	FUNCTION,
+	CONDITIONAL,
+	LOOP
 }
