@@ -35,14 +35,14 @@ public class First {
                 addFirst(terminals, (Terminal)differentProductions.get(0));
             }else{
                 int pointer = 0;
-                List<Terminal> firs = getFirsts(grammar, (NoTerminal) differentProductions.get(pointer));
+                List<Terminal> firts = getFirsts(grammar, (NoTerminal) differentProductions.get(pointer));
                 int i = 0;
-                while(i<firs.size()){
-                    if(!firs.get(i).getName().equals(Terminal.EPSILON)){//No es Ɛ
-                        addFirst(terminals, firs.get(i));
+                while(i<firts.size()){
+                    if(!firts.get(i).getName().equals(Terminal.EPSILON)){//No es Ɛ
+                        addFirst(terminals, firts.get(i));
                     }else{
                         for(Terminal t: getFirsts(grammar, (NoTerminal) differentProductions.get(++pointer))){
-                            addFirst(firs, t);
+                            addFirst(firts, t);
                         }
                     }
                     i++;
