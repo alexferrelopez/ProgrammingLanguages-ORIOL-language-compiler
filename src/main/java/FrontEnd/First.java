@@ -11,9 +11,9 @@ public class First {
      * @param firsts list of firsts
      * @param terminal new no-terminal to be added to the firsts list
      */
-    private static void addFirst(List<Terminal> firsts, Terminal terminal){
+    private static void addFirst(List<TerminalSymbol> firsts, TerminalSymbol terminal){
 
-        for(Terminal t: firsts){
+        for(TerminalSymbol t: firsts){
             if(t.getName().equals(terminal.getName())){
                 return;
             }
@@ -27,22 +27,22 @@ public class First {
      * @param nt non-terminal
      * @return list of terminals
      */
-    public static List<Terminal> getFirsts(Map<NoTerminal, List<List<TermiNoTerm>>> grammar, NoTerminal nt) {
-        List<Terminal> terminals = new LinkedList<>(); //firsts
-        List<List<TermiNoTerm>> production = grammar.get(nt);
-        for(List<TermiNoTerm> differentProductions: production){
+    public static List<TerminalSymbol> getFirsts(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt) {
+        List<TerminalSymbol> terminals = new LinkedList<>(); //firsts
+        List<List<AbstractSymbol>> production = grammar.get(nt);
+        for(List<AbstractSymbol> differentProductions: production){
             if(differentProductions.get(0).isTerminal()){
-                addFirst(terminals, (Terminal)differentProductions.get(0));
+                addFirst(terminals, (TerminalSymbol)differentProductions.get(0));
             }else{
                 int pointer = 0;
-                List<Terminal> firts = getFirsts(grammar, (NoTerminal) differentProductions.get(pointer));
+                List<TerminalSymbol> firsts = getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(pointer));
                 int i = 0;
-                while(i<firts.size()){
-                    if(!firts.get(i).getName().equals(Terminal.EPSILON)){//No es Ɛ
-                        addFirst(terminals, firts.get(i));
+                while(i<firsts.size()){
+                    if(!firsts.get(i).getName().equals(TerminalSymbol.EPSILON)){//No es Ɛ
+                        addFirst(terminals, firsts.get(i));
                     }else{
-                        for(Terminal t: getFirsts(grammar, (NoTerminal) differentProductions.get(++pointer))){
-                            addFirst(firts, t);
+                        for(TerminalSymbol t: getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(++pointer))){
+                            addFirst(firsts, t);
                         }
                     }
                     i++;

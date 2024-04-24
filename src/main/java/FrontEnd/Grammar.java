@@ -13,10 +13,10 @@ public class Grammar {
      *      * The first one will store the different productions each non-terminal can lead to.
      *      * And the second list will be each of the Terminals and Non-Terminals that each particular production can result in.
      */
-    private Map<NoTerminal, List<List<TermiNoTerm>>> grammar = new HashMap<>();
-    private List<NoTerminal> noTerminalList = new LinkedList<>();
+    private final Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar = new HashMap<>();
+    private final List<NonTerminalSymbol> noTerminalList = new LinkedList<>();
 
-    public Map<NoTerminal, List<List<TermiNoTerm>>> getGrammar(){
+    public Map<NonTerminalSymbol, List<List<AbstractSymbol>>> getGrammar(){
         return this.grammar;
     }
 
@@ -30,7 +30,7 @@ public class Grammar {
      * @param isFirst if it's the first means is the axioma
      * @return the NoTerminal
      */
-    private NoTerminal getNoTerminal(String text, boolean isFirst){
+    private NonTerminalSymbol getNoTerminal(String text, boolean isFirst){
         text = text.trim();
         text = text.replaceAll("<", "");
         text = text.replaceAll(">", "");
@@ -43,13 +43,13 @@ public class Grammar {
      * @param isFirst if it is the axioma
      * @return the NoTerminal
      */
-    private NoTerminal findNoTerminal(String noTerm, boolean isFirst){
-        for(NoTerminal nt: noTerminalList){
+    private NonTerminalSymbol findNoTerminal(String noTerm, boolean isFirst){
+        for(NonTerminalSymbol nt: noTerminalList){
             if(nt.getName().equals(noTerm)){
                 return nt;
             }
         }
-        NoTerminal nt = new NoTerminal(noTerm, isFirst);
+        NonTerminalSymbol nt = new NonTerminalSymbol(noTerm, isFirst);
         noTerminalList.add(nt);
         return nt;
     }
@@ -59,7 +59,7 @@ public class Grammar {
      * @param n NoTerminal to find it's producion
      * @param text Each line of our grammar file
      */
-    private void getDreta(NoTerminal n, String text){
+    private void getDreta(NonTerminalSymbol n, String text){
         text = text.trim();
         int punter = 0;
         char[] charArray = text.toCharArray();
@@ -74,7 +74,7 @@ public class Grammar {
                     sbNOterm.append(c);
                 }else{ //Once we found a '>' means the NoTerminal has ended, and we have to store it in our grammar
                     String noTerm = sbNOterm.toString();
-                    NoTerminal nt = findNoTerminal(noTerm, false);
+                    NonTerminalSymbol nt = findNoTerminal(noTerm, false);
                     grammar.get(n).get(punter).add(nt);
                     sbNOterm = new StringBuilder();
                     esNoTerm = false;
@@ -84,7 +84,7 @@ public class Grammar {
                     esNoTerm = true;
                     if(esTerm){//If we were analyzing a Terminal and we found a '<' means a NoTerminal starts hence the Terminal finishes and we have to store it in our grammar
                         String str = sbTerm.toString();
-                        Terminal t = new Terminal(str);
+                        TerminalSymbol t = new TerminalSymbol(str);
                         grammar.get(n).get(punter).add(t);
                         sbTerm = new StringBuilder();
                         esTerm = false;
@@ -95,12 +95,12 @@ public class Grammar {
                     grammar.get(n).add(new LinkedList<>());
                     punter++;
                 }else if(c == 'ε'){//Is a Epsilon
-                    Terminal epsilon = new Terminal(String.valueOf(c));
+                    TerminalSymbol epsilon = new TerminalSymbol(String.valueOf(c));
                     grammar.get(n).get(punter).add(epsilon);
                 }else if(c == ' '){ //If we found a space and we were analyzing a Terminal it means that the Terminal has ended hence we have to store it
                     if(esTerm){
                         String str = sbTerm.toString();
-                        Terminal t = new Terminal(str);
+                        TerminalSymbol t = new TerminalSymbol(str);
                         grammar.get(n).get(punter).add(t);
                         sbTerm = new StringBuilder();
                         esTerm = false;
@@ -113,7 +113,7 @@ public class Grammar {
         }
         if(esTerm){//Once we ended looping through each character, we need to know if the last char was part of a Terminal to store it to our grammar
             String str = sbTerm.toString();
-            Terminal t = new Terminal(str);
+            TerminalSymbol t = new TerminalSymbol(str);
             grammar.get(n).get(punter).add(t);
             sbTerm = new StringBuilder();
         }
@@ -128,8 +128,8 @@ public class Grammar {
             while (sc.hasNextLine()) {
                 String data = sc.nextLine();
                 String[] hashMapSeparator = data.split("::=");//Since our grammar is in BNF nomenclature, we can split each line through the '::=' string and get the non-terminal on the first position and the productions on the second production
-                List<List<TermiNoTerm>> termINoTermList = new LinkedList<>();
-                NoTerminal nt = getNoTerminal(hashMapSeparator[0], isFirst);
+                List<List<AbstractSymbol>> termINoTermList = new LinkedList<>();
+                NonTerminalSymbol nt = getNoTerminal(hashMapSeparator[0], isFirst);
                 isFirst = false;
                 this.grammar.put(nt, termINoTermList);
                 getDreta(nt, hashMapSeparator[1]);
