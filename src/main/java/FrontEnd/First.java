@@ -1,7 +1,6 @@
 package FrontEnd;
 
 import java.util.List;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ public class First {
 
     /**
      * Method for obtain the firsts given a non-terminal
-     * @param grammar our gramamr
+     * @param grammar our grammar
      * @param nt non-terminal
      * @return list of terminals
      */
@@ -32,17 +31,16 @@ public class First {
         List<Terminal> terminals = new LinkedList<>(); //firsts
         List<List<TermiNoTerm>> production = grammar.get(nt);
         for(List<TermiNoTerm> differentProductions: production){
-            if(differentProductions.get(0) instanceof Terminal){
+            if(differentProductions.get(0).isTerminal()){
                 addFirst(terminals, (Terminal)differentProductions.get(0));
             }else{
                 int pointer = 0;
                 List<Terminal> firs = getFirsts(grammar, (NoTerminal) differentProductions.get(pointer));
                 int i = 0;
-                while(i<firs.size()){//for(int i = 0; i<firs.size(); i++ )
+                while(i<firs.size()){
                     if(!firs.get(i).getName().equals("Ɛ")){//No es Ɛ
-                        //terminals.add(firs.get(i));
                         addFirst(terminals, firs.get(i));
-                    }else{//Es Ɛ
+                    }else{
                         for(Terminal t: getFirsts(grammar, (NoTerminal) differentProductions.get(++pointer))){
                             addFirst(firs, t);
                         }
