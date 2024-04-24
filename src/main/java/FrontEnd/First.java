@@ -38,7 +38,7 @@ public class First {
                 List<Terminal> firs = getFirsts(grammar, (NoTerminal) differentProductions.get(pointer));
                 int i = 0;
                 while(i<firs.size()){
-                    if(!firs.get(i).getName().equals("Ɛ")){//No es Ɛ
+                    if(!firs.get(i).getName().equals(Terminal.EPSILON)){//No es Ɛ
                         addFirst(terminals, firs.get(i));
                     }else{
                         for(Terminal t: getFirsts(grammar, (NoTerminal) differentProductions.get(++pointer))){
