@@ -5,12 +5,12 @@ public class NoTerminal extends TermiNoTerm{
     private boolean isAxioma;
 
     public NoTerminal(String name, boolean isAxioma) {
-        super(name);
+        super(name, false);
         this.isAxioma = isAxioma;
     }
 
     public NoTerminal(String name){
-        super(name);
+        super(name, false);
         this.isAxioma= false;
     }
 
