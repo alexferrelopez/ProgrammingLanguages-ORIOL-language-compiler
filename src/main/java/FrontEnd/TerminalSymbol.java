@@ -1,10 +1,10 @@
 package FrontEnd;
 
-public class Terminal extends TermiNoTerm{
+public class TerminalSymbol extends AbstractSymbol {
 
     final static String EPSILON = "Ɛ";
 
-    public Terminal(String name) {
+    public TerminalSymbol(String name) {
         super(name, true);
     }
 }

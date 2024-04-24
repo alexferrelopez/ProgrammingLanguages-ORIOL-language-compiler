@@ -1,10 +1,10 @@
 package FrontEnd;
 
-public abstract class TermiNoTerm {
-    private String name;
-    private boolean isTerminal;
+public abstract class AbstractSymbol {
+    private final String name;
+    private final boolean isTerminal;
 
-    public TermiNoTerm(String name, boolean isTerminal) {
+    public AbstractSymbol(String name, boolean isTerminal) {
         this.name = name;
         this.isTerminal = isTerminal;
     }
