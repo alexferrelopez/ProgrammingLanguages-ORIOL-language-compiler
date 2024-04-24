@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Grammar {
-    private final String GRAMMAR_PATH = "src/test/resources/gramatica.txt";
+    private final String GRAMMAR_PATH = "src/main/resources/gramatica.txt";
     /**
      * Our structure to store the whole grammar.
      * It is a HashMap where its Key will be each non-terminal and the Value will be the different productions from that non-terminal.
