@@ -7,13 +7,8 @@ import ErrorHandlers.WarningTypes.ParserWarningType;
  * Error handler for the parser, extends error enums to give accurate error and warning messages.
  */
 public class ParserErrorHandler extends AbstractErrorHandler<ParserErrorType, ParserWarningType> {
-    public ParserErrorHandler() {
-        super();
-    }
-
     /**
      * See parent class: @{@link AbstractErrorHandler}.
-     *
      */
     @Override
     public String reportError(ParserErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {

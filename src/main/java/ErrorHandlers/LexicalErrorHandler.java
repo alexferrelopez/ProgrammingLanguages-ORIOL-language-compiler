@@ -7,10 +7,6 @@ import ErrorHandlers.WarningTypes.LexicalWarningType;
  * Error handler for lexical errors, extends error enums to give accurate error and warning messages.
  */
 public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, LexicalWarningType> {
-    public LexicalErrorHandler() {
-        super();
-    }
-
     /**
      * See parent class: @{@link AbstractErrorHandler}.
      */
@@ -24,20 +20,13 @@ public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, 
         if (optionalColumn != null) sb.append(", column ").append(optionalColumn);
 
         sb.append(":\n");
-        String message = "";
+        sb.append("\t").append(errorType.getMessage()).append(": ").append(word);
 
-        switch (errorType) {
-            case UNKNOWN_TOKEN_ERROR -> {
-                sb.append("\tUnknown token").append(": ").append(word);
-                message = sb.toString();
-            }
-            case RESERVED_TOKEN_ERROR -> {
-                sb.append("\tReserved token").append(": ").append(word);
-                message = sb.toString();
-            }
-        }
+        String message = sb.toString();
+
         Report<MessageType> report = new Report<>(errorType, optionalLine, optionalColumn, word, sb.toString());
         addReport(report);
+
         return message;
     }
 
@@ -49,10 +38,11 @@ public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, 
         addWarning();
         return "";
     }
-
+    /*
     public static void main(String[] args) {
         LexicalErrorHandler lexicalErrorHandler = new LexicalErrorHandler();
         System.out.println(lexicalErrorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, 1, null, "hello"));
         System.out.println(lexicalErrorHandler.reportError(LexicalErrorType.RESERVED_TOKEN_ERROR, 1, 1, "hello"));
     }
+    */
 }

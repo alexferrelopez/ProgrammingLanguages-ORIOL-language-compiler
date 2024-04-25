@@ -1,7 +1,8 @@
 package ErrorHandlers;
 
 /**
- * Marker interface for message types.
+ * Interface for message types.
  */
 public interface MessageType {
+    String getMessage();
 }
