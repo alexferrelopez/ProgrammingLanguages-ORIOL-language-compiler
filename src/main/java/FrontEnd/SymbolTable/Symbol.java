@@ -10,14 +10,15 @@ import java.util.List;
  * @param <T> the type of the value of the symbol.
  */
 
-public class Symbol<T> {
-    private final String name;            // The name (lexeme) of the symbol.
-    private final DataType dataType;      // The type of the symbol.
+public abstract class Symbol<T> {
+    private final String name;          // The name (lexeme) of the symbol.
+    private final DataType dataType;    // The type of the symbol.
     private long memoryAddress;
     private final long lineDeclaration;
     private List<Long> lineUsage;
-    private T value;                // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
-    private final Scope scope;            // The scope of the symbol.
+    private T value;                    // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
+    private final Scope scope;          // The scope of the symbol.
+    private long offset;	            // Used in code generation to calculate the offset of the symbol in the stack.
 
     // TODO -> recordar que un Symbol és un node d'un arbre, per tant, ha de tenir una llista de fills.
 
