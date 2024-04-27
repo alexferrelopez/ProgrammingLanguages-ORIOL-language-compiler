@@ -1,15 +1,17 @@
-package FrontEnd.SymbolTable.BinaryTreesF2.Algorithms;
+package FrontEnd.SymbolTable.BinaryTree.Algorithm;
 
-import Auxiliar.MyQueue;
-import BinaryTreesF2.Entities.Symbol;
-import BinaryTreesF2.Entities.SymbolTableNode;
+import FrontEnd.SymbolTable.Symbol;
+import FrontEnd.SymbolTable.SymbolTableNode;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class TreeBFS {
-	public static Symbol findCitizenById (SymbolTableNode rootSymbolTableNode, long citizenId) {
+	public static Symbol<?> findCitizenById (SymbolTableNode rootSymbolTableNode, long citizenId) {
 
 		// Just search for nodes if there are any in the tree.
 		if (rootSymbolTableNode != null) {
-			MyQueue<SymbolTableNode> myQueue = new MyQueue<>();
+			Queue<SymbolTableNode> myQueue = new LinkedList<>();
 			myQueue.add(rootSymbolTableNode);
 
 			while (!myQueue.isEmpty()) {
