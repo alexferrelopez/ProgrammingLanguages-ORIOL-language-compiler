@@ -1,16 +1,15 @@
-package FrontEnd.SymbolTable.SymbolType;
+package FrontEnd.SymbolTable.Symbol;
 
 import FrontEnd.Dictionary.TokenEnums.DataType;
-import FrontEnd.SymbolTable.Scope;
-import FrontEnd.SymbolTable.Symbol;
+import FrontEnd.SymbolTable.Scope.ScopeType;
 
 import java.util.List;
 
 public class FunctionSymbol<T> extends Symbol<T> {
 	private final List<VariableSymbol<?>> parameters;  // List of parameters that act as variables inside the function.
 
-	public FunctionSymbol(String name, DataType returnType, List<VariableSymbol<?>> parameters, long lineDeclaration, Scope scope) {
-		super(name, returnType, lineDeclaration, scope);
+	public FunctionSymbol(String name, DataType returnType, List<VariableSymbol<?>> parameters, long lineDeclaration, ScopeType scopeType) {
+		super(name, returnType, lineDeclaration, scopeType);
 		this.parameters = parameters;
 	}
 
