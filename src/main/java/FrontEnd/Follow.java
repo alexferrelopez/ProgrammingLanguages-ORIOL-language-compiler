@@ -1,5 +1,6 @@
 package FrontEnd;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,35 @@ public class Follow {
             }
         }
         follows.add(terminal);
+    }
+
+    /**
+     * Method to check if a production of follows already contains a terminal
+     * @param grammar Our grammar
+     * @param nt Non-Terminal to get the follows
+     * @param t Terminal to know if already exists in the list of follows
+     * @return True if exists, False if not
+     */
+    public static boolean haveFollow(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt, TerminalSymbol t){
+        List<TerminalSymbol> follows = getFollows(grammar, nt);
+        for(TerminalSymbol follow: follows){
+            if(follow.getName().equals(t.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convert the producion from a list to a Map
+     * @param nt Non-terminal
+     * @param tint The list of a production
+     * @return A map of a production
+     */
+    private static Map<NonTerminalSymbol, List<AbstractSymbol>> generateProduction(NonTerminalSymbol nt, List<AbstractSymbol> tint){
+        Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new HashMap<>();
+        productionParser.put(nt, tint);
+        return productionParser;
     }
 
     /**
@@ -70,5 +100,25 @@ public class Follow {
             }
         }
         return follows;
+    }
+
+    /**
+     * Method for obtaining the production of follows of a NonTerminal Symbol
+     * @param grammar Our grammar
+     * @param nt Non-Terminal Symbol to seek its production
+     * @return The production
+     */
+    public static Map<NonTerminalSymbol, List<AbstractSymbol>> getProduction(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt) {
+        List<List<AbstractSymbol>> production = grammar.get(nt);
+        for(List<AbstractSymbol> product: production){
+            for(AbstractSymbol tint: product){
+                if(tint instanceof TerminalSymbol){
+                    if(tint.getName().equals("ε")){
+                        return generateProduction(nt, product);
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
