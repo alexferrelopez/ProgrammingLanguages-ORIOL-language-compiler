@@ -40,4 +40,47 @@ public class ParsingTable {
             }
         }
     }
+
+    /**
+     * Method to get the unique terminals
+     * @param grammar Our gramamr
+     * @return List of unique terminals
+     */
+    private List<TerminalSymbol> findUniqueTerminals(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar) {
+        List<TerminalSymbol> uniqueTerminals = new LinkedList<>();
+        for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> entry : grammar.entrySet()) {
+            List<List<AbstractSymbol>> listFora = entry.getValue();
+            for(List<AbstractSymbol> listDins: listFora){
+                for(AbstractSymbol tint: listDins){
+                    if(tint.isTerminal()){
+                        if(tint.getName().equals("ε")) continue;
+                        boolean found = false;
+                        for(TerminalSymbol terminal: uniqueTerminals){
+                            if(terminal.getName().equals((tint.getName()))){
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            uniqueTerminals.add((TerminalSymbol) tint);
+                        }
+                    }
+
+                }
+            }
+        }
+        uniqueTerminals.add(new TerminalSymbol("EOF"));
+        return uniqueTerminals;
+    }
+
+    /**
+     * Method to get the unique non-terminals
+     * @param grammar Our grammar
+     * @return List of unique no terminals
+     */
+    private List<NonTerminalSymbol> findUniqueNoTerminals(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar) {
+        Set<NonTerminalSymbol> keys = grammar.keySet();
+        return new LinkedList<>(keys);
+    }
+
 }
