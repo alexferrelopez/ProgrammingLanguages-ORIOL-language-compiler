@@ -10,7 +10,6 @@ import FrontEnd.Exceptions.InvalidTokenException;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,7 +18,16 @@ public class LexicalAnalyzer {
      * Lexical Analyzer / Scanner
      **/
     private final String codePath;
-    private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
+    //private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
+    private BufferedReader codeReader;
+    private final String lineBreaks = "\n\r\t ";
+    private final String separators = SpecialSymbol.PUNT_COMMA.getPattern() + SpecialSymbol.PO.getPattern() +
+            SpecialSymbol.PT.getPattern() + SpecialSymbol.COMMA.getPattern() + SpecialSymbol.CO.getPattern() +
+            SpecialSymbol.CT.getPattern() + SpecialSymbol.DOS_PUNTS.getPattern() + SpecialSymbol.BRACKET_O.getPattern() +
+            SpecialSymbol.BRACKET_C.getPattern() + lineBreaks;
+    private boolean separatorFound = false;
+    private char previousChar;
+    private boolean eof = false;
     private final static Token EOF = new Token(ReservedSymbol.EOF);
 
     // Constructor for file path.
@@ -42,43 +50,134 @@ public class LexicalAnalyzer {
         }
 
         try {
-            codeScanner = new Scanner(codeFile);
+            codeReader = new BufferedReader(new FileReader(codeFile));
+
         } catch (FileNotFoundException e) {
             throw new InvalidFileException("LEXIC: File access issues");
         }
     }
-    
-    // Code by https://stackoverflow.com/a/811860
-    public Token getNextToken() throws InvalidTokenException {
-        // Read the next word until EOF (end of file).
-        if (codeScanner.hasNext()) {
-            String word = codeScanner.next();
-            System.out.print("Word read: " + word + " | ");
 
-            Token token = getToken(word);
-            System.out.println(token);
-            return token;
+    /**
+     * Get the next token from the file.
+     * @return the next token.
+     * @throws InvalidTokenException if the token is not valid.
+     */
+    public Token getNextToken() throws InvalidTokenException {
+        // Check if the previous character was a separator from the previous token. Usually happens with cases like:
+        // "miau a;" -> "miau" is a token, "a" is a token, ";" is the separator and the token.
+        if (separatorFound) {
+            separatorFound = false;
+            return getToken(String.valueOf(previousChar));
         }
-        else {
-            // End of the file reached.
+
+        String word;
+
+        // Read the next word from the file.
+        word = readUntilSeparator();
+        // This is a special case where the last token ended on a whitespace and the next token is a separator.
+        // This happens in cases such as "miau a ;", where the last token is "a" and the next token is ";" with no
+        // letters in the word.
+        if (separatorFound && word.isEmpty()) {
+            separatorFound = false;
+            return getToken(String.valueOf(previousChar));
+        }
+
+        // Simple end of file check.
+        if (eof && word.isEmpty()) {
             return EOF;
         }
+
+        return getToken(word);
     }
 
+    /**
+     * Reads the file character by character until a separator is found.
+     *
+     * @return the word read from the file.
+     */
+    private String readUntilSeparator() {
+        StringBuilder stringBuilder = new StringBuilder();
+        // Has to be an integer to check for EOF.
+        int character;
+
+        do {
+            try {
+                character = codeReader.read();
+                char c = (char) character;
+                //Check if the end of the file has been reached.
+                if (character == -1) {
+                    eof = true;
+                    return stringBuilder.toString();
+                // Check if the character is a hidden character (line break, tab, space). Since they are separators
+                } else if (isHiddenCharacter(c)) {
+                    // Here there are two cases:
+                    // 1. The string builder is empty, so we continue reading until we find a non-hidden character to
+                    // return a real token.
+                    // 2. The string builder is not empty, so we return the current word, since we consider the
+                    // character as a separator.
+                    if (!stringBuilder.isEmpty()) {
+                        return stringBuilder.toString().trim();
+                    }
+                // Check if the character is a separator from the separators list. These are also tokens so they must be
+                // returned as a token. There are two cases too:
+                // 1. The string builder is empty, so we get the separator later in the upper function
+                // 2. The string builder is not empty, so we return the current word and store the separator for the
+                // next call to the function.
+                } else if (isSeparator(character)) {
+                    separatorFound = true;
+                    previousChar = c;
+                    return stringBuilder.toString().trim();
+                // If the character is not a separator, we add it to the word.
+                } else {
+                    stringBuilder.append(c);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } while (true);
+    }
+
+    /**
+     * Check if the character is a hidden character (line break, tab, space). In Windows, the line break is "\r\n",
+     * unlike other Unix systems that use \n. We check for both cases by looking if our character is contained in
+     * our string of hidden separators, similar to a regex.
+     * @param character the character to check.
+     * @return true if the character is a hidden character, false otherwise.
+     */
+    private boolean isHiddenCharacter(int character) {
+        return lineBreaks.contains(String.valueOf((char) character));
+    }
+
+    /**
+     * Check if the character is a separator from the separators list. We check if the character is contained in our
+     * string of separators, similar to a regex.
+     * @param character the character to check.
+     * @return true if the character is a separator, false otherwise.
+     */
+    private boolean isSeparator(int character) {
+        return separators.contains(String.valueOf((char) character));
+    }
+
+    /**
+     * Checks against all the regexes of the different enums to see if the word is a valid token.
+     * @param word the word to check against the regexes.
+     * @return the token if the word is valid.
+     * @throws InvalidTokenException if the word is not a valid token.
+     */
     private Token getToken(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
-                // The order of the list is important, since the first match will be the selected one.
-                // "moo" has to be determined as "DATA_TYPE", not "VARIABLE".
-                ReservedSymbol.values(),
-                DataType.values(),
-                SpecialSymbol.values(),
-                MathOperator.values(),
-                BinaryOperator.values(),
-                ValueSymbol.values()
-        )
-        .flatMap(Arrays::stream)
-        .collect(Collectors.toList());
+                        // The order of the list is important, since the first match will be the selected one.
+                        // "moo" has to be determined as "DATA_TYPE", not "VARIABLE".
+                        ReservedSymbol.values(),
+                        DataType.values(),
+                        SpecialSymbol.values(),
+                        MathOperator.values(),
+                        BinaryOperator.values(),
+                        ValueSymbol.values()
+                )
+                .flatMap(Arrays::stream)
+                .collect(Collectors.toList());
 
         // Loop through each enum class to see if the word is found in any enum.
         TokenType tokenType;
@@ -89,6 +188,7 @@ public class LexicalAnalyzer {
 
             // Check if the current token is valid (different to null)
             if (tokenType != null) {
+                System.out.println("Token found: " + tokenType + " " + word);
                 return new Token(tokenType, word);
             }
         }

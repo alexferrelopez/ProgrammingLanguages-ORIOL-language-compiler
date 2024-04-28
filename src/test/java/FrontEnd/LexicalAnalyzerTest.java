@@ -26,17 +26,36 @@ class LexicalAnalyzerTest {
     private static Stream<Arguments> provideTokensForTesting() {
         return Stream.of(
 				// Simple declaration code statement
-                Arguments.of("miau a is 10\n", new Token[] {
+                Arguments.of("miau a   is 10;\na", new Token[] {
                         new Token(DataType.INTEGER),
                         new Token(ValueSymbol.VARIABLE, "a"),
                         new Token(SpecialSymbol.IS),
-                        new Token(ValueSymbol.VALUE_INT, "10")
+                        new Token(ValueSymbol.VALUE_INT, "10"),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(ValueSymbol.VARIABLE, "a"),
                 }),
+
+				// Simple declaration code statement
+				Arguments.of("{(})}; ; {(})}; \n ", new Token[] {
+						new Token(SpecialSymbol.CO),
+						new Token(SpecialSymbol.PO),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PT),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(SpecialSymbol.CO),
+						new Token(SpecialSymbol.PO),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PT),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PUNT_COMMA),
+				}),
 
 				// Conditional statement
 				Arguments.of(
 						"""
-							check ( num module 2 eq 0 ) {
+							check (num module 2 eq 0 ) {
 								 poop 0 ;
 							}
 						""", new Token[] {
