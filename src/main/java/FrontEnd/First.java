@@ -97,7 +97,6 @@ public class First {
                 int i = 0;
                 while(i<firs.size()){
                     if(!firs.get(i).getName().equals("Ɛ")){//No es Ɛ
-                        //terminals.add(firs.get(i));
                         addFirst(terminals, firs.get(i));
                     }else{//Es Ɛ
                         for(TerminalSymbol t: getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(++pointer))){
