@@ -21,10 +21,12 @@ public class LexicalAnalyzer {
     //private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private BufferedReader codeReader;
     private final String lineBreaks = "\n\r\t ";
+    /*
     private final String separators = SpecialSymbol.PUNT_COMMA.getPattern() + SpecialSymbol.PO.getPattern() +
             SpecialSymbol.PT.getPattern() + SpecialSymbol.COMMA.getPattern() + SpecialSymbol.CO.getPattern() +
             SpecialSymbol.CT.getPattern() + SpecialSymbol.DOS_PUNTS.getPattern() + SpecialSymbol.BRACKET_O.getPattern() +
             SpecialSymbol.BRACKET_C.getPattern() + lineBreaks;
+            */
     private boolean separatorFound = false;
     private char previousChar;
     private boolean eof = false;
@@ -155,7 +157,9 @@ public class LexicalAnalyzer {
      * @return true if the character is a separator, false otherwise.
      */
     private boolean isSeparator(int character) {
-        return separators.contains(String.valueOf((char) character));
+        List<TokenType> separators = Stream.of(SpecialSymbol.values())
+                .collect(Collectors.toList());
+        return Tokenizer.isWordInsideTokenList(separators, String.valueOf((char) character));
     }
 
     /**
