@@ -14,8 +14,7 @@ public enum SpecialSymbol implements TokenType {
 	CT("\\}", List.of("}")),
 	DOS_PUNTS(":", List.of(":")),
 	BRACKET_O("\\[" , List.of("[")),
-	BRACKET_C("\\]", List.of("]")),
-	IS("is", List.of("is"));
+	BRACKET_C("\\]", List.of("]"));
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;

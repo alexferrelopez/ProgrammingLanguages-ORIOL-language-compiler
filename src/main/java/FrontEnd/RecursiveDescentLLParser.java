@@ -29,16 +29,13 @@ public class RecursiveDescentLLParser {
 			// Get all the tokens from the grammar.
 			Token token;
 			do {
-				try {
-					token = lexicalAnalyzer.getNextToken();
-				} catch (InvalidTokenException e) {
-					// Do something
-					System.out.println(e.getMessage());
-					break;
-				}
-			} while (!token.isEOF());
+                token = lexicalAnalyzer.getNextToken();
+
+            } while (!token.isEOF());
 		} catch (InvalidFileException e) {
 			System.out.println(e.getMessage());
-		}
-	}
+		} catch (InvalidTokenException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
