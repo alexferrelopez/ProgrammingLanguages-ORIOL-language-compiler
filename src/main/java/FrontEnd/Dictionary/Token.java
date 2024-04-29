@@ -74,9 +74,4 @@ public class Token {
     public int getColumn() {
         return column;
     }
-
-    public void setLocation(int line, int column) {
-        this.line = line;
-        this.column = column;
-    }
 }
