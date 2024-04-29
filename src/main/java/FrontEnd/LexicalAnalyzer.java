@@ -42,14 +42,14 @@ public class LexicalAnalyzer {
 
         // Check if file exists.
         if (!codeFile.exists()) {
-            throw new InvalidFileException();
+            throw new InvalidFileException("File does not exist.");
         }
 
         try {
             codeReader = new BufferedReader(new FileReader(codeFile));
 
         } catch (FileNotFoundException e) {
-            throw new InvalidFileException("LEXIC: File access issues");
+            throw new InvalidFileException("LEXIC: File access issues.");
         }
     }
 
@@ -60,13 +60,17 @@ public class LexicalAnalyzer {
      * @throws InvalidTokenException if the token is not valid.
      */
     public Token getNextToken() throws InvalidTokenException {
+        Token token;
+
         // Check if the previous character was a separator from the previous token. Usually happens with cases like:
         // "miau a;" -> "miau" is a token, "a" is a token, ";" is the separator and the token.
         if (separatorFound) {
             separatorFound = false;
             // The column is decremented by 1 because the column is incremented after reading the last character that
             // is a separator.
-            return new Token(getTokenType(String.valueOf(previousChar)), line, column - 1);
+            token = getTokenRead(String.valueOf(previousChar));
+            token.setLocation(line, column - 1);
+            return token;
         }
 
         String word;
@@ -80,7 +84,9 @@ public class LexicalAnalyzer {
             separatorFound = false;
             // The column is decremented by 1 because the column is incremented after reading the last character that
             // is a separator.
-            return new Token(getTokenType(String.valueOf(previousChar)), line, column - 1);
+            token = getTokenRead(String.valueOf(previousChar));
+            token.setLocation(line, column - 1);
+            return token;
         }
 
         // We might have reached the end of the file but if there is a word, we still need to return it.
@@ -91,7 +97,9 @@ public class LexicalAnalyzer {
 
         // The column is decremented by 1 because the column is incremented after reading the last character that
         // is a separator, it is also decremented by the length of the word to point to the first character of the word.
-        return new Token(getTokenType(word), line, column - 1 - word.length());
+        token = getTokenRead(String.valueOf(previousChar));
+        token.setLocation(line, column - 1 - word.length());
+        return token;
     }
 
     /**
@@ -179,7 +187,7 @@ public class LexicalAnalyzer {
      * @return the token if the word is valid.
      * @throws InvalidTokenException if the word is not a valid token.
      */
-    private TokenType getTokenType(String word) throws InvalidTokenException {
+    private Token getTokenRead(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
                         // The order of the list is important, since the first match will be the selected one.
@@ -204,7 +212,7 @@ public class LexicalAnalyzer {
             // Check if the current token is valid (different to null)
             if (tokenType != null) {
                 System.out.println("Token found: " + tokenType + " " + word);
-                return tokenType;
+                return new Token(tokenType, word);
             }
         }
 

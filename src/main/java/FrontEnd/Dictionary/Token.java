@@ -53,7 +53,7 @@ public class Token {
 
     private String getLexemeWithoutRegex(String lexeme) {
         return lexeme.replace("\\", "");
-	}
+    }
 
     public String getLexeme() {
         return lexeme;
@@ -73,5 +73,10 @@ public class Token {
 
     public int getColumn() {
         return column;
+    }
+
+    public void setLocation(int line, int column) {
+        this.line = line;
+        this.column = column;
     }
 }
