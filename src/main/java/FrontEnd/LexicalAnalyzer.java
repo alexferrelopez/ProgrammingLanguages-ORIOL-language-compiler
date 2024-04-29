@@ -18,19 +18,13 @@ public class LexicalAnalyzer {
      * Lexical Analyzer / Scanner
      **/
     private final String codePath;
-    //private Scanner codeScanner;    // Use a Scanner for both files and strings (testing).
     private BufferedReader codeReader;
-    private final String lineBreaks = "\n\r\t ";
-    /*
-    private final String separators = SpecialSymbol.PUNT_COMMA.getPattern() + SpecialSymbol.PO.getPattern() +
-            SpecialSymbol.PT.getPattern() + SpecialSymbol.COMMA.getPattern() + SpecialSymbol.CO.getPattern() +
-            SpecialSymbol.CT.getPattern() + SpecialSymbol.DOS_PUNTS.getPattern() + SpecialSymbol.BRACKET_O.getPattern() +
-            SpecialSymbol.BRACKET_C.getPattern() + lineBreaks;
-            */
     private boolean separatorFound = false;
     private char previousChar;
     private boolean eof = false;
     private final static Token EOF = new Token(ReservedSymbol.EOF);
+    private int line = 1;
+    private int column = 1;
 
     // Constructor for file path.
     public LexicalAnalyzer(String codeFilePath) {
@@ -61,6 +55,7 @@ public class LexicalAnalyzer {
 
     /**
      * Get the next token from the file.
+     *
      * @return the next token.
      * @throws InvalidTokenException if the token is not valid.
      */
@@ -69,7 +64,9 @@ public class LexicalAnalyzer {
         // "miau a;" -> "miau" is a token, "a" is a token, ";" is the separator and the token.
         if (separatorFound) {
             separatorFound = false;
-            return getToken(String.valueOf(previousChar));
+            // The column is decremented by 1 because the column is incremented after reading the last character that
+            // is a separator.
+            return new Token(getTokenType(String.valueOf(previousChar)), line, column - 1);
         }
 
         String word;
@@ -81,15 +78,20 @@ public class LexicalAnalyzer {
         // letters in the word.
         if (separatorFound && word.isEmpty()) {
             separatorFound = false;
-            return getToken(String.valueOf(previousChar));
+            // The column is decremented by 1 because the column is incremented after reading the last character that
+            // is a separator.
+            return new Token(getTokenType(String.valueOf(previousChar)), line, column - 1);
         }
 
-        // Simple end of file check.
+        // We might have reached the end of the file but if there is a word, we still need to return it.
+        // It's only when the word is empty that we return EOF, meaning there is actually nothing else to read.
         if (eof && word.isEmpty()) {
             return EOF;
         }
 
-        return getToken(word);
+        // The column is decremented by 1 because the column is incremented after reading the last character that
+        // is a separator, it is also decremented by the length of the word to point to the first character of the word.
+        return new Token(getTokenType(word), line, column - 1 - word.length());
     }
 
     /**
@@ -110,7 +112,7 @@ public class LexicalAnalyzer {
                 if (character == -1) {
                     eof = true;
                     return stringBuilder.toString();
-                // Check if the character is a hidden character (line break, tab, space). Since they are separators
+                    // Check if the character is a hidden character (line break, tab, space). Since they are separators
                 } else if (isHiddenCharacter(c)) {
                     // Here there are two cases:
                     // 1. The string builder is empty, so we continue reading until we find a non-hidden character to
@@ -120,17 +122,18 @@ public class LexicalAnalyzer {
                     if (!stringBuilder.isEmpty()) {
                         return stringBuilder.toString().trim();
                     }
-                // Check if the character is a separator from the separators list. These are also tokens so they must be
-                // returned as a token. There are two cases too:
-                // 1. The string builder is empty, so we get the separator later in the upper function
-                // 2. The string builder is not empty, so we return the current word and store the separator for the
-                // next call to the function.
+                    // Check if the character is a separator from the separators list. These are also tokens so they must be
+                    // returned as a token. There are two cases too:
+                    // 1. The string builder is empty, so we get the separator later in the upper function
+                    // 2. The string builder is not empty, so we return the current word and store the separator for the
+                    // next call to the function.
                 } else if (isSeparator(character)) {
                     separatorFound = true;
                     previousChar = c;
                     return stringBuilder.toString().trim();
-                // If the character is not a separator, we add it to the word.
+                    // If the character is not a separator, we add it to the word.
                 } else {
+                    column++;
                     stringBuilder.append(c);
                 }
             } catch (IOException e) {
@@ -143,16 +146,23 @@ public class LexicalAnalyzer {
      * Check if the character is a hidden character (line break, tab, space). In Windows, the line break is "\r\n",
      * unlike other Unix systems that use \n. We check for both cases by looking if our character is contained in
      * our string of hidden separators, similar to a regex.
+     *
      * @param character the character to check.
      * @return true if the character is a hidden character, false otherwise.
      */
     private boolean isHiddenCharacter(int character) {
+        if ("\n".contains(String.valueOf((char) character))) {
+            line++;
+            column = 1;
+        }
+        String lineBreaks = "\n\r\t ";
         return lineBreaks.contains(String.valueOf((char) character));
     }
 
     /**
      * Check if the character is a separator from the separators list. We check if the character is contained in our
-     * string of separators, similar to a regex.
+     * string of separators.
+     *
      * @param character the character to check.
      * @return true if the character is a separator, false otherwise.
      */
@@ -164,11 +174,12 @@ public class LexicalAnalyzer {
 
     /**
      * Checks against all the regexes of the different enums to see if the word is a valid token.
+     *
      * @param word the word to check against the regexes.
      * @return the token if the word is valid.
      * @throws InvalidTokenException if the word is not a valid token.
      */
-    private Token getToken(String word) throws InvalidTokenException {
+    private TokenType getTokenType(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
                         // The order of the list is important, since the first match will be the selected one.
@@ -193,7 +204,7 @@ public class LexicalAnalyzer {
             // Check if the current token is valid (different to null)
             if (tokenType != null) {
                 System.out.println("Token found: " + tokenType + " " + word);
-                return new Token(tokenType, word);
+                return tokenType;
             }
         }
 
