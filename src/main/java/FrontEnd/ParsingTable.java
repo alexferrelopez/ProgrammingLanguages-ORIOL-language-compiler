@@ -49,20 +49,20 @@ public class ParsingTable {
     private List<TerminalSymbol> findUniqueTerminals(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar) {
         List<TerminalSymbol> uniqueTerminals = new LinkedList<>();
         for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> entry : grammar.entrySet()) {
-            List<List<AbstractSymbol>> listFora = entry.getValue();
-            for(List<AbstractSymbol> listDins: listFora){
-                for(AbstractSymbol tint: listDins){
-                    if(tint.isTerminal()){
-                        if(tint.getName().equals("ε")) continue;
+            List<List<AbstractSymbol>> symbolMatrix = entry.getValue();
+            for(List<AbstractSymbol> symbolList: symbolMatrix){
+                for(AbstractSymbol productionSymbols: symbolList){
+                    if(productionSymbols.isTerminal()){
+                        if(productionSymbols.getName().equals(TerminalSymbol.EPSILON)) continue;
                         boolean found = false;
                         for(TerminalSymbol terminal: uniqueTerminals){
-                            if(terminal.getName().equals((tint.getName()))){
+                            if(terminal.getName().equals((productionSymbols.getName()))){
                                 found = true;
                                 break;
                             }
                         }
                         if(!found){
-                            uniqueTerminals.add((TerminalSymbol) tint);
+                            uniqueTerminals.add((TerminalSymbol) productionSymbols);
                         }
                     }
 
