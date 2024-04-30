@@ -1,12 +1,12 @@
 package FrontEnd.SymbolTable;
 
-import FrontEnd.SymbolTable.Scope.Scope;
+import FrontEnd.SymbolTable.Scope.ScopeNode;
 
 public class SymbolTableTree implements SymbolTableInterface {
 	private int currentScopeLevel;					// Current level of the scope
-	private final Scope root;						// Root of the tree
+	private final ScopeNode root;						// Root of the tree
 
-	public SymbolTableTree(Scope rootData) {
+	public SymbolTableTree(ScopeNode rootData) {
 		this.root = rootData;
 		this.currentScopeLevel = 0;
 	}
@@ -15,22 +15,25 @@ public class SymbolTableTree implements SymbolTableInterface {
 	 * Add a scope to the tree
 	 */
 	@Override
-	public void addScopeAtLevel(Scope scope, int level) {
-		Scope parentScope = findScopeAtLevel(root, level);
-		if (parentScope != null) {
-			parentScope.addChild(scope);
+	public void addScopeAtLevel(ScopeNode scopeNode, int level) {
+		ScopeNode parentScopeNode = findScopeAtLevel(root, level);
+		if (parentScopeNode != null) {
+			parentScopeNode.addChild(scopeNode);
 		} else {
-			// Handle error: no Scope at the given level
+			// TODO -> Handle error: no Scope at the given level
 		}
 	}
 
+	/**
+	 * Find a scope at a given level (scope level)
+	 */
 	@Override
-	public Scope findScopeAtLevel(Scope scope, int level) {
-		if (scope.getID() == level) {
-			return scope;
+	public ScopeNode findScopeAtLevel(ScopeNode scopeNode, int level) {
+		if (scopeNode.getLevel() == level) {
+			return scopeNode;
 		} else {
-			for (Scope child : scope.getChildren()) {
-				Scope found = findScopeAtLevel(child, level);
+			for (ScopeNode child : scopeNode.getChildren()) {
+				ScopeNode found = findScopeAtLevel(child, level);
 				if (found != null) {
 					return found;
 				}
@@ -43,12 +46,12 @@ public class SymbolTableTree implements SymbolTableInterface {
 	 * Remove the last scope from the list
 	 */
 	@Override
-	public void removeScope(int level, Scope scope) {
-		Scope parentScope = findScopeAtLevel(root, level);
-		if (parentScope != null) {
-			parentScope.removeChild(scope);
+	public void removeScope(int level, ScopeNode scopeNode) {
+		ScopeNode parentScopeNode = findScopeAtLevel(root, level);
+		if (parentScopeNode != null) {
+			parentScopeNode.removeChild(scopeNode);
 		} else {
-			// Handle error: no Scope at the given level
+			// TODO -> Handle error: no Scope at the given level
 		}
 	}
 

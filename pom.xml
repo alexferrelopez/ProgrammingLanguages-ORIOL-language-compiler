@@ -15,7 +15,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.10.2</version>
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
         <!-- JUnit 4 library to ensure compatibility with JUnit Vintage -->
@@ -23,7 +23,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version> <!-- Ensure this version is at least 4.12 or later -->
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
         <!-- JavaCC Dependency -->
@@ -47,7 +47,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.10.2</version>
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
         <!-- JUnit Vintage Engine to support running JUnit 3/4 tests -->
@@ -56,7 +56,7 @@
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>5.10.2</version>
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
@@ -64,7 +64,7 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.11.0</version>
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
@@ -72,7 +72,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>5.10.2</version>
-            <scope>test</scope>
+            <scopeNode>test</scopeNode>
         </dependency>
 
 

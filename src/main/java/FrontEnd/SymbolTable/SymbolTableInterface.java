@@ -1,15 +1,22 @@
 package FrontEnd.SymbolTable;
 
-import FrontEnd.SymbolTable.Scope.Scope;
-import FrontEnd.SymbolTable.Symbol.Symbol;
+import FrontEnd.SymbolTable.Scope.ScopeNode;
 
 public interface SymbolTableInterface {
+    /**
+     * Add a scope to the tree
+     */
+    void addScopeAtLevel(ScopeNode scopeNode, int level);
 
-    void addScopeAtLevel(Scope scope, int level);
+    /**
+     * Find a scope at a given level (scope level)
+     */
+    ScopeNode findScopeAtLevel(ScopeNode scopeNode, int level);
 
-    Scope findScopeAtLevel(Scope scope, int level);
-
-    void removeScope(int level, Scope scope);
+    /**
+     * Remove the last scope from the list
+     */
+    void removeScope(int level, ScopeNode scopeNode);
 
     /**
      * Get the current scope level
