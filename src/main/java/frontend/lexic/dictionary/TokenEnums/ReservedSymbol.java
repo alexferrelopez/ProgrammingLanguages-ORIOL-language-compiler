@@ -1,6 +1,6 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.lexic.dictionary.TokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.lexic.dictionary.TokenType;
 
 public enum ReservedSymbol implements TokenType {
 	// Enum constants (special symbols)

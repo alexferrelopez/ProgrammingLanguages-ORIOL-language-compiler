@@ -1,6 +1,3 @@
-import FrontEnd.LexicalAnalyzer;
-import FrontEnd.RecursiveDescentLLParser;
-
 public class Main {
 
     private final static int EXPECTED_NUM_ARGS = 1;         // The main argument is not the name of the Java's file (Java is not like C).
@@ -38,8 +35,6 @@ public class Main {
 
     private static void startCompiler(String codeFilePath) {
         // ---- FRONT END ---- //
-        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath);
-        RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer);
-        recursiveDescentLLParser.startCodeAnalysis();
+        Compiler compiler = new Compiler(codeFilePath);
     }
 }
