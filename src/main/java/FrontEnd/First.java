@@ -25,12 +25,12 @@ public class First {
     /**
      * Method for generating the production of the no terminal
      * @param nt no terminal symbol for which production is being generated.
-     * @param tint the list of terminal or no terminal symbols representing the production
+     * @param productionSymbols the list of terminal or no terminal symbols representing the production
      * @return the production
      */
-    private static Map<NonTerminalSymbol, List<AbstractSymbol>> generateProduction(NonTerminalSymbol nt, List<AbstractSymbol> tint){
+    private static Map<NonTerminalSymbol, List<AbstractSymbol>> generateProduction(NonTerminalSymbol nt, List<AbstractSymbol> productionSymbols){
         Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new HashMap<>();
-        productionParser.put(nt, tint);
+        productionParser.put(nt, productionSymbols);
         return productionParser;
     }
 
@@ -93,14 +93,14 @@ public class First {
                 addFirst(terminals, (TerminalSymbol)differentProductions.get(0));
             }else{
                 int pointer = 0;
-                List<TerminalSymbol> firs = getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(pointer));
+                List<TerminalSymbol> firstList = getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(pointer));
                 int i = 0;
-                while(i<firs.size()){
-                    if(!firs.get(i).getName().equals("Ɛ")){//No es Ɛ
-                        addFirst(terminals, firs.get(i));
-                    }else{//Es Ɛ
+                while(i<firstList.size()){
+                    if(!firstList.get(i).getName().equals(TerminalSymbol.EPSILON)){//No es Ɛ
+                        addFirst(terminals, firstList.get(i));
+                    }else{//Is Ɛ
                         for(TerminalSymbol t: getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(++pointer))){
-                            addFirst(firs, t);
+                            addFirst(firstList, t);
                         }
                     }
                     i++;
