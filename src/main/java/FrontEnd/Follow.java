@@ -1,5 +1,8 @@
 package FrontEnd;
 
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidTokenException;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,6 +103,21 @@ public class Follow {
             }
         }
         return follows;
+    }
+
+    public static List<Token> getFollowsToken(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol noTerminal, LexicalAnalyzer lexicalAnalyzer){
+        List<TerminalSymbol> followsTerminalSymbol = getFollows(grammar, noTerminal);
+        List<Token> followsTokens = new LinkedList<>();
+
+        for(TerminalSymbol terminalSymbol: followsTerminalSymbol){
+            try{
+                Token token = lexicalAnalyzer.getToken(terminalSymbol.getName());
+                followsTokens.add(token);
+            }catch (InvalidTokenException e){
+                e.printStackTrace();
+            }
+        }
+        return followsTokens;
     }
 
     /**
