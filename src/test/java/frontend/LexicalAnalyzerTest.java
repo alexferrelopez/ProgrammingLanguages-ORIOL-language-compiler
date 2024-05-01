@@ -2,7 +2,7 @@ package frontend;
 
 import frontend.lexic.LexicalAnalyzer;
 import frontend.lexic.dictionary.Token;
-import frontend.lexic.dictionary.TokenEnums.*;
+import frontend.lexic.dictionary.tokenEnums.*;
 import frontend.exceptions.InvalidFileException;
 import frontend.exceptions.InvalidTokenException;
 import jdk.jfr.Description;

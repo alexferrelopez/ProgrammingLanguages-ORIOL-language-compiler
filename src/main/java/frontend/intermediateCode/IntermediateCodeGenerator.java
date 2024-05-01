@@ -1,4 +1,4 @@
-package frontend.intermediatecode;
+package frontend.intermediateCode;
 
 public class IntermediateCodeGenerator {
 }

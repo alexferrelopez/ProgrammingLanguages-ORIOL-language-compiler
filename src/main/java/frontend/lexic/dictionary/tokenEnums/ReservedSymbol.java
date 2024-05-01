@@ -1,4 +1,4 @@
-package frontend.lexic.dictionary.TokenEnums;
+package frontend.lexic.dictionary.tokenEnums;
 
 import frontend.lexic.dictionary.TokenType;
 

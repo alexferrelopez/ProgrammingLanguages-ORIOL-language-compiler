@@ -1,25 +1,21 @@
-package frontend.lexic.dictionary.TokenEnums;
+package frontend.lexic.dictionary.tokenEnums;
 
 import frontend.lexic.dictionary.TokenType;
 
-public enum SpecialSymbol implements TokenType {
+public enum DataType implements TokenType {
 	// Enum constants (special symbols)
-	PO("\\("),
-	PT("\\)"),
-	COMMA(","),
-	PUNT_COMMA(";"),
-	CO("\\{"),
-	CT("\\}"),
-	DOS_PUNTS(":"),
-	BRACKET_O("\\["),
-	BRACKET_C("\\]"),
-	IS("is");
+	INTEGER("miau"),
+	FLOAT("oink"),
+	BOOLEAN("status"),
+	CHAR("moo"),
+	STRING("quack"),
+	VOID("void");
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;
 
 	// Constructor to initialize the instance field (allow it to have a string value)
-	SpecialSymbol(String pattern) {
+	DataType(String pattern) {
 		this.regexPattern = pattern;
 	}
 

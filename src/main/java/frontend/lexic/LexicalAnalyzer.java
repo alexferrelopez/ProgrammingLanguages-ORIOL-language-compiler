@@ -1,7 +1,7 @@
 package frontend.lexic;
 
 import frontend.lexic.dictionary.Token;
-import frontend.lexic.dictionary.TokenEnums.*;
+import frontend.lexic.dictionary.tokenEnums.*;
 import frontend.lexic.dictionary.TokenType;
 import frontend.lexic.dictionary.Tokenizer;
 import frontend.exceptions.InvalidFileException;

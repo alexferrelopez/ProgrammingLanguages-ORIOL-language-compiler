@@ -1,6 +1,6 @@
 package frontend.lexic.dictionary;
 
-import frontend.lexic.dictionary.TokenEnums.ReservedSymbol;
+import frontend.lexic.dictionary.tokenEnums.ReservedSymbol;
 import org.jetbrains.annotations.Nullable;
 
 public class Token {
