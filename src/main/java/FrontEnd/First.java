@@ -1,9 +1,8 @@
 package FrontEnd;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Map;
+import FrontEnd.Dictionary.TokenType;
+
+import java.util.*;
 
 public class First {
 
@@ -139,6 +138,14 @@ public class First {
             }
         }
         return terminals;
+    }
+
+    public static List<TokenType> getFirstsToken(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt){
+        List<TerminalSymbol> firstsTerminalSymbol = getFirsts(grammar, nt);
+        List<TokenType> firstTokens = new LinkedList<>();
+        System.out.println(Arrays.asList(firstsTerminalSymbol));
+
+        return firstTokens;
     }
 
 

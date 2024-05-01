@@ -4,6 +4,14 @@ import FrontEnd.Dictionary.TokenType;
 
 public enum BinaryOperator implements TokenType {
 	// Enum constants (binary operators)
+
+	SUM2("\\+"), //TODO AIXÒ HO TRAUREM, ÉS PER FER PROVES, NO PATIU ;)
+	MULT2("\\*"),
+	PO2("\\("),
+	PT2("\\)"),
+	VAR2("id"),
+
+
 	GT("bigger|bg"),
 	LT("smaller|sm"),
 	NEQ("different|diff"),
