@@ -48,14 +48,13 @@ public class RecursiveDescentLLParser {
 
 		for(NonTerminalSymbol nt: grammar.keySet()){
 			System.out.print("\nEls first de " + nt.getName() + " son: ");
-			for(TerminalSymbol terminal: First.getFirsts(grammar, nt)){
-				System.out.print(terminal.getName() + " ");
+			for(Token terminal: First.getFirstsToken(grammar, nt, lexicalAnalyzer)){
+				System.out.print(terminal.toString() + " ") ;
 			}
-			System.out.print("\nEls follows de " + nt.getName() + " son: ");
+            /*System.out.print("\nEls follows de " + nt.getName() + " son: ");
 			for(TerminalSymbol terminal: Follow.getFollows(grammar, nt)){
 				System.out.print(terminal.getName() + " ");
-			}
-			First.getFirstsToken(grammar, nt);
+			}*/
 		}
 
 	}

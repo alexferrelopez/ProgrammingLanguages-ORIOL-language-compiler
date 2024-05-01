@@ -1,6 +1,7 @@
 package FrontEnd;
 
-import FrontEnd.Dictionary.TokenType;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidTokenException;
 
 import java.util.*;
 
@@ -140,11 +141,18 @@ public class First {
         return terminals;
     }
 
-    public static List<TokenType> getFirstsToken(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt){
+    public static List<Token> getFirstsToken(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt, LexicalAnalyzer lexicalAnalyzer){
         List<TerminalSymbol> firstsTerminalSymbol = getFirsts(grammar, nt);
-        List<TokenType> firstTokens = new LinkedList<>();
-        System.out.println(Arrays.asList(firstsTerminalSymbol));
+        List<Token> firstTokens = new LinkedList<>();
 
+        for(TerminalSymbol terminalSymbol: firstsTerminalSymbol){
+            try{
+                Token token = lexicalAnalyzer.getToken(terminalSymbol.getName());
+                firstTokens.add(token);
+            }catch (InvalidTokenException e){
+                e.printStackTrace();
+            }
+        }
         return firstTokens;
     }
 
