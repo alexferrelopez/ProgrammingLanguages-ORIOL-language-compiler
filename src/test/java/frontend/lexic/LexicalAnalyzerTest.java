@@ -1,6 +1,5 @@
-package frontend;
+package frontend.lexic;
 
-import frontend.lexic.LexicalAnalyzer;
 import frontend.lexic.dictionary.Token;
 import frontend.lexic.dictionary.tokenEnums.*;
 import frontend.exceptions.InvalidFileException;
