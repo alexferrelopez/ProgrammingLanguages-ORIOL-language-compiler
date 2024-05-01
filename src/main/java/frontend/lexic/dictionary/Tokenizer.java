@@ -1,4 +1,4 @@
-package FrontEnd.Dictionary;
+package frontend.lexic.dictionary;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,11 +1,11 @@
-package FrontEnd;
+package frontend.lexic;
 
-import FrontEnd.Dictionary.Token;
-import FrontEnd.Dictionary.TokenEnums.*;
-import FrontEnd.Dictionary.TokenType;
-import FrontEnd.Dictionary.Tokenizer;
-import FrontEnd.Exceptions.InvalidFileException;
-import FrontEnd.Exceptions.InvalidTokenException;
+import frontend.lexic.dictionary.Token;
+import frontend.lexic.dictionary.tokenEnums.*;
+import frontend.lexic.dictionary.TokenType;
+import frontend.lexic.dictionary.Tokenizer;
+import frontend.exceptions.InvalidFileException;
+import frontend.exceptions.InvalidTokenException;
 
 import java.io.*;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LexicalAnalyzer {
+public class LexicalAnalyzer implements LexicalAnalyzerInterface {
     /**
      * Lexical Analyzer / Scanner
      **/
@@ -27,7 +27,11 @@ public class LexicalAnalyzer {
         this.codePath = codeFilePath;
     }
 
-    public void openCodeFile() throws InvalidFileException {
+    /**
+     * Open the code file and start the lexical analysis. If the file does not exist, throw an exception.
+     * @throws InvalidFileException If the file does not exist.
+     */
+    public void startLexicalAnalysis() throws InvalidFileException {
         // Open the file and check if it exists.
         checkFileExists();
     }
@@ -49,6 +53,12 @@ public class LexicalAnalyzer {
     }
     
     // Code by https://stackoverflow.com/a/811860
+
+    /**
+     * Get the next token from the code file. If the file has no more tokens, return EOF.
+     * @return  The next token in the file (based on the current word).
+     * @throws InvalidTokenException    If the token is not found in any of the enums (does not exist in the language).
+     */
     public Token getNextToken() throws InvalidTokenException {
         // Read the next word until EOF (end of file).
         if (codeScanner.hasNext()) {

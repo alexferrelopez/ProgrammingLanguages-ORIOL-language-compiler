@@ -1,9 +1,9 @@
-package FrontEnd;
+package frontend.lexic;
 
-import FrontEnd.Dictionary.Token;
-import FrontEnd.Dictionary.TokenEnums.*;
-import FrontEnd.Exceptions.InvalidFileException;
-import FrontEnd.Exceptions.InvalidTokenException;
+import frontend.lexic.dictionary.Token;
+import frontend.lexic.dictionary.tokenEnums.*;
+import frontend.exceptions.InvalidFileException;
+import frontend.exceptions.InvalidTokenException;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -260,7 +260,7 @@ class LexicalAnalyzerTest {
 
 			// Now pass the file to the LexicalAnalyzer
 			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());
-			lexicalAnalyzer.openCodeFile();
+			lexicalAnalyzer.startLexicalAnalysis();
 
 			for (Token expectedToken : expectedTokens) {
 				// Check if the read token is the same as the next one.
@@ -280,7 +280,7 @@ class LexicalAnalyzerTest {
 		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp");
 
 		// Asserts that the operation throws the specified exception
-		Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
+		Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::startLexicalAnalysis, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
 	}
 
 	@Test
@@ -290,6 +290,6 @@ class LexicalAnalyzerTest {
 		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());	// tempFile is created always before the test (@BeforeEach)
 
 		// Asserts that the operation does not throw any exception
-		Assertions.assertDoesNotThrow(lexicalAnalyzer::openCodeFile, "LexicalAnalyzer should not throw any exception for existent files.");
+		Assertions.assertDoesNotThrow(lexicalAnalyzer::startLexicalAnalysis, "LexicalAnalyzer should not throw any exception for existent files.");
 	}
 }

@@ -1,4 +1,4 @@
-package FrontEnd.Dictionary;
+package frontend.lexic.dictionary;
 
 public interface TokenType {
 

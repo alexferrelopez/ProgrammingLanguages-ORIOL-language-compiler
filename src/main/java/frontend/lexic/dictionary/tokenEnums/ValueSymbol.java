@@ -1,6 +1,6 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.lexic.dictionary.tokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.lexic.dictionary.TokenType;
 
 public enum ValueSymbol implements TokenType {
 	// Enum constants (mathematics operators)
