@@ -4,24 +4,23 @@ import FrontEnd.SymbolTable.Scope.ScopeNode;
 
 public class SymbolTableTree implements SymbolTableInterface {
 	private int currentScopeLevel;					// Current level of the scope
-	private final ScopeNode root;						// Root of the tree
+	private final ScopeNode root;					// Root of the tree
+	private ScopeNode currentScope;					// Current scope
 
-	public SymbolTableTree(ScopeNode rootData) {
-		this.root = rootData;
+	public SymbolTableTree() {
+		this.root = new ScopeNode(0);
 		this.currentScopeLevel = 0;
+		this.currentScope = root;
 	}
 
 	/**
 	 * Add a scope to the tree
 	 */
 	@Override
-	public void addScopeAtLevel(ScopeNode scopeNode, int level) {
-		ScopeNode parentScopeNode = findScopeAtLevel(root, level);
-		if (parentScopeNode != null) {
-			parentScopeNode.addChild(scopeNode);
-		} else {
-			// TODO -> Handle error: no Scope at the given level
-		}
+	public void addScope(ScopeNode scopeNode) {
+		currentScope.addChild(scopeNode);
+		currentScope = scopeNode;
+		currentScopeLevel++;
 	}
 
 	/**

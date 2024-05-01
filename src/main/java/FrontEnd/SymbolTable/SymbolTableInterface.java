@@ -6,7 +6,7 @@ public interface SymbolTableInterface {
     /**
      * Add a scope to the tree
      */
-    void addScopeAtLevel(ScopeNode scopeNode, int level);
+    void addScope(ScopeNode scopeNode);
 
     /**
      * Find a scope at a given level (scope level)
