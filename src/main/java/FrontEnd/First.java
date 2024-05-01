@@ -1,9 +1,9 @@
 package FrontEnd;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Map;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidTokenException;
+
+import java.util.*;
 
 public class First {
 
@@ -139,6 +139,21 @@ public class First {
             }
         }
         return terminals;
+    }
+
+    public static List<Token> getFirstsToken(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar, NonTerminalSymbol nt, LexicalAnalyzer lexicalAnalyzer){
+        List<TerminalSymbol> firstsTerminalSymbol = getFirsts(grammar, nt);
+        List<Token> firstTokens = new LinkedList<>();
+
+        for(TerminalSymbol terminalSymbol: firstsTerminalSymbol){
+            try{
+                Token token = lexicalAnalyzer.getToken(terminalSymbol.getName());
+                firstTokens.add(token);
+            }catch (InvalidTokenException e){
+                e.printStackTrace();
+            }
+        }
+        return firstTokens;
     }
 
 
