@@ -65,7 +65,7 @@ public class LexicalAnalyzer {
         }
     }
 
-    private Token getToken(String word) throws InvalidTokenException {
+    public Token getToken(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
                 // The order of the list is important, since the first match will be the selected one.
