@@ -2,7 +2,6 @@ package FrontEnd.SymbolTable.Scope;
 
 import FrontEnd.SymbolTable.Symbol.Symbol;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,10 +12,13 @@ public class ScopeNode {
 	private ScopeNode parent;								// Parent scope
 	private int scopeLevel; 								// Level of the scope
 	private final Map<String, Symbol<?>> symbols; 			// List of symbols in the scopes (key = symbol name, value = symbol).
+	private final ScopeType scopeType;
 
-	public ScopeNode(int scopeLevel) {
+	public ScopeNode(int scopeLevel, ScopeType scopeType) {
 		this.symbols = new HashMap<>();
 		this.scopeLevel = scopeLevel;
+		this.parent = null;
+		this.scopeType = scopeType;
 	}
 
 	/**
@@ -27,21 +29,33 @@ public class ScopeNode {
 		this.symbols.put(symbol.getName(), symbol);
 	}
 
+	private Symbol<?> searchSymbolInScope(String symbolName) {
+		if (this.symbols.containsKey(symbolName)) {
+			return this.symbols.get(symbolName);
+		}
+
+		return null;
+	}
+
 	/**
 	 * Find a symbol in the scope.
 	 * @param symbolName	the name of the symbol.
 	 * @return	the symbol with the given name, or null if the symbol is not in the scope.
 	 */
 	public Symbol<?> findSymbol(String symbolName) {
-		for (Map.Entry<String, Symbol<?>> entry : this.symbols.entrySet()) {
-			Symbol<?> value = entry.getValue();
-
-			if (value.hasSameName(symbolName)) {
-				return value;
-			}
+		// If the node is a function or is root, just search the variable in the same scope.
+		if (this.scopeType == ScopeType.FUNCTION || this.parent == null) {
+			return searchSymbolInScope(symbolName);
 		}
 
-		return null;
+		// In any other scope, we have to check on the same scope and their parent's (until reaching root or a function).
+		Symbol<?> symbol = searchSymbolInScope(symbolName);
+		if (symbol != null) {
+			return symbol;
+		}
+
+		// If the symbol is not found, search on the parent's scope.
+		return this.parent.findSymbol(symbolName);
 	}
 
 	/**
@@ -66,13 +80,5 @@ public class ScopeNode {
 	 */
 	public List<ScopeNode> getChildren() {
 		return children;
-	}
-
-	/**
-	 * Remove a child scope from the scope.
-	 * @param scopeNode	the child scope to remove.
-	 */
-	public void removeChild(ScopeNode scopeNode) {
-		this.children.remove(scopeNode);
 	}
 }

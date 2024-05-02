@@ -1,15 +1,19 @@
 package FrontEnd.SymbolTable;
 
 import FrontEnd.SymbolTable.Scope.ScopeNode;
+import FrontEnd.SymbolTable.Scope.ScopeType;
+import FrontEnd.SymbolTable.Symbol.Symbol;
 
 public class SymbolTableTree implements SymbolTableInterface {
-	private int currentScopeLevel;					// Current level of the scope
-	private final ScopeNode root;					// Root of the tree
-	private ScopeNode currentScope;					// Current scope
+	private int currentScopeLevel;	// Current level of the scope
+	private final ScopeNode root;	// Root of the tree
+	private ScopeNode currentScope;	// Current scope
+	private final static ScopeType ROOT_SCOPE = ScopeType.GLOBAL;
+	private final static int ROOT_LEVEL = 0;
 
 	public SymbolTableTree() {
-		this.root = new ScopeNode(0);
-		this.currentScopeLevel = 0;
+		this.root = new ScopeNode(ROOT_LEVEL, ROOT_SCOPE);
+		this.currentScopeLevel = ROOT_LEVEL;
 		this.currentScope = root;
 	}
 
@@ -21,6 +25,27 @@ public class SymbolTableTree implements SymbolTableInterface {
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
 		currentScopeLevel++;
+	}
+
+	/**
+	 * Add a symbol at the current scope of the tree.
+	 *
+	 * @param symbol symbol (variable or function) to add in the scope.
+	 */
+	@Override
+	public void addSymbol(Symbol<?> symbol) {
+		this.currentScope.addSymbol(symbol);
+	}
+
+	/**
+	 * Find a symbol in the scope.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return the symbol with the given name, or null if the symbol is not in the scope.
+	 */
+	@Override
+	public Symbol<?> findSymbol(String symbolName) {
+		return this.currentScope.findSymbol(symbolName);
 	}
 
 	/**
@@ -42,32 +67,11 @@ public class SymbolTableTree implements SymbolTableInterface {
 	}
 
 	/**
-	 * Remove the last scope from the list
-	 */
-	@Override
-	public void removeScope(int level, ScopeNode scopeNode) {
-		ScopeNode parentScopeNode = findScopeAtLevel(root, level);
-		if (parentScopeNode != null) {
-			parentScopeNode.removeChild(scopeNode);
-		} else {
-			// TODO -> Handle error: no Scope at the given level
-		}
-	}
-
-	/**
 	 * Get the current scope level
 	 */
 	@Override
 	public int getCurrentScopeLevel() {
 		return currentScopeLevel;
-	}
-
-	/**
-	 * Set the current scope level
-	 */
-	@Override
-	public void setCurrentScopeLevel(int currentScopeLevel) {
-		this.currentScopeLevel = currentScopeLevel;
 	}
 
 }

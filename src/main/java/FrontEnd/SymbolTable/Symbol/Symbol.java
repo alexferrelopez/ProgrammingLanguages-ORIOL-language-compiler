@@ -1,7 +1,6 @@
 package FrontEnd.SymbolTable.Symbol;
 
 import FrontEnd.Dictionary.TokenEnums.DataType;
-import FrontEnd.SymbolTable.Scope.ScopeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,21 +12,19 @@ import java.util.List;
 
 public abstract class Symbol<Type> {
     private final String name;          // The name (lexeme) of the symbol.
-    private final DataType dataType;    // The type of the symbol.
+    private final DataType dataType;    // The type of the symbol (if it's a function, it's the return type).
     private long memoryAddress;
     private final long lineDeclaration;
-    private List<Long> lineUsage;
+    private final List<Long> lineUsage;
     private Type value;                 // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
-    private final ScopeType scopeType;  // The type of scope of the symbol.
     private long offset;	            // Used in code generation to calculate the offset of the symbol in the stack.
     // Offset for a variable is the distance from the base pointer to the variable.
     // Offset for a function is the label in the assembler code.
 
-    public Symbol(String name, DataType dataType, long lineDeclaration, ScopeType scopeType) {
+    public Symbol(String name, DataType dataType, long lineDeclaration) {
         this.name = name;
         this.dataType = dataType;
         this.lineDeclaration = lineDeclaration;
-        this.scopeType = scopeType;
         this.lineUsage = new ArrayList<>();
     }
 
