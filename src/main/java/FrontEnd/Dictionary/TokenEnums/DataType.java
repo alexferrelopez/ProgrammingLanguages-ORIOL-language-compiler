@@ -37,12 +37,22 @@ public enum DataType implements TokenType {
 	}
 
 	// Getter method for the maximum value of the data type
-	public Number getMaxValue() {
-		return this.maxValue;
+	public boolean isBetweenRange(Number size) {
+		return greaterThan(maxValue, size) && lessThan(minValue, size);
 	}
 
-	// Getter method for the minimum value of the data type
-	public Number getMinValue() {
-		return this.minValue;
+	// Utility method to check if one number is greater than another
+	private static boolean greaterThan(Number num1, Number num2) {
+		return convertToDouble(num1) > convertToDouble(num2);
+	}
+
+	// Utility method to check if one number is less than another
+	private static boolean lessThan(Number num1, Number num2) {
+		return convertToDouble(num1) < convertToDouble(num2);
+	}
+
+	// Convert any Number to double
+	private static double convertToDouble(Number number) {
+		return number.doubleValue();
 	}
 }

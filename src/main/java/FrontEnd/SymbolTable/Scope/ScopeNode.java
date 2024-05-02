@@ -4,15 +4,18 @@ import FrontEnd.SymbolTable.Symbol.Symbol;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScopeNode {
 	private List<ScopeNode> children = new ArrayList<>();	// List of child scopes
 	private ScopeNode parent;								// Parent scope
 	private int scopeLevel; 								// Level of the scope
-	private List<Symbol> symbols; 							// List of symbols in the scopes
+	private final Map<String, Symbol<?>> symbols; 			// List of symbols in the scopes (key = symbol name, value = symbol).
 
 	public ScopeNode(int scopeLevel) {
+		this.symbols = new HashMap<>();
 		this.scopeLevel = scopeLevel;
 	}
 
@@ -21,20 +24,23 @@ public class ScopeNode {
 	 * @param symbol	the symbol to add.
 	 */
 	public void addSymbol(Symbol<?> symbol) {
-		this.symbols.add(symbol);
+		this.symbols.put(symbol.getName(), symbol);
 	}
 
 	/**
 	 * Find a symbol in the scope.
-	 * @param name	the name of the symbol.
+	 * @param symbolName	the name of the symbol.
 	 * @return	the symbol with the given name, or null if the symbol is not in the scope.
 	 */
-	public Symbol<?> findSymbol(String name) {
-		for (Symbol<?> symbol : this.symbols) {
-			if (symbol.getName().equals(name)) {
-				return symbol;
+	public Symbol<?> findSymbol(String symbolName) {
+		for (Map.Entry<String, Symbol<?>> entry : this.symbols.entrySet()) {
+			Symbol<?> value = entry.getValue();
+
+			if (value.hasSameName(symbolName)) {
+				return value;
 			}
 		}
+
 		return null;
 	}
 

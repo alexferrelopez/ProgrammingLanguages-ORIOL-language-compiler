@@ -55,4 +55,8 @@ public abstract class Symbol<Type> {
             return dataType.getSize();
         }
     }
+
+    public boolean hasSameName(String otherSymbolName) {
+        return this.name.equals((otherSymbolName));
+    }
 }
