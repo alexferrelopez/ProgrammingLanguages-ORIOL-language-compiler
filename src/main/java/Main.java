@@ -1,5 +1,5 @@
-import FrontEnd.LexicalAnalyzer;
-import FrontEnd.RecursiveDescentLLParser;
+import frontend.LexicalAnalyzer;
+import frontend.RecursiveDescentLLParser;
 
 public class Main {
 

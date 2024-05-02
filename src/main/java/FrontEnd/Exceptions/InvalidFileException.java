@@ -1,4 +1,4 @@
-package FrontEnd.Exceptions;
+package frontend.Exceptions;
 
 public class InvalidFileException extends Exception {
 

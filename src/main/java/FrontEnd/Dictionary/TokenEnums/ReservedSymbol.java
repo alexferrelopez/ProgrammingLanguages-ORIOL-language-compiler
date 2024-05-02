@@ -1,8 +1,11 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.Dictionary.TokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.Dictionary.TokenType;
 
 public enum ReservedSymbol implements TokenType {
+
+
+
 	// Enum constants (special symbols)
 	IF("check"),
 	ELSE("else|otherwise"),
@@ -13,8 +16,9 @@ public enum ReservedSymbol implements TokenType {
 	RETURN("poop"),
 	EOF("EOF"),
 	MAIN("ranch"),
-	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern()),	// Farmer: VALOR_STRING
-	AARON("(?i)aaron"),											// Regex pattern case insensitive by adding (?i)
+	EPSILON("ε"),
+	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern()),    // Farmer: VALOR_STRING
+	AARON("(?i)aaron"),                                            // Regex pattern case insensitive by adding (?i)
 	ORIOL("(?i)oriol"),
 	ALEXIA("(?i)al(e|è)xia"),
 	GEMMA("(?i)gemma"),
