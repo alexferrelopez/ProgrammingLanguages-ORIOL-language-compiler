@@ -89,8 +89,6 @@ public class RecursiveDescentLLParser {
 		//Display the firsts and follows of the grammar for debugging purposes
 		First.displayAllFirsts(grammarMap, lexicalAnalyzer);
 		Follow.displayAllFollows(grammarMap, lexicalAnalyzer);
-
-
 	}
 
 
@@ -108,7 +106,7 @@ public class RecursiveDescentLLParser {
 				e.printStackTrace();
 			}
 		}else{
-			System.out.println("ERROR NO MATCH entre " + terminal.getName() + " i " + lookahead.getType() + " :(");
+			System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
 		}
 	}
 }
