@@ -16,4 +16,9 @@ public abstract class AbstractSymbol {
     public boolean isTerminal(){
         return isTerminal;
     }
+
+    @Override
+    public String toString() { //For debug purposes
+        return name;
+    }
 }

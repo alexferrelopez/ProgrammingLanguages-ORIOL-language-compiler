@@ -1,4 +1,7 @@
 package FrontEnd;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Dictionary.TokenEnums.BinaryOperator;
+
 import java.util.*;
 
 public class ParsingTable {
@@ -27,7 +30,11 @@ public class ParsingTable {
             for (int j = 0; j < uniqueTerminals.size(); j++) {
                 NonTerminalSymbol nt = uniqueNoTerminals.get(i);
                 TerminalSymbol t = uniqueTerminals.get(j);
+                if(nt.getName().equals("assignation'") && t.getName().equals("VARIABLE")){
+                    System.out.println("PROBLEMON :/");
+                }
                 Map<NonTerminalSymbol, List<AbstractSymbol>> production = First.getProduction(grammar, nt, t);
+
                 if (production != null) {
                     parsingTable[i][j] = production;
                     continue;
@@ -82,5 +89,49 @@ public class ParsingTable {
         Set<NonTerminalSymbol> keys = grammar.keySet();
         return new LinkedList<>(keys);
     }
+
+    public Map[][] getParsingTable() {
+        return parsingTable;
+    }
+
+
+    public List<AbstractSymbol> getProduction(NonTerminalSymbol nonTerminal, Token terminal){
+        int positionTerminal = -1;
+        int positionNonTerminal = -1;
+        for (int i = 0; i < uniqueTerminals.size(); i++) {
+            if(uniqueTerminals.get(i).getName().equals(String.valueOf(terminal.getType()))){
+                positionTerminal = i;
+                break;
+            }
+        }
+        if(positionTerminal == -1){
+            System.out.println("Error, no s'ha trobat el Terminal :(");
+            //TODO error handler (mirar que no siguin paraules prohibides (aaron, alexia, alex, gemma, oriol...))
+            return null;
+        }
+        for (int i = 0; i < uniqueNoTerminals.size(); i++) {
+            String str = uniqueNoTerminals.get(i).getName();
+            String str2 = nonTerminal.getName();
+            if(str.equals(str2)){
+                positionNonTerminal = i;
+                break;
+            }
+        }
+        if(positionNonTerminal == -1){
+            System.out.println("Error, no s'ha trobat el noTerminal :(");
+            return null;
+        }
+        Map productionMap = parsingTable[positionNonTerminal][positionTerminal];
+        if(Objects.isNull(productionMap)){
+            System.out.println("There is no production associated with " + terminal.getLexeme() + " with " + nonTerminal.getName());//TODO throw exception
+            return null;
+        }
+        List<AbstractSymbol> abstractSymbols = new LinkedList<AbstractSymbol>(productionMap.values());
+
+
+        return (List<AbstractSymbol>) abstractSymbols.get(0);
+    }
+
+
 
 }
