@@ -1,10 +1,10 @@
 package FrontEnd;
 
 import FrontEnd.Dictionary.Token;
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.ParserErrorType;
-import FrontEnd.ErrorHandlers.ParserErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.ParserWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.ParserErrorType;
+import ErrorHandlers.ParserErrorHandler;
+import ErrorHandlers.WarningTypes.ParserWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
@@ -29,16 +29,13 @@ public class RecursiveDescentLLParser {
 			// Get all the tokens from the grammar.
 			Token token;
 			do {
-				try {
-					token = lexicalAnalyzer.getNextToken();
-				} catch (InvalidTokenException e) {
-					// Do something
-					System.out.println(e.getMessage());
-					break;
-				}
-			} while (!token.isEOF());
+                token = lexicalAnalyzer.getNextToken();
+
+            } while (!token.isEOF());
 		} catch (InvalidFileException e) {
 			System.out.println(e.getMessage());
-		}
-	}
+		} catch (InvalidTokenException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

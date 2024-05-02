@@ -4,10 +4,10 @@ import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
 import FrontEnd.Dictionary.TokenType;
 import FrontEnd.Dictionary.Tokenizer;
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.LexicalErrorType;
-import FrontEnd.ErrorHandlers.LexicalErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.LexicalWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.LexicalErrorType;
+import ErrorHandlers.LexicalErrorHandler;
+import ErrorHandlers.WarningTypes.LexicalWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
@@ -62,7 +62,15 @@ public class LexicalAnalyzer {
             String word = codeScanner.next();
             System.out.print("Word read: " + word + " | ");
 
-            Token token = getToken(word);
+            Token token;
+            try {
+                token = getToken(word);
+
+            } catch (InvalidTokenException e) {
+                //TODO: Add the line and column number to the error message when possible.
+                errorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, null, null, word);
+                throw e;
+            }
             System.out.println(token);
             return token;
         }

@@ -1,9 +1,9 @@
 package FrontEnd;
 
-import FrontEnd.ErrorHandlers.AbstractErrorHandler;
-import FrontEnd.ErrorHandlers.ErrorTypes.SemanticErrorType;
-import FrontEnd.ErrorHandlers.SemanticErrorHandler;
-import FrontEnd.ErrorHandlers.WarningTypes.SemanticWarningType;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.SemanticErrorType;
+import ErrorHandlers.SemanticErrorHandler;
+import ErrorHandlers.WarningTypes.SemanticWarningType;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
