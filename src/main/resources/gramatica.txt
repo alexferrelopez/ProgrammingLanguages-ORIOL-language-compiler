@@ -1,8 +1,9 @@
-<A> ::= <funcs> <func_type>  <program>
+<A> ::= <funcs>
 <funcs> ::= <func_type> <func_decl> <funcs> | ε
 <func_type> ::= <data_type> DOS_PUNTS
 <program> ::= MAIN <func_struct>
-<func_decl> ::= VARIABLE <func_struct>
+<func_decl> ::= <program> | <func_decl'>
+<func_decl'> ::= VARIABLE <func_struct>
 <func_struct> ::= <func_params> <func_body>
 <func_params> ::= PO <param_list> PT
 <param_list> ::= <param> <param_list'> | ε

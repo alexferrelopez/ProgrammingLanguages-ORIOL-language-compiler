@@ -102,7 +102,6 @@ public class RecursiveDescentLLParser {
 	}
 
 	private void match(TerminalSymbol terminal) {
-
 		if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
 			System.out.println("MATCH");
 			try {
