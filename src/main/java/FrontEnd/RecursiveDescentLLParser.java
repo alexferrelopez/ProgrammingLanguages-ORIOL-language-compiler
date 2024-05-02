@@ -42,19 +42,19 @@ public class RecursiveDescentLLParser {
 
 	private void syntacticAnalysis(){
 
-		Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar = new HashMap<>();
-		Grammar g = new Grammar();
-		grammar = g.getGrammar();
+		Grammar grammar = new Grammar();
+		Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap;
+		grammarMap = grammar.getGrammar();//Read and load the grammar
 
-		ParsingTable parsingTable = new ParsingTable(grammar);
+		ParsingTable parsingTable = new ParsingTable(grammarMap);//Create and fill the parsing table with our grammar
 
 		Stack<AbstractSymbol> stack = new Stack<>();
-		NonTerminalSymbol axioma = g.getAxioma();
-		//Tree tree = new Tree<AbstractSymbol>(axioma); TODO Crear l'arbre
+		NonTerminalSymbol axioma = grammar.getAxioma();
+		//Tree tree = new Tree<AbstractSymbol>(axioma);
 		if(Objects.isNull(axioma)){
 			//TODO throw an exception
 		}else{
-			stack.push(new TerminalSymbol("EOF"));
+			stack.push(new TerminalSymbol("EOF")); //Push the $ and the axioma to the stack
 			stack.push(axioma);
 		}
 		try {
@@ -63,18 +63,18 @@ public class RecursiveDescentLLParser {
 			System.out.println("Stack: " + stack);
 			while(!stack.empty()){
 				AbstractSymbol symbol = stack.pop();
-				if(symbol.isTerminal()){
+				if(symbol.isTerminal()){ //If the symbol is a terminal we have to match it with the lookahead
 					match((TerminalSymbol) symbol);
-					if(symbol.getName().equals("EOF") && lookahead.getLexeme().equals("EOF")){
+					if(symbol.getName().equals("EOF") && lookahead.getLexeme().equals("EOF")){ //if both are EOF we have finished :D
 						System.out.println("ACCEPT");
 					}
 				}else{
-					List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead);
+					List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
 					if(Objects.isNull(output)){
 						System.out.println("Error gramatical"); //TODO throw exception
 						break;
 					}
-					for (int i = output.size()-1; i >=0 ; i--) {
+					for (int i = output.size()-1; i >=0 ; i--) { //Push the production to the stack unless it is epsilon
 						if(!output.get(i).getName().equals(TerminalSymbol.EPSILON)){
 							stack.push(output.get(i));
 						}
@@ -86,21 +86,19 @@ public class RecursiveDescentLLParser {
 			invalidFile.printStackTrace();
 		}
 
+		//Display the firsts and follows of the grammar for debugging purposes
+		First.displayAllFirsts(grammarMap, lexicalAnalyzer);
+		Follow.displayAllFollows(grammarMap, lexicalAnalyzer);
 
-		for(NonTerminalSymbol nt: grammar.keySet()){
-			System.out.print("\nFirsts of " + nt.getName() + " are: ");
-			for(Token terminal: First.getFirstsToken(grammar, nt, lexicalAnalyzer)){
-				System.out.print(terminal.getLexeme() + " ") ;
-			}
-
-            System.out.print("\nFollows of " + nt.getName() + " are: ");
-			for(Token terminal: Follow.getFollowsToken(grammar, nt, lexicalAnalyzer)){
-				System.out.print(terminal.getLexeme() + " ") ;
-			}
-		}
 
 	}
 
+
+
+	/**
+	 * This method checks if the lookahead is the same as the terminal symbol
+	 * @param terminal the terminal symbol to compare
+	 */
 	private void match(TerminalSymbol terminal) {
 		if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
 			System.out.println("MATCH");
