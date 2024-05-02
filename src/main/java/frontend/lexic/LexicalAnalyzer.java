@@ -36,6 +36,11 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
         checkFileExists();
     }
 
+    public void openCodeFile() throws InvalidFileException {
+        // Open the file and check if it exists.
+        checkFileExists();
+    }
+
     private void checkFileExists() throws InvalidFileException {
         // Get file instance based on the argument passed to the program.
         File codeFile = new File(this.codePath);
@@ -75,7 +80,7 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
         }
     }
 
-    private Token getToken(String word) throws InvalidTokenException {
+    public Token getToken(String word) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
                 // The order of the list is important, since the first match will be the selected one.
