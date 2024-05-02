@@ -1,7 +1,7 @@
-package FrontEnd;
+package frontend;
 
-import FrontEnd.Dictionary.Token;
-import FrontEnd.Exceptions.InvalidTokenException;
+import frontend.Dictionary.Token;
+import frontend.Exceptions.InvalidTokenException;
 
 import java.util.HashMap;
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package FrontEnd.Exceptions;
+package frontend.Exceptions;
 
 public class InvalidTokenException extends Exception {
 

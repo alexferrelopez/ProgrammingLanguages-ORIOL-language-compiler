@@ -1,4 +1,4 @@
-package FrontEnd;
+package frontend;
 
 import java.io.File;
 import java.io.FileNotFoundException;

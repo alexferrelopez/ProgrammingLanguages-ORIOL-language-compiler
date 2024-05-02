@@ -1,6 +1,6 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.Dictionary.TokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.Dictionary.TokenType;
 
 public enum DataType implements TokenType {
 	// Enum constants (special symbols)

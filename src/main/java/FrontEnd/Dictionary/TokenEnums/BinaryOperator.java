@@ -1,6 +1,6 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.Dictionary.TokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.Dictionary.TokenType;
 
 public enum BinaryOperator implements TokenType {
 	// Enum constants (binary operators)

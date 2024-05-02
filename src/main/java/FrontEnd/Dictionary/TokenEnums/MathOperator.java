@@ -1,6 +1,6 @@
-package FrontEnd.Dictionary.TokenEnums;
+package frontend.Dictionary.TokenEnums;
 
-import FrontEnd.Dictionary.TokenType;
+import frontend.Dictionary.TokenType;
 
 public enum MathOperator implements TokenType {
 	// Enum constants (mathematics operators)

@@ -1,4 +1,4 @@
-package FrontEnd;
+package frontend;
 
 public class TerminalSymbol extends AbstractSymbol {
 

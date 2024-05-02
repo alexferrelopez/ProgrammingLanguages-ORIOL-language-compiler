@@ -1,6 +1,6 @@
-package FrontEnd;
-import FrontEnd.Dictionary.Token;
-import FrontEnd.Dictionary.TokenEnums.BinaryOperator;
+package frontend;
+import frontend.Dictionary.Token;
+import frontend.Dictionary.TokenEnums.BinaryOperator;
 
 import java.util.*;
 

@@ -1,11 +1,12 @@
-package FrontEnd;
+package frontend;
 
-import FrontEnd.Dictionary.Token;
-import FrontEnd.Dictionary.TokenEnums.*;
-import FrontEnd.Dictionary.TokenType;
-import FrontEnd.Dictionary.Tokenizer;
-import FrontEnd.Exceptions.InvalidFileException;
-import FrontEnd.Exceptions.InvalidTokenException;
+import frontend.Dictionary.Token;
+import frontend.Dictionary.TokenEnums.*;
+import frontend.Dictionary.TokenType;
+import frontend.Dictionary.Tokenizer;
+import frontend.Exceptions.InvalidFileException;
+import frontend.Exceptions.InvalidTokenException;
+import frontend.lexic.LexicalAnalyzerInterface;
 
 import java.io.*;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LexicalAnalyzer {
+public class LexicalAnalyzer implements LexicalAnalyzerInterface {
     /**
      * Lexical Analyzer / Scanner
      **/
@@ -47,7 +48,12 @@ public class LexicalAnalyzer {
             throw new InvalidFileException("LEXIC: File access issues");
         }
     }
-    
+
+    @Override
+    public void startLexicalAnalysis() throws InvalidFileException {
+
+    }
+
     // Code by https://stackoverflow.com/a/811860
     public Token getNextToken() throws InvalidTokenException {
         // Read the next word until EOF (end of file).
