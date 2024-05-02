@@ -4,6 +4,10 @@ import FrontEnd.Dictionary.Token;
 import FrontEnd.Dictionary.TokenEnums.*;
 import FrontEnd.Dictionary.TokenType;
 import FrontEnd.Dictionary.Tokenizer;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.LexicalErrorType;
+import ErrorHandlers.LexicalErrorHandler;
+import ErrorHandlers.WarningTypes.LexicalWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
 
@@ -23,12 +27,14 @@ public class LexicalAnalyzer {
     private char previousChar;
     private boolean eof = false;
     private final static Token EOF = new Token(ReservedSymbol.EOF);
+    private final LexicalErrorHandler errorHandler;
     private int line = 1;
     private int column = 1;
 
     // Constructor for file path.
-    public LexicalAnalyzer(String codeFilePath) {
+    public LexicalAnalyzer(String codeFilePath, AbstractErrorHandler<LexicalErrorType, LexicalWarningType> errorHandler) {
         this.codePath = codeFilePath;
+        this.errorHandler = (LexicalErrorHandler) errorHandler;
     }
 
     public void openCodeFile() throws InvalidFileException {
