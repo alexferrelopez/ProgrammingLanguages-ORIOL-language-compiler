@@ -130,7 +130,7 @@ public class First {
                     if(!firsts.get(i).getName().equals(TerminalSymbol.EPSILON)){//No es Ɛ
                         addFirst(terminals, firsts.get(i));
                     }else{
-                        for(TerminalSymbol t: getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(++pointer))){
+                        for(TerminalSymbol t: getFirsts(grammar, (NonTerminalSymbol) differentProductions.get(pointer++))){
                             addFirst(firsts, t);
                         }
                     }
