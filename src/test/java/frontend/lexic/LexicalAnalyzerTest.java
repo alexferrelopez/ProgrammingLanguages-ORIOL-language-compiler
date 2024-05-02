@@ -1,9 +1,10 @@
 package frontend.lexic;
 
-import frontend.lexic.dictionary.Token;
-import frontend.lexic.dictionary.tokenEnums.*;
-import frontend.exceptions.InvalidFileException;
-import frontend.exceptions.InvalidTokenException;
+import frontend.Dictionary.Token;
+import frontend.Dictionary.TokenEnums.*;
+import frontend.Exceptions.InvalidFileException;
+import frontend.Exceptions.InvalidTokenException;
+import frontend.LexicalAnalyzer;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
