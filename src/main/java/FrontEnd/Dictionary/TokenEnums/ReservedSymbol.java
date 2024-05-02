@@ -4,12 +4,7 @@ import FrontEnd.Dictionary.TokenType;
 
 public enum ReservedSymbol implements TokenType {
 
-	SUM("\\+"), //TODO AIXÒ HO TRAUREM, ÉS PER FER PROVES, NO PATIU 😉
-	MULT("\\*"),
-	PO("\\("),
-	PT("\\)"),
-	VAR("id"),
-	EPSILON("ε"),
+
 
 	// Enum constants (special symbols)
 	IF("check"),
@@ -21,6 +16,7 @@ public enum ReservedSymbol implements TokenType {
 	RETURN("poop"),
 	EOF("EOF"),
 	MAIN("ranch"),
+	EPSILON("ε"),
 	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern()),    // Farmer: VALOR_STRING
 	AARON("(?i)aaron"),                                            // Regex pattern case insensitive by adding (?i)
 	ORIOL("(?i)oriol"),
