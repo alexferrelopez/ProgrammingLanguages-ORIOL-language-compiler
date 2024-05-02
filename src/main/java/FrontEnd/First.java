@@ -156,5 +156,19 @@ public class First {
         return firstTokens;
     }
 
+    /**
+     * Method for displaying all the firsts of the grammar
+     * @param grammarMap
+     * @param lexicalAnalyzer
+     */
+    static void displayAllFirsts(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, LexicalAnalyzer lexicalAnalyzer){
+        for(NonTerminalSymbol nt: grammarMap.keySet()){
+            System.out.print("\nFirsts of " + nt.getName() + " are: ");
+            for(Token terminal: First.getFirstsToken(grammarMap, nt, lexicalAnalyzer)){
+                System.out.print(terminal.getLexeme() + " ") ;
+            }
+        }
+    }
+
 
 }

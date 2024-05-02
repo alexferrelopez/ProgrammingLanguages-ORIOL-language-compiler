@@ -139,4 +139,18 @@ public class Follow {
         }
         return null;
     }
+
+    /**
+     * Method for displaying all thefollows
+     * @param grammarMap
+     * @param lexicalAnalyzer
+     */
+    public static void displayAllFollows(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, LexicalAnalyzer lexicalAnalyzer) {
+        for(NonTerminalSymbol nt: grammarMap.keySet()) {
+            System.out.print("\nFollows of " + nt.getName() + " are: ");
+            for (Token terminal : Follow.getFollowsToken(grammarMap, nt, lexicalAnalyzer)) {
+                System.out.print(terminal.getLexeme() + " ");
+            }
+        }
+    }
 }
