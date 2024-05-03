@@ -1,0 +1,23 @@
+oink : sumRange ( oink numA , oink numB , oink increment ) {
+    oink result is 0.0 ;
+
+    miau pepe is 3 ;
+    miau pepito is 0 ;
+    miau pepita is 4 ;
+
+    check ( numA bigger numB ) {
+        oink tmp is numA ;
+        numA is numB ;
+        numB is tmp ;
+    }
+
+
+    poop result ;
+}
+
+miau : ranch ( ) {
+    oink a is 3.23 ;
+    oink b is 4.5 ;
+    oink c is 0.2 ;
+    poop 0 ;
+}

@@ -10,6 +10,7 @@ import ErrorHandlers.LexicalErrorHandler;
 import ErrorHandlers.WarningTypes.LexicalWarningType;
 import FrontEnd.Exceptions.InvalidFileException;
 import FrontEnd.Exceptions.InvalidTokenException;
+import FrontEnd.lexic.LexicalAnalyzerInterface;
 
 import java.io.*;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LexicalAnalyzer {
+public class LexicalAnalyzer implements LexicalAnalyzerInterface {
     /**
      * Lexical Analyzer / Scanner
      **/
@@ -57,6 +58,11 @@ public class LexicalAnalyzer {
         } catch (FileNotFoundException e) {
             throw new InvalidFileException("LEXIC: File access issues.");
         }
+    }
+
+    @Override
+    public void startLexicalAnalysis() throws InvalidFileException {
+
     }
 
     /**
@@ -187,7 +193,7 @@ public class LexicalAnalyzer {
      * @return the token if the word is valid.
      * @throws InvalidTokenException if the word is not a valid token.
      */
-    private Token getTokenRead(String word, int line, int column) throws InvalidTokenException {
+    public Token getTokenRead(String word, int line, int column) throws InvalidTokenException {
         // Check through all the different enums (each object in the array represents an enum that implements TokenType).
         List<TokenType> enumValues = Stream.of(
                         // The order of the list is important, since the first match will be the selected one.

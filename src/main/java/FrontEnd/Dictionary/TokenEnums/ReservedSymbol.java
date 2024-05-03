@@ -2,6 +2,7 @@ package FrontEnd.Dictionary.TokenEnums;
 
 import FrontEnd.Dictionary.TokenType;
 
+import java.util.Collections;
 import java.util.List;
 
 public enum ReservedSymbol implements TokenType {
@@ -15,6 +16,7 @@ public enum ReservedSymbol implements TokenType {
 	RETURN("poop", List.of("poop")),
 	EOF("EOF", List.of("EOF")),
 	MAIN("ranch", List.of("ranch")),
+    EPSILON("ε", Collections.emptyList()),
 	COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern(), List.of("Farmer: \"This is an example\"")),	// Farmer: VALOR_STRING
 	AARON("(?i)aaron", List.of("aaron")),												// Regex pattern case insensitive by adding (?i)
 	ORIOL("(?i)oriol", List.of("oriol")),
@@ -22,7 +24,6 @@ public enum ReservedSymbol implements TokenType {
 	GEMMA("(?i)gemma", List.of("gemma")),
 	ALEX("(?i)(a|à)lex", List.of("alex", "àlex")),
 	IS("is", List.of("is"));
-
 
 	// Instance field (regex pattern) for each enum constant
 	private final String regexPattern;

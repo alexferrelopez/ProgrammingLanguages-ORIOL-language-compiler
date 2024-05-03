@@ -1,5 +1,6 @@
 package FrontEnd.Dictionary;
 
+import FrontEnd.AbstractSymbol;
 import FrontEnd.Dictionary.TokenEnums.ReservedSymbol;
 import org.jetbrains.annotations.Nullable;
 
