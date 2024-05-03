@@ -216,6 +216,7 @@ public class LexicalAnalyzer {
             }
         }
 
+        errorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, line, column, word);
         // No match found in any enum's regex = throw exception.
         throw new InvalidTokenException("Invalid token found: " + word);
     }
