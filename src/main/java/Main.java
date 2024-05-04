@@ -1,16 +1,3 @@
-import ErrorHandlers.AbstractErrorHandler;
-import ErrorHandlers.ErrorTypes.LexicalErrorType;
-import ErrorHandlers.ErrorTypes.ParserErrorType;
-import ErrorHandlers.ErrorTypes.SemanticErrorType;
-import ErrorHandlers.LexicalErrorHandler;
-import ErrorHandlers.ParserErrorHandler;
-import ErrorHandlers.SemanticErrorHandler;
-import ErrorHandlers.WarningTypes.LexicalWarningType;
-import ErrorHandlers.WarningTypes.ParserWarningType;
-import ErrorHandlers.WarningTypes.SemanticWarningType;
-import FrontEnd.LexicalAnalyzer;
-import FrontEnd.RecursiveDescentLLParser;
-
 public class Main {
 
     private final static int EXPECTED_NUM_ARGS = 1;         // The main argument is not the name of the Java's file (Java is not like C).
@@ -47,14 +34,16 @@ public class Main {
     }
 
     private static void startCompiler(String codeFilePath) {
-        // ---- ERROR HANDLING ---- //
-        AbstractErrorHandler<LexicalErrorType, LexicalWarningType> lexicalErrorHandler = new LexicalErrorHandler();
-        AbstractErrorHandler<ParserErrorType, ParserWarningType> parserErrorHandler = new ParserErrorHandler();
-        AbstractErrorHandler<SemanticErrorType, SemanticWarningType> semanticErrorHandler = new SemanticErrorHandler();
-
         // ---- FRONT END ---- //
-        LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
-        RecursiveDescentLLParser recursiveDescentLLParser = new RecursiveDescentLLParser(lexicalAnalyzer, parserErrorHandler);
-        recursiveDescentLLParser.startCodeAnalysis();
+        Compiler compiler = new Compiler(codeFilePath);
+        compiler.compileCode();
+
+        // Debugging purpose
+        if (compiler.hasErrors()) {
+            System.out.println("Compilation failed!");
+        }
+        else {
+            System.out.println("Compilation success!");
+        }
     }
 }

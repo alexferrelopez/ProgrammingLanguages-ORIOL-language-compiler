@@ -1,17 +1,37 @@
-import ErrorHandlers.LexicalErrorHandler;
-import FrontEnd.LexicalAnalyzer;
-import FrontEnd.lexic.LexicalAnalyzerInterface;
-import FrontEnd.sintaxis.RecursiveDescentLLParser;
-import FrontEnd.sintaxis.SyntacticAnalyzerInterface;
+import errorHandlers.AbstractErrorHandler;
+import errorHandlers.LexicalErrorHandler;
+import errorHandlers.SemanticErrorHandler;
+import errorHandlers.SyntacticErrorHandler;
+import frontEnd.lexic.LexicalAnalyzer;
+import frontEnd.lexic.LexicalAnalyzerInterface;
+import frontEnd.sintaxis.RecursiveDescentLLParser;
+import frontEnd.sintaxis.SyntacticAnalyzerInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Compiler implements CompilerInterface {
 	private final LexicalAnalyzerInterface scanner;
 	private final SyntacticAnalyzerInterface parser;
+	private final List<AbstractErrorHandler<?, ?>> errorHandler;
 
 	public Compiler(String codeFilePath) {
 		// ---- FRONT END ---- //
+
+		// Error Handlers
+		LexicalErrorHandler lexicalErrorHandler = new LexicalErrorHandler();
+		SyntacticErrorHandler syntacticErrorHandler = new SyntacticErrorHandler();
+		SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler();
+
+		this.errorHandler = new ArrayList<>();
+		this.errorHandler.add(lexicalErrorHandler);
+		this.errorHandler.add(lexicalErrorHandler);
+		this.errorHandler.add(syntacticErrorHandler);
+		this.errorHandler.add(semanticErrorHandler);
+
+		// Code Analysis
 		this.scanner = new LexicalAnalyzer(codeFilePath, new LexicalErrorHandler());
-		this.parser = new RecursiveDescentLLParser(scanner);
+		this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
 		// ---- BACK END ---- //
 	}
