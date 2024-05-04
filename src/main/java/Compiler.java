@@ -1,7 +1,8 @@
-import frontend.LexicalAnalyzer;
-import frontend.lexic.LexicalAnalyzerInterface;
-import frontend.sintaxis.RecursiveDescentLLParser;
-import frontend.sintaxis.SyntacticAnalyzerInterface;
+import ErrorHandlers.LexicalErrorHandler;
+import FrontEnd.LexicalAnalyzer;
+import FrontEnd.lexic.LexicalAnalyzerInterface;
+import FrontEnd.sintaxis.RecursiveDescentLLParser;
+import FrontEnd.sintaxis.SyntacticAnalyzerInterface;
 
 public class Compiler implements CompilerInterface {
 	private final LexicalAnalyzerInterface scanner;
@@ -9,7 +10,7 @@ public class Compiler implements CompilerInterface {
 
 	public Compiler(String codeFilePath) {
 		// ---- FRONT END ---- //
-		this.scanner = new LexicalAnalyzer(codeFilePath);
+		this.scanner = new LexicalAnalyzer(codeFilePath, new LexicalErrorHandler());
 		this.parser = new RecursiveDescentLLParser(scanner);
 
 		// ---- BACK END ---- //

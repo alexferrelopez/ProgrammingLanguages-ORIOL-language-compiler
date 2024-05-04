@@ -1,18 +1,27 @@
-package frontend;
+package FrontEnd;
 
-import frontend.Dictionary.Token;
-import frontend.Exceptions.InvalidFileException;
-import frontend.Exceptions.InvalidTokenException;
+import FrontEnd.Dictionary.Token;
+import ErrorHandlers.AbstractErrorHandler;
+import ErrorHandlers.ErrorTypes.ParserErrorType;
+import ErrorHandlers.ParserErrorHandler;
+import ErrorHandlers.WarningTypes.ParserWarningType;
+import FrontEnd.Exceptions.InvalidFileException;
+import FrontEnd.Exceptions.InvalidTokenException;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
 
 public class RecursiveDescentLLParser {
 	private final LexicalAnalyzer lexicalAnalyzer;
+	private final ParserErrorHandler errorHandler;
 
 	private Token lookahead;
 
-	public RecursiveDescentLLParser(LexicalAnalyzer lexicalAnalyzer) {
+	public RecursiveDescentLLParser(LexicalAnalyzer lexicalAnalyzer, AbstractErrorHandler<ParserErrorType, ParserWarningType> parserErrorHandler) {
 		this.lexicalAnalyzer = lexicalAnalyzer;
+		this.errorHandler = (ParserErrorHandler) parserErrorHandler;
 	}
 
 	public void startCodeAnalysis() {
@@ -27,18 +36,15 @@ public class RecursiveDescentLLParser {
 			// Get all the tokens from the grammar.
 			Token token;
 			do {
-				try {
-					token = lexicalAnalyzer.getNextToken();
-				} catch (InvalidTokenException e) {
-					// Do something
-					System.out.println(e.getMessage());
-					break;
-				}
-			} while (!token.isEOF());
+                token = lexicalAnalyzer.getNextToken();
+
+            } while (!token.isEOF());
 		} catch (InvalidFileException e) {
 			System.out.println(e.getMessage());
-		}
-	}
+		} catch (InvalidTokenException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 	private void syntacticAnalysis(){
 

@@ -1,7 +1,7 @@
-package frontend;
+package FrontEnd;
 
-import frontend.Dictionary.Token;
-import frontend.Exceptions.InvalidTokenException;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidTokenException;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -111,7 +111,7 @@ public class Follow {
 
         for(TerminalSymbol terminalSymbol: followsTerminalSymbol){
             try{
-                Token token = lexicalAnalyzer.getToken(terminalSymbol.getName());
+                Token token = lexicalAnalyzer.getTokenRead(terminalSymbol.getName(),0,0);
                 followsTokens.add(token);
             }catch (InvalidTokenException e){
                 e.printStackTrace();

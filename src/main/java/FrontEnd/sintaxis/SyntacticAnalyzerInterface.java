@@ -1,4 +1,4 @@
-package frontend.sintaxis;
+package FrontEnd.sintaxis;
 
 public interface SyntacticAnalyzerInterface {
 

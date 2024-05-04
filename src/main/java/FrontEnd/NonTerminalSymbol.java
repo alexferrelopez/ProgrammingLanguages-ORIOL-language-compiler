@@ -1,4 +1,4 @@
-package frontend;
+package FrontEnd;
 
 public class NonTerminalSymbol extends AbstractSymbol {
 

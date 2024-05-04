@@ -1,12 +1,28 @@
-package frontend.Dictionary;
+package FrontEnd.Dictionary;
 
-import frontend.AbstractSymbol;
-import frontend.Dictionary.TokenEnums.ReservedSymbol;
+import FrontEnd.AbstractSymbol;
+import FrontEnd.Dictionary.TokenEnums.ReservedSymbol;
 import org.jetbrains.annotations.Nullable;
 
 public class Token {
     private final TokenType type;
     private final String lexeme;
+    private int line;
+    private int column;
+
+    public Token(TokenType type, String lexeme, int line, int column) {
+        this.type = type;
+        this.lexeme = lexeme;
+        this.line = line;
+        this.column = column;
+    }
+
+    public Token(TokenType type, int line, int column) {
+        this.type = type;
+        this.lexeme = getLexemeWithoutRegex(type.getPattern());
+        this.line = line;
+        this.column = column;
+    }
 
     /**
      * Creates a new Token.
@@ -38,7 +54,7 @@ public class Token {
 
     private String getLexemeWithoutRegex(String lexeme) {
         return lexeme.replace("\\", "");
-	}
+    }
 
     public String getLexeme() {
         return lexeme;
@@ -50,5 +66,13 @@ public class Token {
     @Override
     public String toString() {
         return type + " " + lexeme; // Just for debug purpose.
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getColumn() {
+        return column;
     }
 }

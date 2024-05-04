@@ -1,10 +1,10 @@
-package frontend.lexic;
+package FrontEnd;
 
-import frontend.Dictionary.Token;
-import frontend.Dictionary.TokenEnums.*;
-import frontend.Exceptions.InvalidFileException;
-import frontend.Exceptions.InvalidTokenException;
-import frontend.LexicalAnalyzer;
+import ErrorHandlers.LexicalErrorHandler;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Dictionary.TokenEnums.*;
+import FrontEnd.Exceptions.InvalidFileException;
+import FrontEnd.Exceptions.InvalidTokenException;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,17 +27,36 @@ class LexicalAnalyzerTest {
     private static Stream<Arguments> provideTokensForTesting() {
         return Stream.of(
 				// Simple declaration code statement
-                Arguments.of("miau a is 10\n", new Token[] {
+                Arguments.of("miau a   is 10;\na", new Token[] {
                         new Token(DataType.INTEGER),
                         new Token(ValueSymbol.VARIABLE, "a"),
-                        new Token(SpecialSymbol.IS),
-                        new Token(ValueSymbol.VALUE_INT, "10")
+                        new Token(ReservedSymbol.IS),
+                        new Token(ValueSymbol.VALUE_INT, "10"),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(ValueSymbol.VARIABLE, "a"),
                 }),
+
+				// Simple declaration code statement
+				Arguments.of("{(})}; ; {(})}; \n ", new Token[] {
+						new Token(SpecialSymbol.CO),
+						new Token(SpecialSymbol.PO),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PT),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(SpecialSymbol.PUNT_COMMA),
+						new Token(SpecialSymbol.CO),
+						new Token(SpecialSymbol.PO),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PT),
+						new Token(SpecialSymbol.CT),
+						new Token(SpecialSymbol.PUNT_COMMA),
+				}),
 
 				// Conditional statement
 				Arguments.of(
 						"""
-							check ( num module 2 eq 0 ) {
+							check (num module 2 eq 0 ) {
 								 poop 0 ;
 							}
 						""", new Token[] {
@@ -101,22 +120,22 @@ class LexicalAnalyzerTest {
 								new Token(SpecialSymbol.CO),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "result"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_FLOAT, "0.0"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.INTEGER),
 								new Token(ReservedSymbol.AARON, "aAROn"),	// Must be defined or will get the lexeme as "(?i)aaron"
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_INT, "3"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.INTEGER),
 								new Token(ReservedSymbol.GEMMA, "gEmMa"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_INT, "0"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.INTEGER),
 								new Token(ReservedSymbol.ORIOL, "ORIol"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_INT, "4"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(ReservedSymbol.IF),
@@ -128,51 +147,51 @@ class LexicalAnalyzerTest {
 								new Token(SpecialSymbol.CO),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "tmp"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "numA"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(ValueSymbol.VARIABLE, "numA"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "numB"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(ValueSymbol.VARIABLE, "numB"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "tmp"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(SpecialSymbol.CT),
 								new Token(DataType.CHAR),
 								new Token(ValueSymbol.VARIABLE, "c"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_CHAR, "'a'"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.STRING),
 								new Token(ValueSymbol.VARIABLE, "text"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_STRING, "\"hola\""),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.STRING),
 								new Token(ValueSymbol.VARIABLE, "text2"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_STRING, "'adeu'"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(ReservedSymbol.FOR),
 								new Token(SpecialSymbol.PO),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "i"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "numA"),
 								new Token(ReservedSymbol.TO),
 								new Token(ValueSymbol.VARIABLE, "numB"),
 								new Token(SpecialSymbol.COMMA),
 								new Token(ValueSymbol.VARIABLE, "i"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "i"),
 								new Token(MathOperator.SUM),
 								new Token(ValueSymbol.VARIABLE, "increment"),
 								new Token(SpecialSymbol.PT),
 								new Token(SpecialSymbol.CO),
 								new Token(ValueSymbol.VARIABLE, "result"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "result"),
 								new Token(MathOperator.SUM),
 								new Token(ValueSymbol.VARIABLE, "i"),
@@ -190,22 +209,22 @@ class LexicalAnalyzerTest {
 								new Token(SpecialSymbol.CO),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "a"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_FLOAT, "3.23"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "b"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_FLOAT, "4.5"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "c"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VALUE_FLOAT, "0.2"),
 								new Token(SpecialSymbol.PUNT_COMMA),
 								new Token(DataType.FLOAT),
 								new Token(ValueSymbol.VARIABLE, "total"),
-								new Token(SpecialSymbol.IS),
+								new Token(ReservedSymbol.IS),
 								new Token(ValueSymbol.VARIABLE, "sumRange"),
 								new Token(SpecialSymbol.PO),
 								new Token(ValueSymbol.VARIABLE, "a"),
@@ -260,7 +279,7 @@ class LexicalAnalyzerTest {
 			}
 
 			// Now pass the file to the LexicalAnalyzer
-			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());
+			LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath(), new LexicalErrorHandler());
 			lexicalAnalyzer.startLexicalAnalysis();
 
 			for (Token expectedToken : expectedTokens) {
@@ -269,7 +288,7 @@ class LexicalAnalyzerTest {
 				Assertions.assertEquals(expectedToken.getType(), currentToken.getType(), "The token type must be the same.");
 				Assertions.assertEquals(expectedToken.getLexeme(), currentToken.getLexeme(), "The lexeme must be the same.");
 			}
-		} catch (IOException | InvalidTokenException | InvalidFileException e) {
+		} catch (IOException | InvalidFileException | InvalidTokenException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -278,7 +297,7 @@ class LexicalAnalyzerTest {
 	@DisplayName("Check file non-existence handling.")
 	@Description("Test that checks if a file that does not exist is handled properly.")
 	public void test_checkFileNotExists() {
-		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp");
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer("fileDoesNotExist.tmp", new LexicalErrorHandler());
 
 		// Asserts that the operation throws the specified exception
 		Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::startLexicalAnalysis, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
@@ -288,7 +307,7 @@ class LexicalAnalyzerTest {
 	@DisplayName("Check file existence handling.")
 	@Description("Test that checks if a file that exists is handled properly.")
 	public void test_checkFileExists() {
-		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath());	// tempFile is created always before the test (@BeforeEach)
+		LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer(tempFile.getAbsolutePath(), null);	// tempFile is created always before the test (@BeforeEach)
 
 		// Asserts that the operation does not throw any exception
 		Assertions.assertDoesNotThrow(lexicalAnalyzer::startLexicalAnalysis, "LexicalAnalyzer should not throw any exception for existent files.");

@@ -1,7 +1,7 @@
-package frontend;
+package FrontEnd;
 
-import frontend.Dictionary.Token;
-import frontend.Exceptions.InvalidTokenException;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidTokenException;
 
 import java.util.*;
 
@@ -147,7 +147,7 @@ public class First {
 
         for(TerminalSymbol terminalSymbol: firstsTerminalSymbol){
             try{
-                Token token = lexicalAnalyzer.getToken(terminalSymbol.getName());
+                Token token = lexicalAnalyzer.getTokenRead(terminalSymbol.getName(),0,0);
                 firstTokens.add(token);
             }catch (InvalidTokenException e){
                 e.printStackTrace();

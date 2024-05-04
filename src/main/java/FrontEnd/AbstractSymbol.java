@@ -1,4 +1,4 @@
-package frontend;
+package FrontEnd;
 
 public abstract class AbstractSymbol {
     private final String name;

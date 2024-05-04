@@ -1,9 +1,9 @@
-package frontend.sintaxis;
+package FrontEnd.sintaxis;
 
-import frontend.lexic.LexicalAnalyzerInterface;
-import frontend.Dictionary.Token;
-import frontend.Exceptions.InvalidFileException;
-import frontend.Exceptions.InvalidTokenException;
+import FrontEnd.lexic.LexicalAnalyzerInterface;
+import FrontEnd.Dictionary.Token;
+import FrontEnd.Exceptions.InvalidFileException;
+import FrontEnd.Exceptions.InvalidTokenException;
 
 public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 	private final LexicalAnalyzerInterface lexicalAnalyzer;
