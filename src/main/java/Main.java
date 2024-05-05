@@ -34,11 +34,10 @@ public class Main {
     }
 
     private static void startCompiler(String codeFilePath) {
-        // ---- FRONT END ---- //
-        Compiler compiler = new Compiler(codeFilePath);
+        CompilerInterface compiler = new Compiler(codeFilePath);
         compiler.compileCode();
 
-        // Debugging purpose
+        // Prints for Debugging purpose
         if (compiler.hasErrors()) {
             System.out.println("Compilation failed!");
         }
