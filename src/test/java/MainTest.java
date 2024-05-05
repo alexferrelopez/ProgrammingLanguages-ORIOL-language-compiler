@@ -5,50 +5,51 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MainTest {
-	private final PrintStream originalOut = System.out;
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
-	@BeforeEach
-	public void setUpStreams() {
-		System.setOut(new PrintStream(outContent));
-	}
+    @BeforeEach
+    public void setUpStreams() {
+        System.setOut(new PrintStream(outContent));
+    }
 
-	@AfterEach
-	public void restoreStreams() {
-		System.setOut(originalOut);
-	}
+    @AfterEach
+    public void restoreStreams() {
+        System.setOut(originalOut);
+    }
 
-	@Test
-	void testNoArguments() {
-		String[] args = {};
-		Main.main(args);
-		assertEquals(Main.NO_ARGS_ERROR + System.lineSeparator(), outContent.toString());
-	}
+    @Test
+    void testNoArguments() {
+        String[] args = {};
+        Main.main(args);
+        assertEquals(Main.NO_ARGS_ERROR + System.lineSeparator(), outContent.toString());
+    }
 
-	@Test
-	void testTooManyArguments() {
-		String[] args = { "file1.farm", "file2.farm" };
-		Main.main(args);
-		assertEquals(Main.TOO_MANY_ARGS_ERROR + System.lineSeparator(), outContent.toString());
-	}
+    @Test
+    void testTooManyArguments() {
+        String[] args = {"file1.farm", "file2.farm"};
+        Main.main(args);
+        assertEquals(Main.TOO_MANY_ARGS_ERROR + System.lineSeparator(), outContent.toString());
+    }
 
-	@Test
-	void testInvalidFileExtension() {
-		String[] args = { "file1.txt" };
-		Main.main(args);
-		assertEquals(Main.INVALID_EXTENSION_ERROR + System.lineSeparator(), outContent.toString());
-	}
+    @Test
+    void testInvalidFileExtension() {
+        String[] args = {"file1.txt"};
+        Main.main(args);
+        assertEquals(Main.INVALID_EXTENSION_ERROR + System.lineSeparator(), outContent.toString());
+    }
 
-	@Test
-	void testValidArguments() {
-		String[] args = { "files/Exemple1.farm" };	// File must exist.
+    @Test
+    void testValidArguments() {
+        String[] args = {"files/Exemple1.farm"};    // File must exist.
 
-		Main.main(args);
+        Main.main(args);
 
-		// Check if the output is the expected.
-		assertTrue(outContent.toString().isEmpty());
-	}
+        // Check if the output is the expected.
+        assertTrue(outContent.toString().isEmpty());
+    }
 }

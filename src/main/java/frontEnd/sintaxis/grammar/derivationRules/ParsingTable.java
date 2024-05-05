@@ -1,17 +1,19 @@
 package frontEnd.sintaxis.grammar.derivationRules;
+
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 
 import java.util.*;
 
 public class ParsingTable {
-    private Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar;
-    private List<TerminalSymbol> uniqueTerminals;
-    private List<NonTerminalSymbol> uniqueNoTerminals;
-    private Map[][] parsingTable;
+    private final Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar;
+    private final List<TerminalSymbol> uniqueTerminals;
+    private final List<NonTerminalSymbol> uniqueNoTerminals;
+    private final Map[][] parsingTable;
 
     /**
      * Constructor class Parsing table
+     *
      * @param grammar our grammar
      */
     public ParsingTable(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar) {
@@ -30,7 +32,7 @@ public class ParsingTable {
             for (int j = 0; j < uniqueTerminals.size(); j++) {
                 NonTerminalSymbol nt = uniqueNoTerminals.get(i);
                 TerminalSymbol t = uniqueTerminals.get(j);
-                if(nt.getName().equals("assignation'") && t.getName().equals("VARIABLE")){
+                if (nt.getName().equals("assignation'") && t.getName().equals("VARIABLE")) {
                     System.out.println("PROBLEMON :/");
                 }
                 Map<NonTerminalSymbol, List<AbstractSymbol>> production = First.getProduction(grammar, nt, t);
@@ -50,6 +52,7 @@ public class ParsingTable {
 
     /**
      * Method to get the unique terminals
+     *
      * @param grammar Our gramamr
      * @return List of unique terminals
      */
@@ -57,18 +60,18 @@ public class ParsingTable {
         List<TerminalSymbol> uniqueTerminals = new LinkedList<>();
         for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> entry : grammar.entrySet()) {
             List<List<AbstractSymbol>> symbolMatrix = entry.getValue();
-            for(List<AbstractSymbol> symbolList: symbolMatrix){
-                for(AbstractSymbol productionSymbols: symbolList){
-                    if(productionSymbols.isTerminal()){
-                        if(productionSymbols.getName().equals(TerminalSymbol.EPSILON)) continue;
+            for (List<AbstractSymbol> symbolList : symbolMatrix) {
+                for (AbstractSymbol productionSymbols : symbolList) {
+                    if (productionSymbols.isTerminal()) {
+                        if (productionSymbols.getName().equals(TerminalSymbol.EPSILON)) continue;
                         boolean found = false;
-                        for(TerminalSymbol terminal: uniqueTerminals){
-                            if(terminal.getName().equals((productionSymbols.getName()))){
+                        for (TerminalSymbol terminal : uniqueTerminals) {
+                            if (terminal.getName().equals((productionSymbols.getName()))) {
                                 found = true;
                                 break;
                             }
                         }
-                        if(!found){
+                        if (!found) {
                             uniqueTerminals.add((TerminalSymbol) productionSymbols);
                         }
                     }
@@ -82,6 +85,7 @@ public class ParsingTable {
 
     /**
      * Method to get the unique non-terminals
+     *
      * @param grammar Our grammar
      * @return List of unique no terminals
      */
@@ -95,16 +99,16 @@ public class ParsingTable {
     }
 
 
-    public List<AbstractSymbol> getProduction(NonTerminalSymbol nonTerminal, Token terminal){
+    public List<AbstractSymbol> getProduction(NonTerminalSymbol nonTerminal, Token terminal) {
         int positionTerminal = -1;
         int positionNonTerminal = -1;
         for (int i = 0; i < uniqueTerminals.size(); i++) {
-            if(uniqueTerminals.get(i).getName().equals(String.valueOf(terminal.getType()))){
+            if (uniqueTerminals.get(i).getName().equals(String.valueOf(terminal.getType()))) {
                 positionTerminal = i;
                 break;
             }
         }
-        if(positionTerminal == -1){
+        if (positionTerminal == -1) {
             System.out.println("Error, no s'ha trobat el Terminal :(");
             //TODO error handler (mirar que no siguin paraules prohibides (aaron, alexia, alex, gemma, oriol...))
             return null;
@@ -112,17 +116,17 @@ public class ParsingTable {
         for (int i = 0; i < uniqueNoTerminals.size(); i++) {
             String str = uniqueNoTerminals.get(i).getName();
             String str2 = nonTerminal.getName();
-            if(str.equals(str2)){
+            if (str.equals(str2)) {
                 positionNonTerminal = i;
                 break;
             }
         }
-        if(positionNonTerminal == -1){
+        if (positionNonTerminal == -1) {
             System.out.println("Error, no s'ha trobat el noTerminal :(");
             return null;
         }
         Map productionMap = parsingTable[positionNonTerminal][positionTerminal];
-        if(Objects.isNull(productionMap)){
+        if (Objects.isNull(productionMap)) {
             System.out.println("There is no production associated with " + terminal.getLexeme() + " with " + nonTerminal.getName());//TODO throw exception
             return null;
         }
@@ -131,7 +135,6 @@ public class ParsingTable {
 
         return (List<AbstractSymbol>) abstractSymbols.get(0);
     }
-
 
 
 }

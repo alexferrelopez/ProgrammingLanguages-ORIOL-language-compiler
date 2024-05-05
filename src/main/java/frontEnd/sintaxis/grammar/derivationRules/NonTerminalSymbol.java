@@ -11,9 +11,9 @@ public class NonTerminalSymbol extends AbstractSymbol {
         this.isAxioma = isAxioma;
     }
 
-    public NonTerminalSymbol(String name){
+    public NonTerminalSymbol(String name) {
         super(name, false);
-        this.isAxioma= false;
+        this.isAxioma = false;
     }
 
     public boolean isAxioma() {

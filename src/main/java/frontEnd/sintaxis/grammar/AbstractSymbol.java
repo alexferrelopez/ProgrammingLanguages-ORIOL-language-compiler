@@ -13,7 +13,7 @@ public abstract class AbstractSymbol {
         return name;
     }
 
-    public boolean isTerminal(){
+    public boolean isTerminal() {
         return isTerminal;
     }
 

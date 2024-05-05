@@ -1,7 +1,7 @@
 package errorHandlers;
 
-import errorHandlers.warningTypes.SemanticWarningType;
 import errorHandlers.errorTypes.SemanticErrorType;
+import errorHandlers.warningTypes.SemanticWarningType;
 
 /**
  * Error handler for semantic errors, extends error enums to give accurate error and warning messages.

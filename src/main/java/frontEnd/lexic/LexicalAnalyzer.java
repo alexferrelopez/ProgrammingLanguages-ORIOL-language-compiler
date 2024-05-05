@@ -1,32 +1,33 @@
 package frontEnd.lexic;
 
-import frontEnd.lexic.dictionary.Token;
-import frontEnd.lexic.dictionary.tokenEnums.*;
-import frontEnd.lexic.dictionary.TokenType;
-import frontEnd.lexic.dictionary.Tokenizer;
 import errorHandlers.AbstractErrorHandler;
-import errorHandlers.errorTypes.LexicalErrorType;
 import errorHandlers.LexicalErrorHandler;
+import errorHandlers.errorTypes.LexicalErrorType;
 import errorHandlers.warningTypes.LexicalWarningType;
 import frontEnd.exceptions.InvalidFileException;
 import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.lexic.dictionary.Token;
+import frontEnd.lexic.dictionary.TokenType;
+import frontEnd.lexic.dictionary.Tokenizer;
+import frontEnd.lexic.dictionary.tokenEnums.ReservedSymbol;
+import frontEnd.lexic.dictionary.tokenEnums.SpecialSymbol;
 
 import java.io.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Lexical Analyzer / Scanner
+ **/
 public class LexicalAnalyzer implements LexicalAnalyzerInterface {
-    /**
-     * Lexical Analyzer / Scanner
-     **/
+    private final static Token EOF = new Token(ReservedSymbol.EOF);
     private final String codePath;
+    private final LexicalErrorHandler errorHandler;
     private BufferedReader codeReader;
     private boolean separatorFound = false;
     private char previousChar;
     private boolean eof = false;
-    private final static Token EOF = new Token(ReservedSymbol.EOF);
-    private final LexicalErrorHandler errorHandler;
     private int line = 1;
     private int column = 1;
 
@@ -189,15 +190,15 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
      */
     private Token getTokenRead(String word, int line, int column) throws InvalidTokenException {
         try {
-			Token token = Tokenizer.convertStringIntoToken(word);
+            Token token = Tokenizer.convertStringIntoToken(word);
             token.setPosition(line, column);
             return token;
 
-		} catch (InvalidTokenException e) {
+        } catch (InvalidTokenException e) {
             // If no token was found, send the error to the lexicErrorHandler.
             errorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, line, column, word);
-			throw new InvalidTokenException(e.getMessage());
-		}
+            throw new InvalidTokenException(e.getMessage());
+        }
 
     }
 }

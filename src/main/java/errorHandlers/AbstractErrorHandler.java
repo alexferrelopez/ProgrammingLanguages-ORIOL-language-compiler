@@ -13,9 +13,9 @@ import java.util.List;
  * @param <K> Any class that interfaces with WarningType
  */
 public abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
+    private final List<Report<MessageType>> reports;
     private int errorCount;
     private int warningCount;
-    private final List<Report<MessageType>> reports;
 
     public AbstractErrorHandler() {
         this.reports = new ArrayList<>();

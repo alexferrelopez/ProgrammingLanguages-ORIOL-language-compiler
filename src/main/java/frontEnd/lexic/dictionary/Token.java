@@ -25,6 +25,7 @@ public class Token {
 
     /**
      * Creates a new Token.
+     *
      * @param type the type of the token (implements TypeToken interface).
      */
     public Token(TokenType type) {
@@ -34,15 +35,15 @@ public class Token {
 
     /**
      * Creates a new Token.
-     * @param type the type of the token (implements TypeToken interface).
+     *
+     * @param type   the type of the token (implements TypeToken interface).
      * @param lexeme the lexeme of the token, can be null if the lexeme is not applicable.
      */
     public Token(TokenType type, @Nullable String lexeme) {
         this.type = type;
         if (lexeme == null) {
             this.lexeme = getLexemeWithoutRegex(type.getPattern()); // Avoid having "\\" in the lexeme because of Regex.
-        }
-        else {
+        } else {
             this.lexeme = lexeme;
         }
     }
@@ -67,6 +68,7 @@ public class Token {
     public TokenType getType() {
         return type;
     }
+
     @Override
     public String toString() {
         return type + " " + lexeme; // Just for debug purpose.

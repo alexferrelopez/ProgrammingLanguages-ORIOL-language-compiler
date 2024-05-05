@@ -7,13 +7,13 @@ public class Tree<T> {
     private final LinkedList<Tree<T>> children;
     private T parent;
 
-    public Tree(T node){
+    public Tree(T node) {
         this.node = node;
         children = new LinkedList<>();
         parent = null;
     }
 
-    public Tree<T> addChild(T child){
+    public Tree<T> addChild(T child) {
         var c = new Tree<T>(child);
         children.add(c);
         c.parent = (T) this;
