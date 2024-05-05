@@ -13,7 +13,7 @@ import java.util.List;
 public class Compiler implements CompilerInterface {
 	private final LexicalAnalyzerInterface scanner;
 	private final SyntacticAnalyzerInterface parser;
-	private final List<AbstractErrorHandler<?, ?>> errorHandler;
+	private final List<AbstractErrorHandler<?,?>> errorHandlerList;
 
 	public Compiler(String codeFilePath) {
 		// ---- FRONT END ---- //
@@ -23,14 +23,13 @@ public class Compiler implements CompilerInterface {
 		SyntacticErrorHandler syntacticErrorHandler = new SyntacticErrorHandler();
 		SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler();
 
-		this.errorHandler = new ArrayList<>();
-		this.errorHandler.add(lexicalErrorHandler);
-		this.errorHandler.add(lexicalErrorHandler);
-		this.errorHandler.add(syntacticErrorHandler);
-		this.errorHandler.add(semanticErrorHandler);
+		this.errorHandlerList = new ArrayList<>();
+		this.errorHandlerList.add(lexicalErrorHandler);
+		this.errorHandlerList.add(syntacticErrorHandler);
+		this.errorHandlerList.add(semanticErrorHandler);
 
 		// Code Analysis
-		this.scanner = new LexicalAnalyzer(codeFilePath, new LexicalErrorHandler());
+		this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
 		this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
 		// ---- BACK END ---- //
@@ -50,6 +49,18 @@ public class Compiler implements CompilerInterface {
 	 */
 	@Override
 	public boolean hasErrors() {
+		for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+			if (abstractErrorHandler.hasErrors()) {
+				return true;
+			}
+		}
 		return false;
+	}
+
+	@Override
+	public void printErrors() {
+		for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+			abstractErrorHandler.printErrors();
+		}
 	}
 }

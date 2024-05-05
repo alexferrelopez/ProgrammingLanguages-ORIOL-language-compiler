@@ -94,10 +94,28 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
     }
 
     /**
+     * Method to get the reports
+     *
+     * @return A clone of the reports list
+     */
+    public List<Report<MessageType>> getReports() {
+        return new ArrayList<>(this.reports);
+    }
+
+    /**
      * Method to reset the error and warning counts
      */
     public void resetErrors() {
         this.errorCount = 0;
         this.warningCount = 0;
+    }
+
+    /**
+     * Method to print all the reports in the reports list
+     */
+    public void printErrors() {
+        for (Report<MessageType> report : reports) {
+            System.out.println(report);
+        }
     }
 }

@@ -40,9 +40,10 @@ public class Main {
         // Prints for Debugging purpose
         if (compiler.hasErrors()) {
             System.out.println("Compilation failed!");
+            compiler.printErrors();
         }
         else {
-            System.out.println("Compilation success!");
+            System.out.println("Compilation successful!");
         }
     }
 }

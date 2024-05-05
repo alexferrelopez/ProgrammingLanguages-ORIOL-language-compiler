@@ -11,4 +11,9 @@ public interface CompilerInterface {
 	 * @return True if the code has errors, false otherwise.
 	 */
 	boolean hasErrors();
+
+	/**
+	 * This method prints the different errors that the compiler has found.
+	 */
+	void printErrors();
 }
