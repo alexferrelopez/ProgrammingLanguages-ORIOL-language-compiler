@@ -1,5 +1,6 @@
 package frontEnd.sintaxis;
 
+import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
 import frontEnd.exceptions.InvalidFileException;
 import frontEnd.exceptions.InvalidTokenException;
@@ -138,8 +139,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = (Tree) parent.getParent();
                     nodeName = ((AbstractSymbol)parent.getNode()).getName();
                 }
-                parent.removeParent();//Crec que s'ha de treure el parent perquè el rebeu com si fos l'arrel de l'arbre
-                //printTree(parent);//TODO send this tree to the lexical analyzer
+                printTree(parent);//TODO send this tree to the lexical analyzer
+                System.out.println();
             }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
@@ -149,5 +150,13 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
         }
+    }
+
+    private void printTree(Tree tree) {
+        var pt = new PrettyPrintTree<Tree<AbstractSymbol>>(
+                Tree::getChildren,
+                Tree::getNode
+        );
+        pt.display(tree);
     }
 }
