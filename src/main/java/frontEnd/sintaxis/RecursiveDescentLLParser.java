@@ -69,6 +69,9 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     for (int i = output.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
                         if (!output.get(i).getName().equals(TerminalSymbol.EPSILON)) {
                             stack.push(output.get(i));
+                            if(Arrays.asList(startTokens).contains(((AbstractSymbol)output.get(i)).getName())){
+                                startTokensStck.push(output.get(i));
+                            }
                         }
                     }
 
@@ -113,8 +116,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         }
 
         //Display the firsts and follows of the grammar for debugging purposes
-        First.displayAllFirsts(grammarMap);
-        Follow.displayAllFollows(grammarMap);
+        //First.displayAllFirsts(grammarMap);
+        //Follow.displayAllFollows(grammarMap);
     }
 
 
@@ -135,7 +138,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = (Tree) parent.getParent();
                     nodeName = ((AbstractSymbol)parent.getNode()).getName();
                 }
-                printTree(parent);//TODO send this tree to the lexical analyzer
+                //printTree(parent);//TODO send this tree to the lexical analyzer
             }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
