@@ -29,6 +29,10 @@ public class Tree<T> {
         return c;
     }
 
+    public void removeParent() {
+        parent = null;
+    }
+
     public T getNode() {
         return node;
     }

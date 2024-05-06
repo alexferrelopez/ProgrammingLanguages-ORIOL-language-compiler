@@ -138,6 +138,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = (Tree) parent.getParent();
                     nodeName = ((AbstractSymbol)parent.getNode()).getName();
                 }
+                parent.removeParent();//Crec que s'ha de treure el parent perquè el rebeu com si fos l'arrel de l'arbre
                 //printTree(parent);//TODO send this tree to the lexical analyzer
             }
             try {
