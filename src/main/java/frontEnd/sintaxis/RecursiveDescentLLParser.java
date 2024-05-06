@@ -120,18 +120,29 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     /**
      * This method checks if the lookahead is the same as the terminal symbol
-     *
      * @param terminal the terminal symbol to compare
      */
     private void match(TerminalSymbol terminal) {
-        if (terminal.getName().equals(String.valueOf(lookahead.getType()))) {
-            System.out.println("MATCH");
+        if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
+            System.out.println("MATCH: " + terminal.getName());
+            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CT")){//If we ended a sentence or a block of code
+                System.out.println("\n\n-----------------TREE-----------------");
+                Tree parent = (Tree) tree.getParent();
+                String nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                AbstractSymbol symbolToSend = startTokensStck.pop();
+                while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
+                ){
+                    parent = (Tree) parent.getParent();
+                    nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                }
+                printTree(parent);//TODO send this tree to the lexical analyzer
+            }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
             } catch (InvalidTokenException e) {
                 e.printStackTrace();
             }
-        } else {
+        }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
         }
     }
