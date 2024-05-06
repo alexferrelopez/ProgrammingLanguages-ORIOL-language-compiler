@@ -11,7 +11,8 @@ public enum BinaryOperator implements TokenType {
     NEQ("different|diff", List.of("different", "diff")),
     EQ("equals|equ|eq", List.of("equals", "equ", "eq")),
     OR("OR|or", List.of("OR", "or")),
-    AND("AND|and", List.of("AND", "and"));
+    AND("AND|and", List.of("AND", "and")),
+    NOT("NOT|not", List.of("NOT", "not"));
 
     // Instance field (regex pattern) for each enum constant
     private final String regexPattern;
