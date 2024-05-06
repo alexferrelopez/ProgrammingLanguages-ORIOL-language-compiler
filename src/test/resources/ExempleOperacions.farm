@@ -1,0 +1,10 @@
+miau : ranch ( ) {
+    miau a is 1 ;
+    miau b is 2 ;
+    miau c is a sum b ;
+    oink d is c minus 1 ;
+    miau e is d times 2 ;
+    oink f is e div 2 ;
+    miau g is f mod 2 ;
+    poop 0 ;
+}
