@@ -1,10 +1,17 @@
 package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
-import frontEnd.Tree;
+import frontEnd.sintaxis.Tree;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
+    private SymbolTableTree symbolTable;
+
+    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableTree symbolTable) {
+        this.errorHandler = semanticErrorHandler;
+        this.symbolTable = symbolTable;
+    }
 
     /*
 	List<Token> tokens; { AbstractSymbol=tipusExpressio, VARIABLE, VALUE, ... }
@@ -23,9 +30,7 @@ public class SemanticAnalyzer {
 	}
 	 */
 
-    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler) {
-        errorHandler = semanticErrorHandler;
-    }
+
 
     public static void sendTree(Tree tree) {
         //TODO implement this method
