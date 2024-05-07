@@ -10,6 +10,8 @@ import frontEnd.sintaxis.grammar.AbstractSymbol;
 import java.util.ArrayList;
 import java.util.List;
 
+import static errorHandlers.errorTypes.SemanticErrorType.DUPLICATE_SYMBOL_DECLARATION;
+
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
     private SymbolTableTree symbolTable;
@@ -31,65 +33,34 @@ public class SemanticAnalyzer {
 
         // We can use a switch statement to check the type of each node
         // We can use the method getType() to get the type of the node
+        // Get a list of terminal symbols (tokens with lexical meaning).
+        List<Token> tokens = new ArrayList<>();
 
+        // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
+        switch (tree.getNode().toString()) {
+            case "declaration":
+                // Call the method to check the declaration of a variable
+
+                break;
+            case "assignation":
+                break;
+            // ...
+        }
     }
 
 
     /**
      * Function to check if a symbol is declared in the current scope.
-     *
-     * @param symbol the symbol to check.
+     * @param tokens the symbol to check.
      */
-    public void checkDeclaration(Symbol symbol) {
-        // Check if the symbol can be declared in the scope
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
-    }
-
-
-    public void checkTypeCompatibility(Symbol symbol) {
-        // Check if the symbol is compatible with the type of the current scope
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
-    }
-
-    /**
-     * Function to check if a function is called correctly.
-     *
-     * @param symbol the symbol to check.
-     */
-    public void checkFunctionCall(Symbol symbol) {
-        // Check if the function is called correctly
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
-
-
-        /**
-         * Function to check if the parameters of a function are correct.
-         * @param symbol the symbol to check.
-         */
-        private void checkFunctionParameters (Symbol symbol){
-            // Check if the parameters of the function are correct
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
+    public void checkDeclaration(List<Token> tokens) {
+        // example: miau a = 3;
+        // We have to check if the variable "a" is declared in the current scope (since current scope to global scope, root)
+        if (symbolTable.findSymbol(tokens.get(1).getLexeme()) == null) {
+            errorHandler.reportError(DUPLICATE_SYMBOL_DECLARATION, tokens.get(1).getLine(), tokens.get(1).getColumn(), "Variable not declared");
         }
-
-        // Additional methods for semantic checks can be added here
     }
+
+    // Additional methods for semantic checks can be added here
 }
+
