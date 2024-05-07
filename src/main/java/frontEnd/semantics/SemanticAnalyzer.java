@@ -1,9 +1,14 @@
 package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
+import frontEnd.lexic.dictionary.Token;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.sintaxis.Tree;
-import frontEnd.semantics.symbolTable.SymbolTableTree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
@@ -16,6 +21,7 @@ public class SemanticAnalyzer {
 
     /**
      * Function to check the semantic of the tree received from the parser.
+     *
      * @param tree the tree that we receive from the parser.
      */
     public static void sendTree(Tree tree) {
@@ -31,6 +37,7 @@ public class SemanticAnalyzer {
 
     /**
      * Function to check if a symbol is declared in the current scope.
+     *
      * @param symbol the symbol to check.
      */
     public void checkDeclaration(Symbol symbol) {
@@ -56,6 +63,7 @@ public class SemanticAnalyzer {
 
     /**
      * Function to check if a function is called correctly.
+     *
      * @param symbol the symbol to check.
      */
     public void checkFunctionCall(Symbol symbol) {
@@ -66,21 +74,22 @@ public class SemanticAnalyzer {
         } else {
             symbolTable.addSymbol(symbol);
         }*/
-    }
 
-    /**
-     * Function to check if the parameters of a function are correct.
-     * @param symbol the symbol to check.
-     */
-    private void checkFunctionParameters(Symbol symbol) {
-        // Check if the parameters of the function are correct
+
+        /**
+         * Function to check if the parameters of a function are correct.
+         * @param symbol the symbol to check.
+         */
+        private void checkFunctionParameters (Symbol symbol){
+            // Check if the parameters of the function are correct
         /*
         if (symbolTable.currentScope().contains(symbol.getName())) {
             errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
         } else {
             symbolTable.addSymbol(symbol);
         }*/
-    }
+        }
 
-    // Additional methods for semantic checks can be added here
+        // Additional methods for semantic checks can be added here
+    }
 }
