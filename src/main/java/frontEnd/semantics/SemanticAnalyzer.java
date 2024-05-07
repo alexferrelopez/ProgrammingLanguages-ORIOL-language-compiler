@@ -71,8 +71,7 @@ public class SemanticAnalyzer {
             errorHandler.reportError(FUNCTION_NOT_DECLARED, tokens.get(0).getLine(), tokens.get(0).getColumn(), "Function not declared");
         }
 
-        // We have to check if the parameters that the function receives are correct
-
+        // TODO -> We have to check if the parameters that the function receives are correct
     }
 
     // Additional methods for semantic checks can be added here
