@@ -12,7 +12,8 @@ public enum SemanticErrorType implements ErrorType {
     FUNCTION_PARAMETERS_NOT_MATCH("Function parameters not match"),
     FUNCTION_RETURN_TYPE_NOT_CORRECT("Function return type not correct"),
     FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
-    NOT_A_VARIABLE("Function is not a variable");
+    NOT_A_VARIABLE("Function is not a variable"),
+    INVALID_VALUE("Invalid value"),;
 
     //TODO: Add different types of errors,
     final String message;

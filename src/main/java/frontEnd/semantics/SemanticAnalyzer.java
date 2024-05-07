@@ -2,8 +2,9 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
+import frontEnd.exceptions.InvalidValueException;
+import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
-import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
-    private SymbolTableTree symbolTable;
+    private final SymbolTableTree symbolTable;
 
     public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableTree symbolTable) {
         this.errorHandler = semanticErrorHandler;
@@ -64,17 +65,16 @@ public class SemanticAnalyzer {
 
         @SuppressWarnings("unchecked")  // Suppress the unchecked cast warning (it will always be a variable and ValueSymbol here)
         Symbol<VariableSymbol<?>> variable = (Symbol<VariableSymbol<?>>) symbol;
-        ValueSymbol valueSymbol = (ValueSymbol) value.getType();
 
-        // Check if the value is compatible with the variable type.
-        if (!variable.isValidType(valueSymbol)) {
+        // Check if the value is compatible with the variable type and assign (and check) the value to the variable.
+		try {
+			variable.setValue(value);
+		} catch (InvalidValueException e) {
+			errorHandler.reportError(SemanticErrorType.INVALID_VALUE, value.getLine(), value.getColumn(), e.getMessage());
+		} catch (InvalidValueTypeException e) {
             errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, value.getLine(), value.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
-            return;
-        }
-
-        // Assign (and check) the value to the variable.
-        variable.setValue(value.getLexeme());
-    }
+		}
+	}
 
     /**
      * Function to check if a symbol is declared in the current scope.

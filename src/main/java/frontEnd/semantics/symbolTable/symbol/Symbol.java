@@ -1,5 +1,9 @@
 package frontEnd.semantics.symbolTable.symbol;
 
+import errorHandlers.errorTypes.SemanticErrorType;
+import frontEnd.exceptions.InvalidValueException;
+import frontEnd.exceptions.InvalidValueTypeException;
+import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 
@@ -41,8 +45,22 @@ public abstract class Symbol<Type> {
         return this.value;
     }
 
-    public void setValue(String newValue) {
-        this.value = typeClass.cast(dataType.convertValue(newValue));
+    public void setValue(Token newValue) throws InvalidValueException, InvalidValueTypeException {
+        // Check if the value is compatible with the variable type.
+        if (!isValidType((ValueSymbol) newValue.getType())) {
+            throw new InvalidValueTypeException("The value is not compatible with the variable type.");
+        }
+
+        // Check if the value is between a range (only in numbers).
+        String value = newValue.getLexeme();
+        if (dataType == DataType.FLOAT || dataType == DataType.INTEGER) {
+            Number numberValue = (Number) dataType.convertValue(value);
+            if (!dataType.isBetweenRange(numberValue)) {
+                throw new InvalidValueException("The value is not in the range of the data type.");
+            }
+        }
+
+        this.value = typeClass.cast(dataType.convertValue(value));
     }
 
     public void addLineUsage(long line) {
