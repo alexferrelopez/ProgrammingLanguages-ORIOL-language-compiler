@@ -1,6 +1,7 @@
 package frontEnd.semantics.symbolTable.symbol;
 
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
+import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +22,14 @@ public abstract class Symbol<Type> {
     // Offset for a variable is the distance from the base pointer to the variable.
     // Offset for a function is the label in the assembler code.
 
-    public Symbol(String name, DataType dataType, long lineDeclaration) {
+    private final Class<Type> typeClass; // Class token to maintain type safety
+
+    public Symbol(String name, DataType dataType, long lineDeclaration, Class<Type> typeClass) {
         this.name = name;
         this.dataType = dataType;
         this.lineDeclaration = lineDeclaration;
-        this.lineUsage = new ArrayList<>();
+		this.typeClass = typeClass;
+		this.lineUsage = new ArrayList<>();
     }
 
     public String getName() {
@@ -37,8 +41,8 @@ public abstract class Symbol<Type> {
         return this.value;
     }
 
-    public void setValue(Type value) {
-        this.value = value;
+    public void setValue(String newValue) {
+        this.value = typeClass.cast(dataType.convertValue(newValue));
     }
 
     public void addLineUsage(long line) {
@@ -53,11 +57,21 @@ public abstract class Symbol<Type> {
         }
     }
 
+    /**
+     * Check if a symbol is a variable.
+     * @return  true if the symbol is a variable; false otherwise.
+     */
+    public abstract boolean isVariable();
+
     public boolean hasSameName(String otherSymbolName) {
         return this.name.equals((otherSymbolName));
     }
 
     public long getLineDeclaration() {
         return this.lineDeclaration;
+    }
+
+    public boolean isValidType(ValueSymbol valueSymbol) {
+        return this.dataType.isValidType(valueSymbol);
     }
 }
