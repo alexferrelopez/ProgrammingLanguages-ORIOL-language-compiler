@@ -23,6 +23,14 @@ public interface SymbolTableInterface {
     Symbol<?> findSymbol(String symbolName);
 
     /**
+     * Find if a symbol exists in the whole symbols table.
+     *
+     * @param symbolName the name of the symbol.
+     * @return true if the symbol exists; false otherwise.
+     */
+    public boolean containsSymbol(String symbolName);
+
+    /**
      * Find a scope at a given level (scope level)
      */
     ScopeNode findScopeAtLevel(ScopeNode scopeNode, int level);

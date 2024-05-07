@@ -49,6 +49,17 @@ public class SymbolTableTree implements SymbolTableInterface {
 	}
 
 	/**
+	 * Find if a symbol exists in the whole symbols table.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return true if the symbol exists; false otherwise.
+	 */
+	@Override
+	public boolean containsSymbol(String symbolName) {
+		return (this.currentScope.findSymbol(symbolName) != null);
+	}
+
+	/**
 	 * Find a scope at a given level (scope level)
 	 */
 	@Override
