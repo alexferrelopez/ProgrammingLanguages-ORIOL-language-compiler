@@ -7,7 +7,7 @@ import frontEnd.sintaxis.grammar.AbstractSymbol;
 
 /**
  * Code to display a tree in the console in a pretty way.
- * From Guthub: https://github.com/AharonSambol/PrettyPrintTreeJava/blob/main/src/main/java/ajs/printutils/PrettyPrintTree.java
+ * From Github: https://github.com/AharonSambol/PrettyPrintTreeJava/blob/main/src/main/java/ajs/printutils/PrettyPrintTree.java
  *
  * @param <Node>
  */

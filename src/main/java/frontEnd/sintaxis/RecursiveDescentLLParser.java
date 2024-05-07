@@ -139,8 +139,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = (Tree) parent.getParent();
                     nodeName = ((AbstractSymbol)parent.getNode()).getName();
                 }
-                printTree(parent);//TODO send this tree to the lexical analyzer
-                System.out.println();
+                printTree(parent);//TODO send this tree to the semantical analyzer
+                //SemanticAnalyzer.sendTree(parent);
             }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
