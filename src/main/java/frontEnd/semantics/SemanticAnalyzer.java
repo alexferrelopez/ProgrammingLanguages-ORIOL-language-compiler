@@ -1,48 +1,94 @@
 package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
-import frontEnd.lexic.dictionary.Token;
+import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.sintaxis.Tree;
-import frontEnd.sintaxis.grammar.AbstractSymbol;
-
-import java.util.ArrayList;
-import java.util.List;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
+    private SymbolTableTree symbolTable;
 
-    /*
-	List<Token> tokens; { AbstractSymbol=tipusExpressio, VARIABLE, VALUE, ... }
+    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableTree symbolTable) {
+        this.errorHandler = semanticErrorHandler;
+        this.symbolTable = symbolTable;
+    }
 
-	switch(tokens.get(0).getType()) {
-		case FOR:
-			// Do something
-			break;
-		case VARIABLE:
-			// Do something
-			break;
-		case VALUE:
-			// Do something
-			break;
-		...
+    /**
+     * Function to check the semantic of the tree received from the parser.
+     * @param tree the tree that we receive from the parser.
+     */
+    public static void sendTree(Tree tree) {
+        //TODO implement this method
+
+        // We receive a tree that each node is the type AbstractSymbol
+
+        // We can use a switch statement to check the type of each node
+        // We can use the method getType() to get the type of the node
+
+    }
+
+
+    /**
+     * Function to check if a symbol is declared in the current scope.
+     * @param symbol the symbol to check.
+     */
+    public void checkDeclaration(Symbol symbol) {
+        // Check if the symbol can be declared in the scope
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
+    }
+
+
+    public void checkTypeCompatibility(Symbol symbol) {
+        // Check if the symbol is compatible with the type of the current scope
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
+    }
+
+    /**
+     * Function to check if a function is called correctly.
+     * @param symbol the symbol to check.
+     */
+    public void checkFunctionCall(Symbol symbol) {
+        // Check if the function is called correctly
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
 	}
-	 */
 
     public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler) {
         errorHandler = semanticErrorHandler;
     }
 
-    public static void sendTree(Tree<AbstractSymbol> tree) {
-        // Get a list of terminal symbols (tokens with lexical meaning).
-        List<Token> tokens = new ArrayList<>();
+    public static void sendTree(Tree tree) {
 
-        // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
-        switch (tree.getNode().getName()) {
-            case "declaration":
-                break;
-            case "assignation":
-                break;
-            // ...
-        }
     }
+
+    /**
+     * Function to check if the parameters of a function are correct.
+     * @param symbol the symbol to check.
+     */
+    private void checkFunctionParameters(Symbol symbol) {
+        // Check if the parameters of the function are correct
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
+    }
+
+    // Additional methods for semantic checks can be added here
 }

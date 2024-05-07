@@ -56,4 +56,8 @@ public abstract class Symbol<Type> {
     public boolean hasSameName(String otherSymbolName) {
         return this.name.equals((otherSymbolName));
     }
+
+    public long getLineDeclaration() {
+        return this.lineDeclaration;
+    }
 }
