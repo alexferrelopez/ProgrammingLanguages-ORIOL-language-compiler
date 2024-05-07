@@ -32,9 +32,6 @@ public class ParsingTable {
             for (int j = 0; j < uniqueTerminals.size(); j++) {
                 NonTerminalSymbol nt = uniqueNoTerminals.get(i);
                 TerminalSymbol t = uniqueTerminals.get(j);
-                if (nt.getName().equals("assignation'") && t.getName().equals("VARIABLE")) {
-                    System.out.println("PROBLEMON :/");
-                }
                 Map<NonTerminalSymbol, List<AbstractSymbol>> production = First.getProduction(grammar, nt, t);
 
                 if (production != null) {

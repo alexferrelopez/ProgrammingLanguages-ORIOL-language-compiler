@@ -1,0 +1,10 @@
+miau : ranch ( ) {
+    miau a is 2;
+    status c is alive;
+    check ( NOT alive ) {
+        miau a is 4;
+    } else {
+        miau a is 3;
+    }
+    poop 0 ;
+}

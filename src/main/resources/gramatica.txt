@@ -19,7 +19,7 @@
 <declaration> ::= <data_type> <assignation> PUNT_COMMA | <assignation> PUNT_COMMA
 <data_type> ::= INTEGER | FLOAT | CHAR | STRING | BOOLEAN | VOID
 <assignation> ::= VARIABLE IS <assignation'>
-<assignation'> ::= <arit_1> | <func_call> | <literal_bool>
+<assignation'> ::= <arit_1> | <func_call> | <expr_bool>
 <expression> ::= <declaration> | <condition> | <loop> | <func_call> | <return_stmt>
 <value> ::= <literal_num> | <literal_bool> | VALUE_CHAR
 <literal_num> ::= VALUE_FLOAT | VALUE_INT | VARIABLE
@@ -35,8 +35,7 @@
 <log_1'> ::= OR <log_2> <log_1'> | ε
 <log_2> ::= <log_3> <log_2'>
 <log_2'> ::= AND <log_3> <log_2'> | ε
-<log_3> ::= NOT <log_3'> <log_4>
-<log_3'> ::= <log_3> | ε
+<log_3> ::= NOT <log_4> | <log_4>
 <log_4> ::= PO <log_1> PT | <log_5>
 <log_5> ::= <literal_bool> | VARIABLE
 <arit_1> ::= <arit_2> <arit_1'>
