@@ -55,10 +55,7 @@ public class SemanticAnalyzer {
         }*/
     }
 
-    /**
-     * Function to check if a symbol is compatible with the type of the current scope.
-     * @param symbol the symbol to check.
-     */
+
     public void checkTypeCompatibility(Symbol symbol) {
         // Check if the symbol is compatible with the type of the current scope
         /*
@@ -69,7 +66,33 @@ public class SemanticAnalyzer {
         }*/
     }
 
+    /**
+     * Function to check if a function is called correctly.
+     * @param symbol the symbol to check.
+     */
+    public void checkFunctionCall(Symbol symbol) {
+        // Check if the function is called correctly
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
+    }
 
+    /**
+     * Function to check if the parameters of a function are correct.
+     * @param symbol the symbol to check.
+     */
+    private void checkFunctionParameters(Symbol symbol) {
+        // Check if the parameters of the function are correct
+        /*
+        if (symbolTable.currentScope().contains(symbol.getName())) {
+            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
+        } else {
+            symbolTable.addSymbol(symbol);
+        }*/
+    }
 
     // Additional methods for semantic checks can be added here
 }
