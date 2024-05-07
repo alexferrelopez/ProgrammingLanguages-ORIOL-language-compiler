@@ -14,30 +14,18 @@ public class SemanticAnalyzer {
         this.symbolTable = symbolTable;
     }
 
-    /*
-	List<Token> tokens; { AbstractSymbol=tipusExpressio, VARIABLE, VALUE, ... }
-
-	switch(tokens.get(0).getType()) {
-		case FOR:
-			// Do something
-			break;
-		case VARIABLE:
-			// Do something
-			break;
-		case VALUE:
-			// Do something
-			break;
-		...
-	}
-	 */
-
-
     /**
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
      */
     public static void sendTree(Tree tree) {
         //TODO implement this method
+
+        // We receive a tree that each node is the type AbstractSymbol
+
+        // We can use a switch statement to check the type of each node
+        // We can use the method getType() to get the type of the node
+
     }
 
 
