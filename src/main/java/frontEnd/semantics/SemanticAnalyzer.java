@@ -3,9 +3,8 @@ package frontEnd.semantics;
 import errorHandlers.SemanticErrorHandler;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
-import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.sintaxis.Tree;
-import frontEnd.sintaxis.grammar.AbstractSymbol;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +28,6 @@ public class SemanticAnalyzer {
      */
     public static void sendTree(Tree tree) {
         //TODO implement this method
-
-        // We receive a tree that each node is the type AbstractSymbol
-
-        // We can use a switch statement to check the type of each node
-        // We can use the method getType() to get the type of the node
-        // Get a list of terminal symbols (tokens with lexical meaning).
         List<Token> tokens = new ArrayList<>();
 
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
@@ -62,6 +55,10 @@ public class SemanticAnalyzer {
         }
     }
 
+    /**
+     * Function to check if the parameters of a function call are correct and if the function is declared previously.
+     * @param tokens the function to check.
+     */
     public void checkFunctionCall(List<Token> tokens) {
         // example: miau(3, 4, 5);
 
