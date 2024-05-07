@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static errorHandlers.errorTypes.SemanticErrorType.DUPLICATE_SYMBOL_DECLARATION;
+import static errorHandlers.errorTypes.SemanticErrorType.FUNCTION_NOT_DECLARED;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
@@ -59,6 +60,19 @@ public class SemanticAnalyzer {
         if (symbolTable.findSymbol(tokens.get(1).getLexeme()) == null) {
             errorHandler.reportError(DUPLICATE_SYMBOL_DECLARATION, tokens.get(1).getLine(), tokens.get(1).getColumn(), "Variable not declared");
         }
+    }
+
+    public void checkFunctionCall(List<Token> tokens) {
+        // example: miau(3, 4, 5);
+
+        // We have to check if the function is declared
+        // All the functions are stored in the root node
+        if (symbolTable.findSymbol(tokens.get(0).getLexeme()) == null) {
+            errorHandler.reportError(FUNCTION_NOT_DECLARED, tokens.get(0).getLine(), tokens.get(0).getColumn(), "Function not declared");
+        }
+
+        // We have to check if the parameters that the function receives are correct
+
     }
 
     // Additional methods for semantic checks can be added here
