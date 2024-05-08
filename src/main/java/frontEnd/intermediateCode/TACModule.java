@@ -4,12 +4,13 @@ import java.util.List;
 
 public class TACModule {
     private List<String> instructions;  // Store all the instructions
-    private int labelCounter;           // Create unique labels for if, while, and for statements
+    private int labelCounter;           // Create unique labels for if, while, and for statements (L0, L1, L2, ...)
+    private int tempVarCounter;         // Create unique temporary variables (t0, t1, t2, ...)
 
 
     /**
      * Method to add a general instruction to the TAC module
-     * @param instruction the instruction to add
+     * @param instruction the instruction to add (ex: x = 5)
      */
     public void addInstruction(String instruction) {
         this.instructions.add(instruction);
@@ -18,7 +19,7 @@ public class TACModule {
     /**
      * Method to add a unary instruction to the TAC module
      * @param result the result of the operation
-     * @param operand the operand of the operation (ex: x = -y)
+     * @param operand the operand of the operation (ex: b + a)
      */
     public void addUnaryInstruction(String result, String operand) {
         this.instructions.add(result + " = " + operand);
@@ -26,7 +27,7 @@ public class TACModule {
 
 
     /**
-     * Method to add a binary instruction to the TAC module
+     * Method to add a binary instruction that NOT requires a temporary variable to the TAC module (ex: x = 5 + 3)
      * @param result the result of the operation
      * @param operator the operator of the operation (ex: +, -, *, /)
      * @param operand1 the first operand of the operation
@@ -36,10 +37,22 @@ public class TACModule {
         this.instructions.add(result + " = " + operand1 + " " + operator + " " + operand2);
     }
 
+    /**
+     * Method to add a binary instruction that requires a temporary variable to the TAC module (ex: t0 = 5 + 3)
+     * @param operator the operator of the operation (ex: +, -, *, /)
+     * @param operand1 the first operand of the operation
+     * @param operand2 the second operand of the operation
+     * @return the temporary variable that stores the result of the operation
+     */
+    public String addBinaryInstruction(String operator, String operand1, String operand2) {
+        String tempResult = getNextTempVar();
+        this.instructions.add(tempResult + " = " + operand1 + " " + operator + " " + operand2);
+        return tempResult;
+    }
 
     /**
      * Method to create and return a unique label
-     * @return
+     * @return the unique label
      */
     public String createLabel() {
         return "L" + (labelCounter++);
@@ -51,6 +64,15 @@ public class TACModule {
      */
     public void addLabel(String label) {
         this.instructions.add(label + ":");
+    }
+
+
+    /**
+     * Method to create and return a unique temporary variable
+     * @return the unique temporary variable
+     */
+    private String getNextTempVar() {
+        return "t" + (tempVarCounter++);
     }
 
     /**
