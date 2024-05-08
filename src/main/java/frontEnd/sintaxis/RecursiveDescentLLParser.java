@@ -129,17 +129,24 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
             System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
-            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CT")){//If we ended a sentence or a block of code
+            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
                 System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStck.pop();
+                if(terminal.getName().equals("CO")){
+                    startTokensStck.push(symbolToSend);
+                }
                 while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                 ){
                     parent = parent.getParent();
                     nodeName = (parent.getNode()).getName();
                 }
+                if(terminal.getName().equals("CT")){
+                    parent = new Tree<>(terminal);
+                }
                 printTree(parent);//TODO send this tree to the semantical analyzer
+                System.out.println();
                 //SemanticAnalyzer.sendTree(parent);
             }
             try {
