@@ -19,7 +19,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private Token lookahead;
 
-    private Tree tree;
+    private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStck = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private String[] startTokens = new String[]{"program", "func_decl", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
@@ -80,11 +80,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     //If any of the children of the actual node of the tree is different from the symbol that we are
                     // analyzing we have to go up in the tree
                     if(!((NonTerminalSymbol) tree.getNode()).getName().equals(symbol.getName())){
-                        LinkedList<Tree<AbstractSymbol>> children = tree.getChildren();
+                        List<Tree<AbstractSymbol>> children = tree.getChildren();
                         boolean found = false;
                         do{
-                            for(Tree child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
-                                if(((AbstractSymbol)child.getNode()).getName().equals(symbol.getName())){
+                            for(Tree<AbstractSymbol> child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
+                                if((child.getNode()).getName().equals(symbol.getName())){
                                     tree = child;
                                     found = true;
                                     break;
@@ -92,7 +92,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                             }
                             if(!found){//If none of the children is the symbol that we are analyzing we go up in the tree
                                 if(!Objects.isNull(tree.getParent())){
-                                    tree = (Tree) tree.getParent();
+                                    tree = tree.getParent();
                                     children = tree.getChildren();
                                 }
                             }
@@ -103,7 +103,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         tree.addChild(as);
                         if(as.getName().equals(TerminalSymbol.EPSILON)){//If the children is epsilon we have to go up in the tree
                             if(!Objects.isNull(tree.getParent())){
-                                tree = (Tree) tree.getParent();
+                                tree = tree.getParent();
                             }
 
                         }

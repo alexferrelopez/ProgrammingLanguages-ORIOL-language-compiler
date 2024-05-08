@@ -1,7 +1,7 @@
 package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
-import frontEnd.Tree;
+import frontEnd.sintaxis.Tree;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
