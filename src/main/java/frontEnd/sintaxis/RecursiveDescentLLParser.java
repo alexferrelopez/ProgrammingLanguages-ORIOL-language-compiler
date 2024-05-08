@@ -9,7 +9,6 @@ import frontEnd.lexic.dictionary.Token;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.*;
-import frontEnd.sintaxis.Tree;
 
 import java.util.*;
 
@@ -129,15 +128,16 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private void match(TerminalSymbol terminal) {
         if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
             System.out.println("MATCH: " + terminal.getName());
+            terminal.setToken(lookahead);
             if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CT")){//If we ended a sentence or a block of code
                 System.out.println("\n\n-----------------TREE-----------------");
-                Tree parent = (Tree) tree.getParent();
-                String nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                Tree<AbstractSymbol> parent = tree.getParent();
+                String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStck.pop();
                 while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                 ){
-                    parent = (Tree) parent.getParent();
-                    nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                    parent = parent.getParent();
+                    nodeName = (parent.getNode()).getName();
                 }
                 printTree(parent);//TODO send this tree to the semantical analyzer
                 //SemanticAnalyzer.sendTree(parent);
@@ -149,14 +149,16 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             }
         }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
+            // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
         }
     }
 
-    private void printTree(Tree tree) {
-        var pt = new PrettyPrintTree<Tree<AbstractSymbol>>(
+    private void printTree(Tree<AbstractSymbol> tree) {
+        PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
                 Tree::getChildren,
                 Tree::getNode
         );
-        pt.display(tree);
+
+        printTree.display(tree);
     }
 }

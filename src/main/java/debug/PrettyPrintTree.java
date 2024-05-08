@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.*;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
+import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
 
 /**
  * Code to display a tree in the console in a pretty way.
@@ -40,7 +41,21 @@ public final class PrettyPrintTree<Node> {
             Function<Node, AbstractSymbol> getVal
     ) {
         this.getChildren = getChildren;
-        this.getNodeVal = getVal.andThen(AbstractSymbol::getName);
+        this.getNodeVal = node -> {
+            AbstractSymbol symbol = getVal.apply(node);
+            String nodeValue = symbol.getName();
+
+            // Check if symbol is terminal to print the token's lexeme (variable or token name).
+            if (symbol.isTerminal()) {
+                TerminalSymbol terminalSymbol = (TerminalSymbol) symbol;
+
+                // Do not print lexeme if it's EPSILON.
+                if (!terminalSymbol.isEpsilon()) {
+                    return (nodeValue + "\n" + terminalSymbol.getToken().getLexeme());
+                }
+            }
+            return nodeValue;
+        };
     }
 
     public PrettyPrintTree<Node> setBorder(boolean border) { this.border = border;  return this; }
@@ -200,10 +215,6 @@ public final class PrettyPrintTree<Node> {
     }
     private String colorTxt(String txt) {
         var spaces = " ".repeat(txt.length() - (txt = txt.trim()).length());
-        boolean is_label = txt.startsWith("|");
-        if (is_label) {
-            // todo "Not implemented yet"
-        }
         txt = this.border ? txt : " " + txt.substring(1, txt.length() - 1) + " ";
         txt = this.color == Color.NONE ? txt : "\u001b[" +  colorToNum.get(this.color) + "m" + txt + "\u001b[0m";
         return spaces + txt;
