@@ -8,6 +8,7 @@ public interface SymbolTableInterface {
      * Add a scope to the tree
      */
     void addScope(ScopeNode scopeNode);
+    void exitScope();   // Move the scope to his parent
 
     /**
      * Add a symbol at the current scope of the tree.
