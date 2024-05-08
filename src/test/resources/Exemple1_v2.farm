@@ -1,8 +1,7 @@
 oink : sumRange ( oink numA , oink numB , oink increment ) {
     oink result is 0.0 ;
-
     miau pepe is 3 ;
-    miau pepito is 0 ;
+    oink pepito is 0 ;
     miau pepita is 4 ;
 
     check ( numA bigger numB ) {
@@ -10,8 +9,6 @@ oink : sumRange ( oink numA , oink numB , oink increment ) {
         numA is numB ;
         numB is tmp ;
     }
-
-
     poop result ;
 }
 
