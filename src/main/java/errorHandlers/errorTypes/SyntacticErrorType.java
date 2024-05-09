@@ -1,7 +1,7 @@
 package errorHandlers.errorTypes;
 
 /**
- * Enum for parser errors
+ * Enum for parser/syntactic analyzer errors
  */
 public enum SyntacticErrorType implements ErrorType {
     //TODO: Add different types of parsing errors
