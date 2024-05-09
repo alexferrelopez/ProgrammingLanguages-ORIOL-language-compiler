@@ -9,6 +9,8 @@ import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
+import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +26,19 @@ public class SemanticAnalyzer {
 
     private List<Token> convertSymbolsIntoTokens(List<AbstractSymbol> terminalSymbols) {
         List<Token> tokens = new ArrayList<>();
-        for (AbstractSymbol symbol : terminalSymbols) {
-            if (symbol.isTerminal()) {
+
+        // Loop through all leave symbols (which can only be terminals or EPSILON).
+        for (int i = terminalSymbols.size() - 1; i >= 0; i--) {
+
+            // Loop in inverse order since the first token is in the last terminal read.
+            AbstractSymbol symbol = terminalSymbols.get(i);
+            if (symbol.isTerminal()) {  // Safe check, not really necessary.
                 TerminalSymbol terminal = (TerminalSymbol) symbol;
-                tokens.add(terminal.getToken());
+
+                // Only get token from the terminals that have any lexical meaning.
+                if (!terminal.isEpsilon()) {
+                    tokens.add(terminal.getToken());
+                }
             }
         }
         return tokens;
@@ -37,7 +48,7 @@ public class SemanticAnalyzer {
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
      */
-    public void sendTree(Tree tree) {
+    public void sendTree(Tree<AbstractSymbol> tree) {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
