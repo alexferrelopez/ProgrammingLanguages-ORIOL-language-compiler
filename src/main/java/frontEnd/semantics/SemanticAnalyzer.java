@@ -22,6 +22,17 @@ public class SemanticAnalyzer {
         this.symbolTable = symbolTable;
     }
 
+    private List<Token> convertSymbolsIntoTokens(List<AbstractSymbol> terminalSymbols) {
+        List<Token> tokens = new ArrayList<>();
+        for (AbstractSymbol symbol : terminalSymbols) {
+            if (symbol.isTerminal()) {
+                TerminalSymbol terminal = (TerminalSymbol) symbol;
+                tokens.add(terminal.getToken());
+            }
+        }
+        return tokens;
+    }
+
     /**
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
@@ -32,7 +43,8 @@ public class SemanticAnalyzer {
         // We can use a switch statement to check the type of each node
         // We can use the method getType() to get the type of the node
         // Get a list of terminal symbols (tokens with lexical meaning).
-        List<Token> tokens = new ArrayList<>();
+        List<AbstractSymbol> terminalSymbols = TreeTraversal.getLeafNodesIterative(tree);
+        List<Token> tokens = convertSymbolsIntoTokens(terminalSymbols);
 
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
         switch (tree.getNode().toString()) {
