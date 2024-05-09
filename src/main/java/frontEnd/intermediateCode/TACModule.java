@@ -9,20 +9,13 @@ public class TACModule {
 
 
     /**
-     * Method to add a general instruction to the TAC module
-     * @param instruction the instruction to add (ex: x = 5)
+     * Method to add a unary instruction to the TAC module like: x + 1
+     * @param operand1 the first operand of the operation
+     * @param operand2 the second operand of the operation
+     * @param operator the operator of the operation (ex: +, -, *, /)
      */
-    public void addInstruction(String instruction) {
-        this.instructions.add(new TACInstruction(instruction));
-    }
-
-    /**
-     * Method to add a unary instruction to the TAC module
-     * @param result the result of the operation
-     * @param operand the operand of the operation (ex: b + a)
-     */
-    public void addUnaryInstruction(String result, String operand) {
-        this.instructions.add(new TACInstruction(result, operand));
+    public void addUnaryInstruction(String operand1, String operand2, String operator) {
+        this.instructions.add(new TACInstruction(getNextTempVar(), operand1, operand2, operator));
     }
 
 
@@ -58,14 +51,18 @@ public class TACModule {
         return "L" + (labelCounter++);
     }
 
+
+
     /**
      * Method to add a label to the TAC module
      * @param label the label to add
      */
+
+    /*
     public void addLabel(String label) {
         this.instructions.add(new TACInstruction(label + ":"));
     }
-
+**/
 
     /**
      * Method to create and return a unique temporary variable
