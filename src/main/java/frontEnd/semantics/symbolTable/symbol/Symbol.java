@@ -75,6 +75,14 @@ public abstract class Symbol<Type> {
         }
     }
 
+    public boolean isDatatype(String dataType) {
+        return this.dataType.getPattern().equalsIgnoreCase(dataType);
+    }
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
     /**
      * Check if a symbol is a variable.
      * @return  true if the symbol is a variable; false otherwise.

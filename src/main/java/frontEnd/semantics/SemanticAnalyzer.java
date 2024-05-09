@@ -2,13 +2,18 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
+import frontEnd.exceptions.InvalidAssignmentException;
 import frontEnd.exceptions.InvalidValueException;
 import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
+import frontEnd.lexic.dictionary.TokenType;
+import frontEnd.lexic.dictionary.tokenEnums.BinaryOperator;
+import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +31,7 @@ public class SemanticAnalyzer {
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
      */
-    public void sendTree(Tree tree) {
+    public void sendTree(Tree<AbstractSymbol> tree) {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
@@ -40,6 +45,7 @@ public class SemanticAnalyzer {
                 break;
             case "assignation":
                 checkAssignationSemantics(tokens);
+                //generateAddressAssignation()
                 break;
             // ...
         }
@@ -66,6 +72,21 @@ public class SemanticAnalyzer {
         @SuppressWarnings("unchecked")  // Suppress the unchecked cast warning (it will always be a variable and ValueSymbol here)
         Symbol<VariableSymbol<?>> variable = (Symbol<VariableSymbol<?>>) symbol;
 
+        // Check what type of assignation this is.
+        List<Token> expressionTokens = assignationTokens.subList(2, assignationTokens.size() - 2);  // Do not take into account PUNT_COMMA token.
+        switch (variable.getDataType()) {
+            case BOOLEAN -> {
+				try {
+					checkValidBooleanExpression(expressionTokens);
+				} catch (InvalidAssignmentException e) {
+					// Do not add the symbol to the symbol table if the expression is invalid.
+                    return;
+				}
+			}
+            //case INTEGER, FLOAT -> checkValidNumericExpression(expressionTokens);
+            //case STRING -> checkValidStringExpression(expressionTokens);
+        }
+
         // Check if the value is compatible with the variable type and assign (and check) the value to the variable.
 		try {
 			variable.setValue(value);
@@ -75,6 +96,24 @@ public class SemanticAnalyzer {
             errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, value.getLine(), value.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
 		}
 	}
+
+    private void checkValidBooleanExpression(List<Token> expressionTokens) throws InvalidAssignmentException {
+        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
+        List<TokenType> validTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
+
+        boolean valid = true;
+        for (Token token : expressionTokens) {
+            if (!validTokens.contains(token.getType())) {
+                valid = false;
+                errorHandler.reportError(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
+            }
+        }
+
+        // Check if the expression is valid
+        if (!valid) {
+           throw new InvalidAssignmentException("Invalid boolean expression");
+        }
+    }
 
     /**
      * Function to check if a symbol is declared in the current scope.

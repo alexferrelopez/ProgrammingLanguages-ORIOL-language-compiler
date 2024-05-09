@@ -13,7 +13,8 @@ public enum SemanticErrorType implements ErrorType {
     FUNCTION_RETURN_TYPE_NOT_CORRECT("Function return type not correct"),
     FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
     NOT_A_VARIABLE("Function is not a variable"),
-    INVALID_VALUE("Invalid value"),;
+    INVALID_VALUE("Invalid value"),
+    INVALID_BOOLEAN_EXPRESSION("Invalid boolean expression");
 
     //TODO: Add different types of errors,
     final String message;
