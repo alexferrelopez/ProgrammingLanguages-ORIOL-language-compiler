@@ -3,7 +3,7 @@ package frontEnd.intermediateCode;
 import java.util.List;
 
 public class TACModule {
-    private List<String> instructions;  // Store all the instructions
+    private List<TACInstruction> instructions;  // Store all the instructions
     private int labelCounter;           // Create unique labels for if, while, and for statements (L0, L1, L2, ...)
     private int tempVarCounter;         // Create unique temporary variables (t0, t1, t2, ...)
 
@@ -13,7 +13,7 @@ public class TACModule {
      * @param instruction the instruction to add (ex: x = 5)
      */
     public void addInstruction(String instruction) {
-        this.instructions.add(instruction);
+        this.instructions.add(new TACInstruction(instruction));
     }
 
     /**
@@ -22,7 +22,7 @@ public class TACModule {
      * @param operand the operand of the operation (ex: b + a)
      */
     public void addUnaryInstruction(String result, String operand) {
-        this.instructions.add(result + " = " + operand);
+        this.instructions.add(new TACInstruction(result, operand));
     }
 
 
@@ -34,7 +34,7 @@ public class TACModule {
      * @param operand2 the second operand of the operation
      */
     public void addBinaryInstruction(String result, String operator, String operand1, String operand2) {
-        this.instructions.add(result + " = " + operand1 + " " + operator + " " + operand2);
+        this.instructions.add(new TACInstruction(result, operator, operand1, operand2));
     }
 
     /**
@@ -46,7 +46,7 @@ public class TACModule {
      */
     public String addBinaryInstruction(String operator, String operand1, String operand2) {
         String tempResult = getNextTempVar();
-        this.instructions.add(tempResult + " = " + operand1 + " " + operator + " " + operand2);
+        this.instructions.add(new TACInstruction(tempResult, operator, operand1, operand2));
         return tempResult;
     }
 
@@ -63,7 +63,7 @@ public class TACModule {
      * @param label the label to add
      */
     public void addLabel(String label) {
-        this.instructions.add(label + ":");
+        this.instructions.add(new TACInstruction(label + ":"));
     }
 
 
@@ -82,10 +82,9 @@ public class TACModule {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (String instr : instructions) {
-            builder.append(instr).append("\n");
+        for (TACInstruction instruction : instructions) {
+            builder.append(instruction).append("\n");
         }
         return builder.toString();
     }
-
 }

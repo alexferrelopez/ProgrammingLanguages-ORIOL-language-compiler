@@ -24,19 +24,18 @@ public class TACGenerator {
         this.tacModule = tacModule;
     }
 
-    public void generateCode(ArrayList<Token> tokens) {
+    public void generateCode(Tree<Token> tree) {
         // We get an arraylist of tokens from the semantic analyzer
         // This arraylist of tokens represents one line of code
         // The possible first tokens are: data types, reserved words (like: if, while, for, do, return), and variables
         // We need to see if the line of code is an assignment, an if statement, a while statement, etc.
 
-        Token token = tokens.get(0);
 
         // Handle unknown token type
         if (token.getType().equals(INTEGER) || token.getType().equals(FLOAT) || token.getType().equals(BOOLEAN) || token.getType().equals(CHAR) || token.getType().equals(STRING) || token.getType().equals(VOID)) {
             // Handle data type declaration
 
-        } else if (token.getType().equals(VARIABLE)) {
+        } else if (tree.getNode().getType().equals(VARIABLE)) {
             // Handle assignment
             handleAssignment(token, tokens);
 

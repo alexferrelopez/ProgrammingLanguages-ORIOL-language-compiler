@@ -33,6 +33,13 @@ public class TACInstruction {
         this.operand2 = null;
     }
 
+    public TACInstruction(String result) {
+        this.result = result;
+        this.operator = "=";  // Asignación por defecto
+        this.operand1 = null;
+        this.operand2 = null;
+    }
+
     /**
      * Method to generate and return all the accumulated TAC code as a String
      * @return the operator

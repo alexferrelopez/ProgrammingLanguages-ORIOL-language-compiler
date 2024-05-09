@@ -2,10 +2,12 @@ import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
+import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.sintaxis.RecursiveDescentLLParser;
 import frontEnd.sintaxis.SyntacticAnalyzerInterface;
+import frontEnd.intermediateCode.TACGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class Compiler implements CompilerInterface {
         // Code Analysis
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
+
 
         // ---- BACK END ---- //
     }
