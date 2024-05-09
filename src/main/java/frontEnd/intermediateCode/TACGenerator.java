@@ -30,7 +30,7 @@ public class TACGenerator {
         // The possible first tokens are: data types, reserved words (like: if, while, for, do, return), and variables
         // We need to see if the line of code is an assignment, an if statement, a while statement, etc.
 
-
+/*
         // Handle unknown token type
         if (token.getType().equals(INTEGER) || token.getType().equals(FLOAT) || token.getType().equals(BOOLEAN) || token.getType().equals(CHAR) || token.getType().equals(STRING) || token.getType().equals(VOID)) {
             // Handle data type declaration
@@ -56,13 +56,12 @@ public class TACGenerator {
             // Handle unknown token type
             // ***** Must not reach this point *****
         }
-
+*/
     }
 
     private void handleAssignment(Token token, ArrayList<Token> tokens) {
         String variableName = token.getLexeme();
         // We call again the generateCode method to handle the right side of the assignment (he have to skip the variable name and the equal sign)
-        generateCode(new ArrayList<>(tokens.subList(2, tokens.size())));
 
     }
 }
