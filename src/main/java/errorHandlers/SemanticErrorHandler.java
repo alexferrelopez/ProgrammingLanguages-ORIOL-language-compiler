@@ -13,7 +13,21 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
     @Override
     public String reportError(SemanticErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {
         addError();
-        return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Semantic error no.").append(this.getErrorCount());
+
+        if (optionalLine != null) sb.append(" at line ").append(optionalLine);
+        if (optionalColumn != null) sb.append(", column ").append(optionalColumn);
+
+        sb.append(":\n");
+        sb.append("\t").append(errorType.getMessage()).append(": ").append(word);
+
+        String message = sb.toString();
+
+        Report<MessageType> report = new Report<>(errorType, optionalLine, optionalColumn, word, sb.toString());
+        addReport(report);
+
+        return message;
     }
 
     /**
@@ -24,4 +38,11 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
         addWarning();
         return "";
     }
+
+    /*
+    public static void main(String[] args) {
+        SemanticErrorHandler lexicalErrorHandler = new SemanticErrorHandler();
+        System.out.println(lexicalErrorHandler.reportError(SemanticErrorType.NON_MATCHING_TYPE, 1, 3, "hello"));
+    }
+     */
 }

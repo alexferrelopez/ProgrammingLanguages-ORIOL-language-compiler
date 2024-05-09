@@ -1,34 +1,33 @@
 package errorHandlers;
 
-import errorHandlers.errorTypes.ParserErrorType;
+import errorHandlers.errorTypes.SyntacticErrorType;
 import errorHandlers.warningTypes.ParserWarningType;
 
 /**
- * Error handler for the parser, extends error enums to give accurate error and warning messages.
+ * Error handler for the parser/syntactic analyzer, extends error enums to give accurate error and warning messages.
  */
-public class SyntacticErrorHandler extends AbstractErrorHandler<ParserErrorType, ParserWarningType> {
+public class SyntacticErrorHandler extends AbstractErrorHandler<SyntacticErrorType, ParserWarningType> {
     /**
      * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
-    public String reportError(ParserErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {
+    public String reportError(SyntacticErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {
         addError();
-        /*
-        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-        levenshteinDistance.apply("a", "b");
-        levenshteinDistance.getThreshold();
-        */
         StringBuilder sb = new StringBuilder();
-        sb.append("Lexical error no.").append(this.getErrorCount());
+        sb.append("Syntactic error no.").append(this.getErrorCount());
 
         if (optionalLine != null) sb.append(" at line ").append(optionalLine);
         if (optionalColumn != null) sb.append(", column ").append(optionalColumn);
 
         sb.append(":\n");
+        sb.append("\t").append(errorType.getMessage()).append(": ").append(word);
 
-        //TODO
+        String message = sb.toString();
 
-        return "";
+        Report<MessageType> report = new Report<>(errorType, optionalLine, optionalColumn, word, sb.toString());
+        addReport(report);
+
+        return message;
     }
 
     /**
@@ -39,4 +38,11 @@ public class SyntacticErrorHandler extends AbstractErrorHandler<ParserErrorType,
         addWarning();
         return "";
     }
+
+    /*
+    public static void main(String[] args) {
+        SyntacticErrorHandler lexicalErrorHandler = new SyntacticErrorHandler();
+        System.out.println(lexicalErrorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, 1, 3, "hello"));
+    }
+    */
 }

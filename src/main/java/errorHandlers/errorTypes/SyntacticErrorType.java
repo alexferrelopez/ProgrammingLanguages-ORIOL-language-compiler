@@ -3,7 +3,7 @@ package errorHandlers.errorTypes;
 /**
  * Enum for parser errors
  */
-public enum ParserErrorType implements ErrorType {
+public enum SyntacticErrorType implements ErrorType {
     //TODO: Add different types of parsing errors
     UNEXPECTED_TOKEN_ERROR(""),
     MISSING_TOKEN_ERROR(""),
@@ -13,7 +13,7 @@ public enum ParserErrorType implements ErrorType {
 
     final String message;
 
-    ParserErrorType(String message) {
+    SyntacticErrorType(String message) {
         this.message = message;
     }
 
