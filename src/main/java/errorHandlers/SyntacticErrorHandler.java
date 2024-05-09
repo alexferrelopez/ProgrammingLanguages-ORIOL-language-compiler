@@ -14,7 +14,7 @@ public class SyntacticErrorHandler extends AbstractErrorHandler<SyntacticErrorTy
      * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
-    public String reportError(SyntacticErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {
+    public String reportError(SyntacticErrorType errorType, @Nullable Integer optionalLine, @Nullable Integer optionalColumn, String word) {
         addError();
         StringBuilder sb = new StringBuilder();
         sb.append("Syntactic error no.").append(this.getErrorCount());

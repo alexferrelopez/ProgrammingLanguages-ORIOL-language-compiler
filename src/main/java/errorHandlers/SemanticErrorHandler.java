@@ -14,7 +14,7 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
      * See parent class: @{@link AbstractErrorHandler}.
      */
     @Override
-    public String reportError(SemanticErrorType errorType, Integer optionalLine, Integer optionalColumn, String word) {
+    public String reportError(SemanticErrorType errorType, @Nullable Integer optionalLine, @Nullable Integer optionalColumn, String word) {
         addError();
         StringBuilder sb = new StringBuilder();
         sb.append("Semantic error no.").append(this.getErrorCount());
