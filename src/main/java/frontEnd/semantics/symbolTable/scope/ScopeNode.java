@@ -86,4 +86,7 @@ public class ScopeNode {
 	public ScopeNode getParent() {
 		return parent;
 	}
+	public Map<String, Symbol<?>> getSymbols() {
+		return symbols;
+	}
 }

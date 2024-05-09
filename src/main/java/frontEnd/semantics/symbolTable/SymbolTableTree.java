@@ -82,4 +82,7 @@ public class SymbolTableTree implements SymbolTableInterface {
 		currentScope = parent;
 	}
 
+	public ScopeNode getCurrentScope() {
+		return currentScope;
+	}
 }
