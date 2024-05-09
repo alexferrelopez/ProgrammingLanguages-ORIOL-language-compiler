@@ -75,4 +75,11 @@ public class SymbolTableTree implements SymbolTableInterface {
 		return currentScopeLevel;
 	}
 
+	@Override
+	public void leaveCurrentScope() {
+		currentScopeLevel--;
+		ScopeNode parent = currentScope.getParent();
+		currentScope = parent;
+	}
+
 }

@@ -81,4 +81,9 @@ public class ScopeNode {
 	public List<ScopeNode> getChildren() {
 		return children;
 	}
+
+
+	public ScopeNode getParent() {
+		return parent;
+	}
 }

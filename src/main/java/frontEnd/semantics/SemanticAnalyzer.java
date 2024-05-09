@@ -67,7 +67,7 @@ public class SemanticAnalyzer {
                 if(isOpenFunction(tree)){
                     symbolTable.addScope(ScopeType.FUNCTION);
                 }else{
-                    //TODO: Sortir del scope de funció i pujar un nivell
+                    symbolTable.leaveCurrentScope();
                 }
                 //findReturn(tree);
                 break;

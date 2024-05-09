@@ -32,4 +32,9 @@ public interface SymbolTableInterface {
      * Get the current scope level
      */
     int getCurrentScopeLevel();
+
+    /**
+     *
+     */
+    void leaveCurrentScope();
 }
