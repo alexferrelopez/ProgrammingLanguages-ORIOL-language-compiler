@@ -2,12 +2,15 @@ import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
+import frontEnd.intermediateCode.TACGenerator;
 import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.sintaxis.RecursiveDescentLLParser;
 import frontEnd.sintaxis.SyntacticAnalyzerInterface;
-import frontEnd.intermediateCode.TACGenerator;
+import frontEnd.sintaxis.Tree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +18,13 @@ import java.util.List;
 public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
+    private final TACGenerator tacGenerator;
     private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
 
-        // Error Handlers
+        // *** Error Handlers ***
         LexicalErrorHandler lexicalErrorHandler = new LexicalErrorHandler();
         SyntacticErrorHandler syntacticErrorHandler = new SyntacticErrorHandler();
         SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler();
@@ -30,10 +34,21 @@ public class Compiler implements CompilerInterface {
         this.errorHandlerList.add(syntacticErrorHandler);
         this.errorHandlerList.add(semanticErrorHandler);
 
-        // Code Analysis
+        // *** Code Analysis ***
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
+        // *** Intermediate Code *** //
+        Tree<AbstractSymbol> tree = parser.getTree();    // Get tree from parser
+
+        // Print the tree for debugging
+        parser.printTree(tree);
+
+        TACModule tacModule = new TACModule();
+        this.tacGenerator = new TACGenerator(tacModule);
+
+        // Generate the intermediate code
+        this.tacGenerator.generateCode(tree);
 
         // ---- BACK END ---- //
     }
