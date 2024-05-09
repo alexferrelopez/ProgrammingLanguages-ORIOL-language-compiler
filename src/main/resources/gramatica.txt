@@ -40,11 +40,11 @@
 <log_4> ::= PO <log_1> PT | <log_5>
 <log_5> ::= <arit_1>
 <arit_1> ::= <arit_2> <arit_1'>
-<arit_1'> ::= SUM <arit_2> <arit_1'> | SUB <arit_2> <arit_1'> | ε
+<arit_1'> ::= SUM <arit_5> | SUB <arit_5> | ε
 <arit_2> ::= <arit_3> <arit_2'>
-<arit_2'> ::= DIV <arit_3> <arit_2'> | MUL <arit_3> <arit_2'> | MOD <arit_3> <arit_2'> | ε
+<arit_2'> ::= DIV <arit_5> | MUL <arit_5> | MOD <arit_5> | ε
 <arit_3> ::= <arit_4> <arit_3'>
-<arit_3'> ::= POW <arit_4> | ε
+<arit_3'> ::= POW <arit_5> | ε
 <arit_4> ::= PO <arit_1> PT | <arit_5>
 <arit_5> ::= <rela_1>
 <rela_1> ::= <rela_2> <rela_1'>
