@@ -2,7 +2,7 @@ miau : ranch ( ) {
     miau a is 1 ;
     miau b is 2 ;
     a is cridaFunc(hola);
-    miau c is a sum b ;
+    miau c is a sum b minus 1 times b ;
     oink d is c minus 1 ;
     miau e is d times 2 ;
     oink f is e div 2 ;

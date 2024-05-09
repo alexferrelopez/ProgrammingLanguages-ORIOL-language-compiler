@@ -50,9 +50,11 @@ public final class PrettyPrintTree<Node> {
                 TerminalSymbol terminalSymbol = (TerminalSymbol) symbol;
 
                 // Do not print lexeme if it's EPSILON.
-                /*if (!terminalSymbol.isEpsilon()) {
-                    return (nodeValue + "\n" + terminalSymbol.getToken().getLexeme());
-                }*/
+                if (!terminalSymbol.isEpsilon()) {
+                    if (terminalSymbol.getToken() != null) {
+                        return (nodeValue + "\n" + terminalSymbol.getToken().getLexeme());
+                    }
+                }
             }
             return nodeValue;
         };
