@@ -6,6 +6,7 @@ import frontEnd.exceptions.InvalidFileException;
 import frontEnd.exceptions.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
+import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.*;
@@ -16,6 +17,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private final LexicalAnalyzerInterface lexicalAnalyzer;
     private final SyntacticErrorHandler errorHandler;
 
+    private final SemanticAnalyzer semanticAnalyzer;
+
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
@@ -23,9 +26,10 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private String[] startTokens = new String[]{"program", "func_decl", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
-    public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler) {
+    public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzer semanticAnalyzer) {
         this.lexicalAnalyzer = lexicalAnalyzer;
         this.errorHandler = parserErrorHandler;
+        this.semanticAnalyzer = semanticAnalyzer;
     }
 
     /**
@@ -52,7 +56,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         try {
             lexicalAnalyzer.startLexicalAnalysis();
             lookahead = lexicalAnalyzer.getNextToken();
-            System.out.println("Stack: " + stack);
+            //System.out.println("Stack: " + stack);
             while (!stack.empty()) {
                 AbstractSymbol symbol = stack.pop();
                 if (symbol.isTerminal()) { //If the symbol is a terminal we have to match it with the lookahead
@@ -108,7 +112,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         }
                     }
                 }
-                System.out.println("Stack: " + stack);
+                //System.out.println("Stack: " + stack);
             }
 
         } catch (InvalidFileException | InvalidTokenException invalidFile) {
@@ -127,10 +131,10 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
      */
     private void match(TerminalSymbol terminal) {
         if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
-            System.out.println("MATCH: " + terminal.getName());
+            //System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
             if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
-                System.out.println("\n\n-----------------TREE-----------------");
+                //System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStck.pop();
@@ -142,12 +146,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = parent.getParent();
                     nodeName = (parent.getNode()).getName();
                 }
-                if(terminal.getName().equals("CT")){
+                /*if(terminal.getName().equals("CT")){
                     parent = new Tree<>(terminal);
-                }
-                printTree(parent);//TODO send this tree to the semantical analyzer
-                System.out.println();
-                //SemanticAnalyzer.sendTree(parent);
+                }*/
+                //printTree(parent);//TODO send this tree to the semantical analyzer
+                semanticAnalyzer.sendTree(parent);
             }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();

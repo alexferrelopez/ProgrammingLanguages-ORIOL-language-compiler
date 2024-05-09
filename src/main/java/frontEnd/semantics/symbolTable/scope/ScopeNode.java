@@ -14,10 +14,10 @@ public class ScopeNode {
 	private final Map<String, Symbol<?>> symbols; 				// List of symbols in the scopes (key = symbol name, value = symbol).
 	private final ScopeType scopeType;
 
-	public ScopeNode(int scopeLevel, ScopeType scopeType) {
+	public ScopeNode(int scopeLevel, ScopeType scopeType, ScopeNode parent) {
 		this.symbols = new HashMap<>();
 		this.scopeLevel = scopeLevel;
-		this.parent = null;
+		this.parent = parent;
 		this.scopeType = scopeType;
 	}
 

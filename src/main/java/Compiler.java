@@ -4,6 +4,8 @@ import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
+import frontEnd.semantics.SemanticAnalyzer;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.sintaxis.RecursiveDescentLLParser;
 import frontEnd.sintaxis.SyntacticAnalyzerInterface;
 
@@ -22,6 +24,8 @@ public class Compiler implements CompilerInterface {
         LexicalErrorHandler lexicalErrorHandler = new LexicalErrorHandler();
         SyntacticErrorHandler syntacticErrorHandler = new SyntacticErrorHandler();
         SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler();
+        SymbolTableTree symbolTable = new SymbolTableTree();
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(semanticErrorHandler, symbolTable);
 
         this.errorHandlerList = new ArrayList<>();
         this.errorHandlerList.add(lexicalErrorHandler);
@@ -30,7 +34,7 @@ public class Compiler implements CompilerInterface {
 
         // Code Analysis
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
-        this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
+        this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
     }

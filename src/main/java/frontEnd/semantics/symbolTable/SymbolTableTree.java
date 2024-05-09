@@ -12,7 +12,7 @@ public class SymbolTableTree implements SymbolTableInterface {
 	private final static int ROOT_LEVEL = 0;
 
 	public SymbolTableTree() {
-		this.root = new ScopeNode(ROOT_LEVEL, ROOT_SCOPE);
+		this.root = new ScopeNode(ROOT_LEVEL, ROOT_SCOPE, null);
 		this.currentScopeLevel = ROOT_LEVEL;
 		this.currentScope = root;
 	}
@@ -21,10 +21,11 @@ public class SymbolTableTree implements SymbolTableInterface {
 	 * Add a scope to the tree
 	 */
 	@Override
-	public void addScope(ScopeNode scopeNode) {
+	public void addScope(ScopeType scopeType) {
+		currentScopeLevel++;
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType, currentScope);
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
-		currentScopeLevel++;
 	}
 
 	/**
