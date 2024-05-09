@@ -21,21 +21,10 @@ public class TACInstruction {
         this.operand2 = operand2;
     }
 
-    /**
-     * Constructor for unary operations
-     * @param result Result of the operation
-     * @param operand1 Operand of the operation
-     */
-    public TACInstruction(String result, String operand1) {
-        this.result = result;
-        this.operand1 = operand1;
-        this.operator = "=";  // Asignación por defecto
-        this.operand2 = null;
-    }
-
-    public TACInstruction(String result) {
-        this.result = result;
-        this.operator = "=";  // Asignación por defecto
+    // For if, while, for, do-while, etc.
+    public TACInstruction(String label, String operator) {
+        this.result = label;
+        this.operator = operator;
         this.operand1 = null;
         this.operand2 = null;
     }
