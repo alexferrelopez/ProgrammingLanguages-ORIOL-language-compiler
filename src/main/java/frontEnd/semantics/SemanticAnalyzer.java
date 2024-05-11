@@ -219,9 +219,11 @@ public class SemanticAnalyzer {
     }
 
     private void checkValidBooleanExpression(List<Token> expressionTokens) throws InvalidAssignmentException {
-        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
-        List<TokenType> validTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
+        checkLogicalExpression(expressionTokens);
+        checkRelationalExpression(expressionTokens);
+    }
 
+    private void validateLogicalRelationalTokens(List<Token> expressionTokens, List<TokenType> validTokens) throws InvalidAssignmentException {
         boolean validExpression = true;
         for (Token token : expressionTokens) {
             if (!validTokens.contains(token.getType())) {
@@ -235,6 +237,18 @@ public class SemanticAnalyzer {
                 }
             }
         }
+
+        // Check if the expression is valid
+        if (!validExpression) {
+            throw new InvalidAssignmentException(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
+        }
+    }
+
+    private void checkRelationalExpression(List<Token> relationalTokens) throws InvalidAssignmentException {
+        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
+        List<TokenType> validRelationalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ);
+        validateLogicalRelationalTokens(relationalTokens, validRelationalTokens);
+    }
 
         // Check if the expression is valid
         if (!validExpression) {
