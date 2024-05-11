@@ -6,12 +6,19 @@ miau: fibonacci(miau n) {
         check (n equals 1) {
             poop 1;
         }
+        else {
+            n is n minus 1;
+            miau a is fibonacci(n);
+            n is n minus 1;
+            miau b is fibonacci(n);
+
+            miau result is a sum b;
+            poop result;
+        }
     }
 }
 
 miau: ranch() {
-    fibonacci(i);
-
     miau n is 10;
     n is n minus 1;
     feed (miau i is 0 to n, i is i sum 1) {
