@@ -44,10 +44,14 @@ public class SemanticAnalyzer {
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
         switch (tree.getNode().toString()) {
             case "declaration":
-                break;
-            case "assignation":
-                checkAssignationSemantics(tokens);
-                //generateAddressAssignation()
+                // Check if it's an assignment or a declaration
+                if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
+                    // Declaration
+                }
+                else {
+                    // Assignment
+                    checkAssignationSemantics(tokens);
+                }
                 break;
             // ...
         }
