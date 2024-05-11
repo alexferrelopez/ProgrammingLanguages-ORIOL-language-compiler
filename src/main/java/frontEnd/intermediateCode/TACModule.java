@@ -34,9 +34,10 @@ public class TACModule {
         this.instructions.add(new TACInstruction(label, "label"));
     }
 
-    public void addConditionalJump(String condition, String label) {
-        this.instructions.add(new TACInstruction("if " + condition + " goto", label, null, null));
+    public void addConditionalJump(String condition, String targetLabel) {
+        this.instructions.add(new TACInstruction(targetLabel, "goto", condition , null));
     }
+
 
     public void addUnconditionalJump(String label) {
         this.instructions.add(new TACInstruction("goto", label, null, null));

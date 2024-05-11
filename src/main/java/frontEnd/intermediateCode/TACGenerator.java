@@ -86,6 +86,25 @@ public class TACGenerator {
         }
     }
 
+    private void handleFunctionCall(Tree<AbstractSymbol> tree, String functionName) {
+        // We have '(', <func_params>, ')'
+        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
+
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        // Get the parameters
+        List<String> parameters = new ArrayList<>();
+        for (Tree<AbstractSymbol> leafNode : leafNodes) {
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNode.getNode();
+            if (!terminalSymbol.getToken().getLexeme().equals(",") && !terminalSymbol.getToken().getLexeme().equals("(") && !terminalSymbol.getToken().getLexeme().equals(")") ){
+                parameters.add(terminalSymbol.getToken().getLexeme());
+            }
+        }
+
+        tacModule.addUnaryInstruction(functionName, "call", parameters.toString());
+    }
+
     private void handleReturn(Tree<AbstractSymbol> tree) {
         // We have RETURN, <return_stmt'>, ';'
         Tree<AbstractSymbol> return_stmt = tree.getChildren().get(1);
@@ -94,7 +113,7 @@ public class TACGenerator {
 
         if (leafNodes.size() == 1 && ((TerminalSymbol) leafNodes.get(0).getNode()).isEpsilon()) {
             // Return statement without a return value
-            tacModule.addUnaryInstruction( null, "poop",null);
+            tacModule.addUnaryInstruction(null, "poop", null);
             return;
         }
 
@@ -137,15 +156,16 @@ public class TACGenerator {
     }
 
 
-
     private void handleWhile(Tree<AbstractSymbol> tree) {
         // Similar a handleIf, pero adaptado para bucles 'while'
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
         // Check if it's a function call or a simple assignment
-        if (tree.getChildren().get(1).getChildren().get(0).getNode().getName().equals("func_call")) {
+        if (tree.getChildren().get(1).getChildren().get(0).getNode().getName().equals("func_call'")) {
             // Handle function call
+            String functionName = ((TerminalSymbol) tree.getChildren().get(0).getNode()).getToken().getLexeme();
+            handleFunctionCall(tree.getChildren().get(1).getChildren().get(0), functionName);
             return;
         }
         Expression expr = generateExpressionCode(tree);
