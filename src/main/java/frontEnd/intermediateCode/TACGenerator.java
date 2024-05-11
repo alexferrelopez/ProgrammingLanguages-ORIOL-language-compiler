@@ -23,20 +23,20 @@ public class TACGenerator {
         // Si es un nodo no terminal, procesar basado en el tipo
         if (!symbol.isTerminal()) {
             switch (symbol.getName()) {
-                case "if":
+                case "condition":
                     handleIf(tree);
-                    break;
+                    return;  // Evita procesamiento adicional de los hijos
                 case "while":
                     handleWhile(tree);
-                    break;
+                    return;  // Evita procesamiento adicional de los hijos
                 case "assignation":
                     handleAssignment(tree);
+                    break;  // Asumimos que handleAssignment no procesa completamente todos los hijos
+                case "func_params":
+                    // Manejar los parámetros de una función
                     break;
-                // Agregar más casos según sea necesario
+                // otros casos...
             }
-        } else {
-            // Si es un nodo terminal y necesita procesamiento especial (como 'if', 'while')
-            handleTerminal(symbol);
         }
 
         // Procesar recursivamente todos los hijos del nodo actual
@@ -45,34 +45,43 @@ public class TACGenerator {
         }
     }
 
-    private void handleTerminal(AbstractSymbol symbol) {
-        // Aquí manejas los terminales que puedan influir en el control de flujo o similares
-        if (symbol.getName().equals("FOR") || symbol.getName().equals("IF") || symbol.getName().equals("WHILE")) {
-            // Si son parte de estructuras de control, podrías querer manejar los saltos o inicios de bucles aquí
-        }
-    }
 
 
     private void handleIf(Tree<AbstractSymbol> tree) {
-        // Suposición: El primer hijo es la condición, el segundo es el bloque 'then', el tercero (opcional) el 'else'
-        String conditionResult = generateExpressionCode(tree.getChildren().get(0));
+        // Condition expression
+        Tree<AbstractSymbol> condition_expr = tree.getChildren().get(1);
+
+        // Get expr_bool
+        Tree<AbstractSymbol> expr_bool = condition_expr.getChildren().get(1);
+
+        // Use generateExpressionCode
+        Expression expr = generateExpressionCode(expr_bool);
+
+        String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
+
         String labelTrue = tacModule.createLabel();
         String labelFalse = tacModule.createLabel();
         String labelEnd = tacModule.createLabel();
 
-        tacModule.addConditionalJump(conditionResult, labelTrue);
+        // Add conditional jump
+        tacModule.addConditionalJump(tempVar, labelTrue);
         tacModule.addUnconditionalJump(labelFalse);
 
+        // Handle 'then' block
         tacModule.addLabel(labelTrue);
-        generateCode(tree.getChildren().get(1)); // Código del bloque 'then'
-        tacModule.addUnconditionalJump(labelEnd);
+        generateCode(tree.getChildren().get(2)); // Asumiendo que el bloque 'then' es el tercer hijo
+        tacModule.addUnconditionalJump(labelEnd); // Salto al final después del bloque 'then'
 
+        // Handle 'else' block
         tacModule.addLabel(labelFalse);
-        if (tree.getChildren().size() > 2) {
-            generateCode(tree.getChildren().get(2)); // Código del bloque 'else'
+        if (tree.getChildren().size() > 3) {
+            generateCode(tree.getChildren().get(3)); // Asumiendo que el bloque 'else' es el cuarto hijo
         }
+
+        // Label del final del bloque 'if'
         tacModule.addLabel(labelEnd);
     }
+
 
     private void handleWhile(Tree<AbstractSymbol> tree) {
         // Similar a handleIf, pero adaptado para bucles 'while'
@@ -94,20 +103,6 @@ public class TACGenerator {
         tacModule.addUnaryInstruction(lhs, "=", rhs);
     }
 
-    private String generateExpressionCode(Tree<AbstractSymbol> node) {
-        // Aquí manejas la generación de código para las expresiones aritméticas
-        if (node.getChildren().isEmpty()) { // Es un nodo hoja, posiblemente un número o variable directa
-            return node.getNode().getName();
-        } else {
-            // Recursivamente maneja los operadores y operandos
-            String leftOperand = generateExpressionCode(node.getChildren().get(0));
-            String operator = node.getNode().getName(); // El operador está en el nodo actual
-            String rightOperand = generateExpressionCode(node.getChildren().get(1));
-            String tempVar = tacModule.addBinaryInstruction(operator, leftOperand, rightOperand);
-            return tempVar;
-        }
-    }
-
     // Handle declaration if an assignation is present
     private void handleDeclaration(Tree<AbstractSymbol> tree) {
         Tree<AbstractSymbol> assignationNode = tree.getChildren().get(1);
@@ -121,5 +116,20 @@ public class TACGenerator {
     public void printTAC() {
         System.out.println("Generated TAC Code:");
         tacModule.printInstructions();
+    }
+
+    private Expression generateExpressionCode(Tree<AbstractSymbol> expr_bool) {
+        List<Tree<AbstractSymbol>> leafNodes = expr_bool.getLeafNodes(expr_bool);
+
+        TerminalSymbol operatorSymbol = (TerminalSymbol) leafNodes.get(1).getNode();
+        String operator = operatorSymbol.getToken().getLexeme();
+
+        TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+        String leftOperand = leftOperandSymbol.getToken().getLexeme();
+
+        TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
+        String rightOperand = rightOperandSymbol.getToken().getLexeme();
+
+        return new Expression(leftOperand, operator, rightOperand);
     }
 }
