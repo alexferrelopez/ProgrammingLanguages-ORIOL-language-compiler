@@ -47,6 +47,7 @@ public class SemanticAnalyzer {
                 // Check if it's an assignment or a declaration
                 if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
                     // Declaration
+                    checkDeclaration(tokens);
                 }
                 else {
                     // Assignment
@@ -271,16 +272,17 @@ public class SemanticAnalyzer {
 
     /**
      * Function to check if a symbol is declared in the current scope.
-     * @param symbol the symbol to check.
      */
-    public void checkDeclaration(Symbol symbol) {
-        // Check if the symbol can be declared in the scope
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
+    public void checkDeclaration(List<Token> declarationTokens) {
+        // DECLARATION = DATA_TYPE VARIABLE IS <VALUE> PUNT_COMMA;
+        Token variableDatatype = declarationTokens.get(0);
+        Token variable = declarationTokens.get(1);
+
+        // Check if the symbol is already declared in the scope.
+        if (symbolTable.containsSymbol(variable.getLexeme())) {
+            errorHandler.reportError(SemanticErrorType.DUPLICATE_SYMBOL_DECLARATION, variable.getLine(), variable.getColumn(), SemanticErrorType.DUPLICATE_SYMBOL_DECLARATION.getMessage());
+            return;
+        }
     }
 
 
