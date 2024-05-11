@@ -92,7 +92,7 @@ public class SemanticAnalyzer {
 		return true;
 	}
 
-    public void checkAssignationSemantics(List<Token> assignationTokens, @Nullable Symbol<?> assignedSymbol) throws InvalidAssignmentException {
+	private void checkAssignationSemantics(List<Token> assignationTokens, @Nullable Symbol<?> assignedSymbol) throws InvalidAssignmentException {
 		// Expected format: VARIABLE IS <value> PUNT_COMMA
 		Token variableName = assignationTokens.get(0);
 
@@ -298,7 +298,7 @@ public class SemanticAnalyzer {
 	/**
 	 * Function to check if a symbol is declared in the current scope.
 	 */
-	public void checkDeclaration(List<Token> declarationTokens) {
+	private void checkDeclaration(List<Token> declarationTokens) {
 		// DECLARATION = DATA_TYPE VARIABLE IS <VALUE> PUNT_COMMA;
 		Token variableDatatype = declarationTokens.get(0);
 		Token variable = declarationTokens.get(1);
@@ -326,7 +326,7 @@ public class SemanticAnalyzer {
 	}
 
 
-	public void checkTypeCompatibility(Symbol symbol) {
+	private void checkTypeCompatibility(Symbol symbol) {
 		// Check if the symbol is compatible with the type of the current scope
 	/*
 	if (symbolTable.currentScope().contains(symbol.getName())) {
@@ -340,7 +340,7 @@ public class SemanticAnalyzer {
 	 * Function to check if a function is called correctly.
 	 * @param symbol the symbol to check.
 	 */
-	public void checkFunctionCall(Symbol symbol) {
+	private void checkFunctionCall(Symbol symbol) {
 		// Check if the function is called correctly
 	/*
 	if (symbolTable.currentScope().contains(symbol.getName())) {
