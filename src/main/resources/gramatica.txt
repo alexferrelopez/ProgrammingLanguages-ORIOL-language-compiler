@@ -1,6 +1,6 @@
 <A> ::= <funcs>
-<funcs> ::= <func_type> <func_decl> <funcs> | ε
-<func_type> ::= <data_type> DOS_PUNTS
+<funcs> ::= <func_type>  <funcs> | ε
+<func_type> ::= <data_type> DOS_PUNTS <func_decl>
 <program> ::= MAIN <func_struct>
 <func_decl> ::= <program> | <func_decl'>
 <func_decl'> ::= VARIABLE <func_struct>
