@@ -20,7 +20,6 @@ public class TACGenerator {
 
         AbstractSymbol symbol = tree.getNode();
 
-        // Si es un nodo no terminal, procesar basado en el tipo
         if (!symbol.isTerminal()) {
             switch (symbol.getName()) {
                 case "condition":
@@ -35,7 +34,10 @@ public class TACGenerator {
                 case "func_params":
                     // Manejar los parámetros de una función
                     break;
-                // otros casos...
+                case "return_stmt":
+                    // Manejar la sentencia 'return'
+                    handleReturn(tree);
+                    break;
             }
         }
 
@@ -45,6 +47,21 @@ public class TACGenerator {
         }
     }
 
+    private void handleReturn(Tree<AbstractSymbol> tree) {
+        // We have RETURN, <return_stmt'>, ';'
+        Tree<AbstractSymbol> return_stmt = tree.getChildren().get(1);
+
+        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(return_stmt);
+
+        if (leafNodes.size() == 1 && ((TerminalSymbol) leafNodes.get(0).getNode()).isEpsilon()) {
+            // Return statement without a return value
+            tacModule.addUnaryInstruction( null, "poop",null);
+            return;
+        }
+
+        TerminalSymbol returnSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+        tacModule.addUnaryInstruction(returnSymbol.getToken().getLexeme(), "poop", null);
+    }
 
 
     private void handleIf(Tree<AbstractSymbol> tree) {
@@ -87,8 +104,11 @@ public class TACGenerator {
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
-        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
-
+        // Check if it's a function call or a simple assignment
+        if (tree.getChildren().get(1).getChildren().get(0).getNode().getName().equals("func_call")) {
+            // Handle function call
+            return;
+        }
         Expression expr = generateExpressionCode(tree);
 
         tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
