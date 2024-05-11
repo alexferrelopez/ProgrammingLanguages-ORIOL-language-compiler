@@ -48,39 +48,37 @@ public class TACGenerator {
 
 
     private void handleIf(Tree<AbstractSymbol> tree) {
-        // Condition expression
-        Tree<AbstractSymbol> condition_expr = tree.getChildren().get(1);
-
-        // Get expr_bool
-        Tree<AbstractSymbol> expr_bool = condition_expr.getChildren().get(1);
-
-        // Use generateExpressionCode
-        Expression expr = generateExpressionCode(expr_bool);
-
+        // Condition
+        Tree<AbstractSymbol> condition_expr = tree.getChildren().get(1).getChildren().get(1); // expr_bool
+        Expression expr = generateExpressionCode(condition_expr);
         String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
 
+        // Labels
         String labelTrue = tacModule.createLabel();
         String labelFalse = tacModule.createLabel();
         String labelEnd = tacModule.createLabel();
 
-        // Add conditional jump
+        // Jump instructions
         tacModule.addConditionalJump(tempVar, labelTrue);
         tacModule.addUnconditionalJump(labelFalse);
 
-        // Handle 'then' block
+        // 'then' block
         tacModule.addLabel(labelTrue);
-        generateCode(tree.getChildren().get(2)); // Asumiendo que el bloque 'then' es el tercer hijo
-        tacModule.addUnconditionalJump(labelEnd); // Salto al final después del bloque 'then'
+        Tree<AbstractSymbol> func_body = tree.getChildren().get(1).getChildren().get(3);
+        generateCode(func_body);
+        tacModule.addUnconditionalJump(labelEnd);
 
-        // Handle 'else' block
+        // 'else' block
         tacModule.addLabel(labelFalse);
+        // Check if there is an else block
         if (tree.getChildren().size() > 3) {
-            generateCode(tree.getChildren().get(3)); // Asumiendo que el bloque 'else' es el cuarto hijo
+            generateCode(tree.getChildren().get(3));
         }
 
-        // Label del final del bloque 'if'
+        // End label for the if statement
         tacModule.addLabel(labelEnd);
     }
+
 
 
     private void handleWhile(Tree<AbstractSymbol> tree) {
