@@ -2,6 +2,7 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import frontEnd.sintaxis.Tree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
 
 public class SemanticAnalyzer {
     private final SemanticErrorHandler errorHandler;
@@ -27,7 +28,7 @@ public class SemanticAnalyzer {
         errorHandler = semanticErrorHandler;
     }
 
-    public static void sendTree(Tree tree) {
+    public static void sendTree(Tree<AbstractSymbol> tree) {
         //TODO implement this method
     }
 }
