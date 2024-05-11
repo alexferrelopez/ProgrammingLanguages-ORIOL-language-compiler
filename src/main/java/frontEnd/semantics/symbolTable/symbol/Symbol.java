@@ -53,7 +53,15 @@ public abstract class Symbol<Type> {
         }
     }
 
+    public long getLineDeclaration() {
+        return lineDeclaration;
+    }
+
     public boolean hasSameName(String otherSymbolName) {
         return this.name.equals((otherSymbolName));
+    }
+
+    public DataType getDataType() {
+        return dataType;
     }
 }

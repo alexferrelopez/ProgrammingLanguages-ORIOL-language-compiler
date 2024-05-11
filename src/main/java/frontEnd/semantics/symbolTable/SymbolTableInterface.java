@@ -1,5 +1,6 @@
 package frontEnd.semantics.symbolTable;
 
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
@@ -9,6 +10,12 @@ public interface SymbolTableInterface {
      * Add a scope to the tree
      */
     void addScope(ScopeType scopeType);
+
+
+    /**
+     * Add a function scope to the tree
+     */
+    void addScope(ScopeType scopeType, DataType returnType);
 
     /**
      * Add a symbol at the current scope of the tree.

@@ -1,5 +1,6 @@
 package frontEnd.semantics.symbolTable;
 
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
@@ -24,6 +25,17 @@ public class SymbolTableTree implements SymbolTableInterface {
 	public void addScope(ScopeType scopeType) {
 		currentScopeLevel++;
 		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType, currentScope);
+		currentScope.addChild(scopeNode);
+		currentScope = scopeNode;
+	}
+
+	/**
+	 * Add a scope to the tree
+	 */
+	@Override
+	public void addScope(ScopeType scopeType, DataType returnType) {
+		currentScopeLevel++;
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType, currentScope, returnType);
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
 	}
