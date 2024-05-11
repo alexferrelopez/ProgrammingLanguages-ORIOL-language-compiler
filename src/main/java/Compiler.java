@@ -58,7 +58,7 @@ public class Compiler implements CompilerInterface {
         tacGenerator = new TACGenerator(tacModule);
 
         // Generate the intermediate code
-        tacGenerator.generateCode(tree);
+        tacGenerator.generateTAC(tree);
 
         tacGenerator.printTAC();
 

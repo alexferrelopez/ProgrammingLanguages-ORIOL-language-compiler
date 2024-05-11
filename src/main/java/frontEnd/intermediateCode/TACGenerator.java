@@ -10,12 +10,51 @@ import java.util.List;
 
 public class TACGenerator {
     private TACModule tacModule;
+    private List<Tree<AbstractSymbol>> funcTreeList;
 
     public TACGenerator(TACModule tacModule) {
         this.tacModule = tacModule;
     }
 
-    public void generateCode(Tree<AbstractSymbol> tree) {
+    public void generateTAC(Tree<AbstractSymbol> tree) {
+        // Get the program node
+        Tree<AbstractSymbol> program = getProgramNode(tree);
+        this.funcTreeList = getFunctionNodes(tree);
+        // Remove the last element of the list, which is the program node
+        this.funcTreeList.remove(this.funcTreeList.size() - 1);
+        generateCode(program);
+    }
+
+    private List<Tree<AbstractSymbol>> getFunctionNodes(Tree<AbstractSymbol> tree) {
+        List<Tree<AbstractSymbol>> functionNodes = new ArrayList<>();
+
+        if (tree.getNode() instanceof NonTerminalSymbol && tree.getNode().getName().equals("func_type")) {
+            functionNodes.add(tree);
+        }
+
+        for (Tree<AbstractSymbol> child : tree.getChildren()) {
+            functionNodes.addAll(getFunctionNodes(child));
+        }
+
+        return functionNodes;
+    }
+
+    private Tree<AbstractSymbol> getProgramNode(Tree<AbstractSymbol> tree) {
+        if (tree.getNode() instanceof NonTerminalSymbol && tree.getNode().getName().equals("program")) {
+            return tree;
+        }
+
+        for (Tree<AbstractSymbol> child : tree.getChildren()) {
+            Tree<AbstractSymbol> programNode = getProgramNode(child);
+            if (programNode != null) {
+                return programNode;
+            }
+        }
+
+        return null;
+    }
+
+    private void generateCode(Tree<AbstractSymbol> tree) {
         if (tree == null || tree.getNode() == null) return;
 
         AbstractSymbol symbol = tree.getNode();
