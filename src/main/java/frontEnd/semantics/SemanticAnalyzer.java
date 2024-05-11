@@ -67,7 +67,6 @@ public class SemanticAnalyzer {
     public void checkAssignationSemantics(List<Token> assignationTokens) {
         // Expected format: VARIABLE IS <value> PUNT_COMMA
         Token variableName = assignationTokens.get(0);
-        Token value = assignationTokens.get(2);
 
         // Check if the current symbol exists.
         Symbol<?> symbol = symbolTable.findSymbol(variableName.getLexeme());
@@ -107,13 +106,15 @@ public class SemanticAnalyzer {
         }
 
         // Check if the value is compatible with the variable type and assign (and check) the value to the variable.
+        /*
 		try {
-			variable.setValue(value);
+			variable.checkValue(value);
 		} catch (InvalidValueException e) {
-			errorHandler.reportError(SemanticErrorType.INVALID_VALUE, value.getLine(), value.getColumn(), e.getMessage());
+			errorHandler.reportError(SemanticErrorType.INVALID_VALUE, variableName.getLine(), variableName.getColumn(), e.getMessage());
 		} catch (InvalidValueTypeException e) {
-            errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, value.getLine(), value.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
+            errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, variableName.getLine(), variableName.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
 		}
+		*/
 	}
 
     private Symbol<?> getSymbolByLexeme(String lexeme) {

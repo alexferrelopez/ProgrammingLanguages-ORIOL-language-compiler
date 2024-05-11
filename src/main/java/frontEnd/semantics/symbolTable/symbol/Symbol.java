@@ -1,6 +1,5 @@
 package frontEnd.semantics.symbolTable.symbol;
 
-import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.exceptions.InvalidValueException;
 import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
@@ -45,7 +44,7 @@ public abstract class Symbol<Type> {
         return this.value;
     }
 
-    public void setValue(Token newValue) throws InvalidValueException, InvalidValueTypeException {
+    public void checkValue(Token newValue) throws InvalidValueException, InvalidValueTypeException {
         // Check if the value is compatible with the variable type.
         if (!isValidType((ValueSymbol) newValue.getType())) {
             throw new InvalidValueTypeException("The value is not compatible with the variable type.");
@@ -60,7 +59,7 @@ public abstract class Symbol<Type> {
             }
         }
 
-        this.value = typeClass.cast(dataType.convertValue(value));
+        //this.value = typeClass.cast(dataType.convertValue(value));
     }
 
     public void addLineUsage(long line) {

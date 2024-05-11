@@ -11,6 +11,8 @@ miau : ranch ( ) {
     status bool9 is bool ;
     status bool10 is not bool;
     status bool11 is bool and bool10 ;
+    status bool12 is bool and not bool ;
+    status bool13 is not bool and not bool ;
 
     poop 0 ;
 }
