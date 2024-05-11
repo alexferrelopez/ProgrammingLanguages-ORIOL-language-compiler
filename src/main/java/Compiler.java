@@ -2,6 +2,8 @@ import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
+import errorHandlers.errorTypes.ErrorType;
+import errorHandlers.warningTypes.WarningType;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.sintaxis.RecursiveDescentLLParser;
@@ -13,7 +15,7 @@ import java.util.List;
 public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
-    private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
+    private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
@@ -50,7 +52,7 @@ public class Compiler implements CompilerInterface {
      */
     @Override
     public boolean hasErrors() {
-        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
             if (abstractErrorHandler.hasErrors()) {
                 return true;
             }
@@ -59,9 +61,26 @@ public class Compiler implements CompilerInterface {
     }
 
     @Override
+    public boolean hasWarnings() {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+            if (abstractErrorHandler.hasWarnings()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void printErrors() {
-        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
             abstractErrorHandler.printErrors();
+        }
+    }
+
+    @Override
+    public void printWarnings() {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+            abstractErrorHandler.printWarnings();
         }
     }
 }
