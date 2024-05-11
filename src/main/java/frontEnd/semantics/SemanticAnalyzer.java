@@ -226,6 +226,8 @@ public class SemanticAnalyzer {
     private void validateLogicalRelationalTokens(List<Token> expressionTokens, List<TokenType> validTokens) throws InvalidAssignmentException {
         boolean validExpression = true;
         for (Token token : expressionTokens) {
+
+            // Check if the token is valid (it is inside the list of "validTokens" which is filled previously).
             if (!validTokens.contains(token.getType())) {
                 validExpression = false;
                 errorHandler.reportError(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
@@ -250,10 +252,11 @@ public class SemanticAnalyzer {
         validateLogicalRelationalTokens(relationalTokens, validRelationalTokens);
     }
 
-        // Check if the expression is valid
-        if (!validExpression) {
-           throw new InvalidAssignmentException(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
-        }
+    private void checkLogicalExpression(List<Token> logicalTokens) throws InvalidAssignmentException {
+        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
+        List<TokenType> validLogicalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
+
+        validateLogicalRelationalTokens(logicalTokens, validLogicalTokens);
     }
 
     private boolean checkVariableSameType(Token token, List<DataType> dataTypes) {
