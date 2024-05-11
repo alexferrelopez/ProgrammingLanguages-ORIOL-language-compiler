@@ -4,6 +4,10 @@ miau : ranch ( ) {
     a is cridaFunc(hola);
     miau ca is cridaFunc();
     miau c is a sum b ;
+    c is a sum b ;
+    c is a sum 1 ;
+    c is 1 sum 1 ;
+    c is 1 sum b ;
     miau c is 3 sum b ;
     miau c is 3 sum 3 ;
     miau c is b sum 3 ;

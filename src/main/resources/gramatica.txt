@@ -30,7 +30,8 @@
 <condition_expr> ::= PO <expr_bool> PT <func_body>
 <condition_else> ::= ELSE <func_body> | ε
 <loop> ::= <loop_for> | <loop_while>
-<loop_for> ::= FOR PO <declaration> TO <literal_num> COMMA <assignation> PT <func_body>
+<loop_for> ::= FOR PO <loop_variable> TO <value> COMMA <assignation> PT <func_body>
+<loop_variable> ::= <data_type> <assignation> | <assignation>
 <loop_while> ::= WHILE <condition_expr>
 <log_1> ::= <log_2> <log_1'>
 <log_1'> ::= OR <log_2> <log_1'> | ε

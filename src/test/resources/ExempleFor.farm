@@ -1,5 +1,5 @@
 miau : ranch ( ) {
-    feed ( miau i is 1 ; to 5 , i is i sum 1 ) {
+    feed ( miau i is 1 to 5, i is i sum 1 ) {
         miau a is 2 ;
     }
     poop 0 ;

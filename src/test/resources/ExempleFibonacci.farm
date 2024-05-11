@@ -1,0 +1,21 @@
+miau: fibonacci(miau n) {
+    check (n equals 0) {
+      poop 0;
+    }
+    else {
+        check (n equals 1) {
+            poop 1;
+        }
+    }
+}
+
+miau: ranch() {
+    fibonacci(i);
+
+    miau n is 10;
+    n is n minus 1;
+    feed (miau i is 0 to n, i is i sum 1) {
+        fibonacci(i);
+    }
+    poop 0 ;
+}
