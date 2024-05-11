@@ -32,9 +32,6 @@ public class TACGenerator {
                 case "assignation":
                     handleAssignment(tree);
                     break;
-                case "declaration":
-                    handleDeclaration(tree);
-                    break;
                 // Agregar más casos según sea necesario
             }
         } else {
