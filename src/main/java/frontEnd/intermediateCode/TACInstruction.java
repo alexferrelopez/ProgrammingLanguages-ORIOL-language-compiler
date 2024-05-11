@@ -42,4 +42,20 @@ public class TACInstruction {
         }
     }
 
+    public String getOperator() {
+        return operator;
+    }
+
+    public String getOperand1() {
+        return operand1;
+    }
+
+    public String getOperand2() {
+        return operand2;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
 }
