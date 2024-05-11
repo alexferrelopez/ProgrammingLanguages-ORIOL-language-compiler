@@ -70,20 +70,17 @@ public class SemanticAnalyzer {
         switch (tree.getNode().toString()) {
             case "declaration":
                 VariableSymbol variableSymbol = new VariableSymbol(tokens.get(1).getLexeme(), (DataType) tokens.get(0).getType(), 0, false);
-                symbolTable.addSymbol(variableSymbol);
+                symbolTable.addSymbol(variableSymbol);//TODO: treure aixo, es nomes per veure si funciona
                 break;
             case "assignation":
                 //checkAssignationSemantics(tokens);
                 break;
             case "func_type":
-                printTree(tree);
                 checkFunctionDeclarationSemantics(tokens);
                 returnFound = false;
                 break;
             case "return_stmt":
-                if(checkReturnSemantics(tokens)){
-                    //return; TODO
-                }
+                checkReturnSemantics(tokens);
                 returnFound = true;
                 break;
             case "CT":
@@ -91,15 +88,26 @@ public class SemanticAnalyzer {
                 symbolTable.leaveCurrentScope();
                 break;
             case "EOF":
-                if(!mainFound){
-                    errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_MISSING, null, null, SemanticErrorType.MAIN_FUNCTION_MISSING.getMessage());
-                    printError(SemanticErrorType.MAIN_FUNCTION_MISSING.getMessage());
-                }
+                checkEOFSematics();
                 break;
             // ...
         }
     }
 
+    /**
+     * Check the semantics after finishing
+     */
+    private void checkEOFSematics() {
+        if(!mainFound){
+            errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_MISSING, null, null, SemanticErrorType.MAIN_FUNCTION_MISSING.getMessage());
+            printError(SemanticErrorType.MAIN_FUNCTION_MISSING.getMessage());
+        }
+    }
+
+    /**
+     * Check the semantics of a closing bracket
+     * @param tokens the tokens of the closing bracket
+     */
     private void checkCloseBracketsSemantics(List<Token> tokens) {
         if(symbolTable.getCurrentScope().getScopeType() == ScopeType.FUNCTION){
             if(!returnFound){
@@ -109,48 +117,51 @@ public class SemanticAnalyzer {
         }
     }
 
-    private boolean checkReturnSemantics(List<Token> tokens) {
+    /**
+     * Check the semantics of a return declaration
+     * @param tokens the tokens of the return declaration
+     */
+    private void checkReturnSemantics(List<Token> tokens) {
         Token token = tokens.get(1);
-        ValueSymbol type = (ValueSymbol) token.getType();
-        DataType returnType = null;
-        if(type == ValueSymbol.VARIABLE){
-            Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
-            if (Objects.isNull(symbol)) {
-                errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), 0, SemanticErrorType.VARIABLE_NOT_DECLARED.getMessage());
-                printError("Variable " + token.getLexeme() + " not declared");
-                return true;
+        if(token.getLexeme().equals("void")){
+            DataType functionReturnType = symbolTable.getCurrentScope().getReturnType();
+            if(functionReturnType != DataType.VOID){
+                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), 0, "Return type is not correct expected " + functionReturnType + " but received void");
+                printError("Return type is not correct expected " + functionReturnType + " but received void");
             }
-            returnType =  symbol.getDataType();
         }else{
-            returnType = switch (type) {
-                case VALUE_INT -> DataType.INTEGER;
-                case VALUE_FLOAT -> DataType.FLOAT;
-                case VALUE_TRUE, VALUE_FALSE -> DataType.BOOLEAN;
-                case VALUE_CHAR -> DataType.CHAR;
-                case VALUE_STRING -> DataType.STRING;
-                default -> returnType;
-            };
+            ValueSymbol type = (ValueSymbol) token.getType();
+            DataType returnType = null;
+            if(type == ValueSymbol.VARIABLE){
+                Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
+                if (Objects.isNull(symbol)) {
+                    errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), 0, "Variable " + token.getLexeme() + " not declared");
+                    printError("Variable " + token.getLexeme() + " not declared");
+                }
+                returnType =  symbol.getDataType();
+            }else{
+                returnType = switch (type) {
+                    case VALUE_INT -> DataType.INTEGER;
+                    case VALUE_FLOAT -> DataType.FLOAT;
+                    case VALUE_TRUE, VALUE_FALSE -> DataType.BOOLEAN;
+                    case VALUE_CHAR -> DataType.CHAR;
+                    case VALUE_STRING -> DataType.STRING;
+                    default -> returnType;
+                };
+            }
+
+            DataType functionReturnType = symbolTable.getCurrentScope().getReturnType();
+            if(returnType != functionReturnType){
+                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), 0, "Return type is not correct expected " + functionReturnType + " but received " + returnType);
+                printError("Return type is not correct expected " + functionReturnType + " but received " + returnType);
+            }
         }
-
-        DataType functionReturnType = symbolTable.getCurrentScope().getReturnType();
-        if(returnType != functionReturnType){
-            errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), 0, SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT.getMessage());
-            printError("Return type is not correct expected " + functionReturnType + " but received " + returnType);
-            return true;
-        }
-
-
         if(returnFound){
             errorHandler.reportError(SemanticErrorType.RETURN_SECOND, token.getLine(), 0, SemanticErrorType.RETURN_SECOND.getMessage());
             printError(SemanticErrorType.RETURN_SECOND.getMessage());
-            return true;
         }
-
-
-
-
-        return false;
     }
+
 
     private void checkFunctionDeclarationSemantics(List<Token> tokens) {
 
@@ -200,7 +211,7 @@ public class SemanticAnalyzer {
         for(int i = 0; i < variables.size(); i++){
             for(int j = i+1; j < variables.size(); j++){
                 if(variables.get(i).getName().equals(variables.get(j).getName())){
-                    errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int)variables.get(i).getLineDeclaration(), 0, SemanticErrorType.VARIABLE_ALREADY_DEFINED.getMessage());
+                    errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int)variables.get(i).getLineDeclaration(), 0, "Variable " + variables.get(i).getName() + " is already defined");
                     printError("Variable " + variables.get(i).getName() + " is already defined");
                     return true;
                 }
@@ -255,17 +266,6 @@ public class SemanticAnalyzer {
 
 
 
-
-    private boolean findReturn(Tree tree) {
-
-        Tree tree2 = (Tree) ((Tree) tree.getChildren().get(0)).getChildren().get(0);
-        TerminalSymbol ts = (TerminalSymbol) tree2.getNode();
-        Token token = ts.getToken();
-        printTree(tree2);
-        Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
-
-        return false;
-    }
 
     private void printTree(Tree<AbstractSymbol> tree) {
         PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
