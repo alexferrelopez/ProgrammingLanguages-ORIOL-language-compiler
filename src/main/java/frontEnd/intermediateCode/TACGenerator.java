@@ -70,9 +70,10 @@ public class TACGenerator {
 
         // 'else' block
         tacModule.addLabel(labelFalse);
+        Tree<AbstractSymbol> elseBlock = tree.getChildren().get(2);
         // Check if there is an else block
-        if (tree.getChildren().size() > 3) {
-            generateCode(tree.getChildren().get(3));
+        if (elseBlock.getChildren().get(0).getNode().getName() != "ε") {
+            generateCode(elseBlock);
         }
 
         // End label for the if statement
@@ -86,30 +87,12 @@ public class TACGenerator {
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
-        // Supongamos que los nodos de asignación tienen dos hijos
-        TerminalSymbol assignSymbol = (TerminalSymbol) tree.getChildren().get(0).getNode();
+        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
 
-        String lhs = assignSymbol.getToken().getLexeme(); // Variable a la izquierda
+        Expression expr = generateExpressionCode(tree);
 
-        // Para llegar a la expresión a la derecha, necesitas procesar los hijos del nodo de asignación
-        Tree<AbstractSymbol> assignationNode = tree.getChildren().get(2);
-
-        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(assignationNode);
-
-        TerminalSymbol assignationSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
-        String rhs = assignationSymbol.getToken().getLexeme(); // Variable o número a la derecha
-        tacModule.addUnaryInstruction(lhs, "=", rhs);
+        tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
     }
-
-    // Handle declaration if an assignation is present
-    private void handleDeclaration(Tree<AbstractSymbol> tree) {
-        Tree<AbstractSymbol> assignationNode = tree.getChildren().get(1);
-
-        if (assignationNode != null) {
-            handleAssignment(assignationNode);
-        }
-    }
-
 
     public void printTAC() {
         System.out.println("Generated TAC Code:");
@@ -118,6 +101,9 @@ public class TACGenerator {
 
     private Expression generateExpressionCode(Tree<AbstractSymbol> expr_bool) {
         List<Tree<AbstractSymbol>> leafNodes = expr_bool.getLeafNodes(expr_bool);
+
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
         TerminalSymbol operatorSymbol = (TerminalSymbol) leafNodes.get(1).getNode();
         String operator = operatorSymbol.getToken().getLexeme();
