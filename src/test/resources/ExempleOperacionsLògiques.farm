@@ -1,0 +1,18 @@
+miau : ranch ( ) {
+    status bool is alive ;
+    status bool2 is not alive ;
+    status bool3 is dead ;
+    status bool4 is not dead ;
+    status bool5 is alive or dead ;
+    status bool6 is alive and dead ;
+    status bool7 is dead or alive ;
+    status bool8 is not dead or alive ;
+    status bool8 is not ( dead or alive ) ;
+    status bool9 is bool ;
+    status bool10 is not bool;
+    status bool11 is bool and bool10 ;
+    status bool12 is bool and not bool ;
+    status bool13 is not bool and not bool ;
+
+    poop 0 ;
+}

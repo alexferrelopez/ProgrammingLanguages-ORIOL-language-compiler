@@ -27,6 +27,11 @@ public class SymbolTableTree implements SymbolTableInterface {
 		currentScopeLevel++;
 	}
 
+	@Override
+	public void exitScope() {
+		this.currentScope = this.currentScope.getParent();
+	}
+
 	/**
 	 * Add a symbol at the current scope of the tree.
 	 *

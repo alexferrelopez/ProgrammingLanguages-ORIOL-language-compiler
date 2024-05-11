@@ -58,6 +58,10 @@ public class ScopeNode {
 		return this.parent.findSymbol(symbolName);
 	}
 
+	public ScopeNode getParent() {
+		return parent;
+	}
+
 	/**
 	 * Get the level of the scope.
 	 * @return	the level of the scope.
