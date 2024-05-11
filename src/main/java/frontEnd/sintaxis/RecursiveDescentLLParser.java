@@ -187,7 +187,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         }
     }
 
-    private void printTree(Tree<AbstractSymbol> tree) {
+    public void printTree(Tree<AbstractSymbol> tree) {
         PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
                 Tree::getChildren,
                 Tree::getNode
