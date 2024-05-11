@@ -18,7 +18,7 @@ import java.util.List;
 public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
-    private final TACGenerator tacGenerator;
+    private TACGenerator tacGenerator;
     private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
@@ -38,19 +38,7 @@ public class Compiler implements CompilerInterface {
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
-        // *** Intermediate Code *** //
-        Tree<AbstractSymbol> tree = parser.getTree();    // Get tree from parser
 
-        // Print the tree for debugging
-        parser.printTree(tree);
-
-        TACModule tacModule = new TACModule();
-        this.tacGenerator = new TACGenerator(tacModule);
-
-        // Generate the intermediate code
-        this.tacGenerator.generateCode(tree);
-
-        // ---- BACK END ---- //
     }
 
     /**
@@ -59,6 +47,22 @@ public class Compiler implements CompilerInterface {
     @Override
     public void compileCode() {
         parser.parseProgram();
+
+        // *** Intermediate Code *** //
+        Tree<AbstractSymbol> tree = parser.getTree();    // Get tree from parser
+
+        // Print the tree for debugging
+        parser.printTree(tree);
+
+        TACModule tacModule = new TACModule();
+        tacGenerator = new TACGenerator(tacModule);
+
+        // Generate the intermediate code
+        tacGenerator.generateCode(tree);
+
+        tacGenerator.printTAC();
+
+        // ---- BACK END ---- //
     }
 
     /**
