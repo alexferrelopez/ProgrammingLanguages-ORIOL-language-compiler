@@ -1,6 +1,6 @@
 <A> ::= <funcs>
-<funcs> ::= <func_type> <func_decl> <funcs> | ε
-<func_type> ::= <data_type> DOS_PUNTS
+<funcs> ::= <func_type>  <funcs> | ε
+<func_type> ::= <data_type> DOS_PUNTS <func_decl>
 <program> ::= MAIN <func_struct>
 <func_decl> ::= <program> | <func_decl'>
 <func_decl'> ::= VARIABLE <func_struct>
@@ -35,7 +35,8 @@
 <log_1'> ::= OR <log_2> <log_1'> | ε
 <log_2> ::= <log_3> <log_2'>
 <log_2'> ::= AND <log_3> <log_2'> | ε
-<log_3> ::= NOT <log_4> | <log_4>
+<log_3> ::= NOT <log_3'> <log_4>
+<log_3'> ::= <log_3> | ε
 <log_4> ::= PO <log_1> PT | <log_5>
 <log_5> ::= <literal_bool> | VARIABLE
 <arit_1> ::= <arit_2> <arit_1'>
