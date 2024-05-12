@@ -1,5 +1,6 @@
 package frontEnd.semantics.symbolTable;
 
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
@@ -11,10 +12,11 @@ public interface SymbolTableInterface {
      */
     void addScope(ScopeType scopeType);
 
+
     /**
-     * Exit the current scope.
+     * Add a function scope to the tree
      */
-    void exitScope();
+    void addScope(ScopeType scopeType, DataType returnType);
 
     /**
      * Add a symbol at the current scope of the tree.
@@ -30,12 +32,27 @@ public interface SymbolTableInterface {
     Symbol<?> findSymbol(String symbolName);
 
     /**
-     * Find if a symbol exists in the whole symbols table.
+     * Find a symbol globally in all the scopes.
+     * @param symbolName	the name of the symbol.
+     * @return	the symbol with the given name, or null if the symbol is not in the scope.
+     */
+    Symbol<?> findSymbolGlobally(String symbolName);
+
+    /**
+     * Find if a symbol exists in the current scope.
      *
      * @param symbolName the name of the symbol.
      * @return true if the symbol exists; false otherwise.
      */
     boolean containsSymbol(String symbolName);
+
+    /**
+     * Find if a symbol exists in the whole symbols table.
+     *
+     * @param symbolName the name of the symbol.
+     * @return true if the symbol exists; false otherwise.
+     */
+    boolean containsSymbolGlobally(String symbolName);
 
     /**
      * Find a scope at a given level (scope level)
@@ -46,4 +63,9 @@ public interface SymbolTableInterface {
      * Get the current scope level
      */
     int getCurrentScopeLevel();
+
+    /**
+     *
+     */
+    void leaveCurrentScope();
 }

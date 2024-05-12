@@ -1,5 +1,6 @@
 package frontEnd.semantics.symbolTable;
 
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
@@ -12,7 +13,7 @@ public class SymbolTableTree implements SymbolTableInterface {
 	private final static int ROOT_LEVEL = 0;
 
 	public SymbolTableTree() {
-		this.root = new ScopeNode(ROOT_LEVEL, ROOT_SCOPE);
+		this.root = new ScopeNode(ROOT_LEVEL, ROOT_SCOPE, null);
 		this.currentScopeLevel = ROOT_LEVEL;
 		this.currentScope = root;
 	}
@@ -23,14 +24,20 @@ public class SymbolTableTree implements SymbolTableInterface {
 	@Override
 	public void addScope(ScopeType scopeType) {
 		currentScopeLevel++;
-		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType);
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType, currentScope);
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
 	}
 
+	/**
+	 * Add a scope to the tree
+	 */
 	@Override
-	public void exitScope() {
-		this.currentScope = this.currentScope.getParent();
+	public void addScope(ScopeType scopeType, DataType returnType) {
+		currentScopeLevel++;
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType, currentScope, returnType);
+		currentScope.addChild(scopeNode);
+		currentScope = scopeNode;
 	}
 
 	/**
@@ -55,6 +62,16 @@ public class SymbolTableTree implements SymbolTableInterface {
 	}
 
 	/**
+	 * Find a symbol globally in all the scopes.
+	 * @param symbolName	the name of the symbol.
+	 * @return	the symbol with the given name, or null if the symbol is not in the scope.
+	 */
+	@Override
+	public Symbol<?> findSymbolGlobally(String symbolName) {
+		return this.currentScope.findSymbolGlobally(symbolName);
+	}
+
+	/**
 	 * Find if a symbol exists in the whole symbols table.
 	 *
 	 * @param symbolName the name of the symbol.
@@ -63,6 +80,16 @@ public class SymbolTableTree implements SymbolTableInterface {
 	@Override
 	public boolean containsSymbol(String symbolName) {
 		return (this.currentScope.findSymbol(symbolName) != null);
+	}
+
+	/**
+	 * Find if a symbol exists in the whole symbols table.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return true if the symbol exists; false otherwise.
+	 */
+	public boolean containsSymbolGlobally(String symbolName) {
+		return (this.currentScope.findSymbolGlobally(symbolName) != null);
 	}
 
 	/**
@@ -91,4 +118,13 @@ public class SymbolTableTree implements SymbolTableInterface {
 		return currentScopeLevel;
 	}
 
+	@Override
+	public void leaveCurrentScope() {
+		currentScopeLevel--;
+		this.currentScope = this.currentScope.getParent();
+	}
+
+	public ScopeNode getCurrentScope() {
+		return currentScope;
+	}
 }
