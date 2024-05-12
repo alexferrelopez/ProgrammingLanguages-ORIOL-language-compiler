@@ -7,6 +7,7 @@ import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.BinaryOperator;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
+import frontEnd.lexic.dictionary.tokenEnums.MathOperator;
 import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
@@ -121,7 +122,7 @@ public class SemanticAnalyzer {
                     return;
 				}
 			}
-            //case INTEGER, FLOAT -> checkValidNumericExpression(expressionTokens);
+            case INTEGER, FLOAT -> checkValidArithmeticExpression(expressionTokens, variable.getDataType());
             //case STRING -> checkValidStringExpression(expressionTokens);
         }
 
@@ -136,6 +137,79 @@ public class SemanticAnalyzer {
 		}
 		*/
 	}
+
+    /**
+     * Function to check if the arithmetic expression is valid.
+     *  - Check if the expression is valid (e.g. 1 + 2 or 2 * 4).
+     *  - Check if the variables are declared and are numbers (integers or floats).
+     *  - Check if the operations are done between the same type of variables.
+     *  - Check if there is a division by zero (just in literal numbers, not with variables).
+     * @param expressionTokens  the tokens of the arithmetic expression.
+     */
+    private void checkValidArithmeticExpression(List<Token> expressionTokens, DataType variableDataType) {
+        // Check all the tokens are valid for an arithmetic expression (e.g. +, -, *, /, etc.)
+        List<TokenType> validArithmeticOperatorsTokens = List.of(MathOperator.SUM, MathOperator.SUB, MathOperator.MUL, MathOperator.DIV, MathOperator.POW, MathOperator.MOD);
+        List<TokenType> validArithmeticValueTokens = List.of(ValueSymbol.VALUE_INT, ValueSymbol.VALUE_FLOAT, ValueSymbol.VARIABLE);
+
+        List<TokenType> validArithmeticTokens = new ArrayList<>();
+        validArithmeticTokens.addAll(validArithmeticValueTokens);
+        validArithmeticTokens.addAll(validArithmeticOperatorsTokens);
+        boolean isValid = true;
+
+        for (Token token : expressionTokens) {
+            // Check if the token is inside the valid arithmetic tokens.
+            if (!validArithmeticTokens.contains(token.getType())) {
+                errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION.getMessage());
+                isValid = false;
+            }
+            else if (token.getType() == ValueSymbol.VARIABLE) {
+                // Check if the ID (variable or function) exists and it's a number (integer or float).
+                if (!checkVariableSameType(token, List.of(DataType.INTEGER, DataType.FLOAT))) {
+                    isValid = false;
+                }
+            }
+
+            // Check the operation (sum, sub...) is done between same type of variables / values.
+            if (isValid == validArithmeticOperatorsTokens.contains(token.getType())) {
+                // Check if the previous and next tokens are compatible.
+                int tokenIndex = expressionTokens.indexOf(token);
+                Token previousToken = expressionTokens.get(tokenIndex - 1);
+                Token nextToken = expressionTokens.get(tokenIndex + 1);
+
+                DataType leftOperandType = getOperandDataType(previousToken);
+                DataType rightOperandType = getOperandDataType(nextToken);
+
+                // Check if both operands have same type.
+                if (leftOperandType != rightOperandType) {
+                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
+                    isValid = false;
+                }
+                // Check if the operand has the same type as the variable.
+                else if (leftOperandType != variableDataType) {
+                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
+                    isValid = false;
+                }
+            }
+        }
+
+        // Check if the operation was semantically correct (or not) to warn.
+        if (!isValid) {
+            // TODO: Send a warning to the user that the arithmetic expression is invalid (throw exception).
+        }
+    }
+
+    // Method to determine the data type of a token.
+    private DataType getOperandDataType(Token token) {
+        if (token.getType() == ValueSymbol.VARIABLE) {
+            Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
+            return symbol.getDataType();
+        } else if (token.getType() instanceof ValueSymbol) {
+            return ((ValueSymbol) token.getType()).getDataType();
+        } else {
+            // This case should never happen.
+            throw new IllegalArgumentException("Unsupported token type for arithmetic operations");
+        }
+    }
 
     private Symbol<?> getSymbolByLexeme(String lexeme) {
         return symbolTable.findSymbol(lexeme);
@@ -172,10 +246,8 @@ public class SemanticAnalyzer {
             }
             else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a boolean.
-                Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
-                if (symbol != null && symbol.getDataType() != DataType.BOOLEAN) {
+                if (!checkVariableSameType(token, List.of(DataType.BOOLEAN))) {
                     validExpression = false;
-                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
                 }
             }
         }
@@ -184,6 +256,16 @@ public class SemanticAnalyzer {
         if (!validExpression) {
            throw new InvalidAssignmentException(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
         }
+    }
+
+    private boolean checkVariableSameType(Token token, List<DataType> dataTypes) {
+        // Check if the ID (variable or function) exists and it's a boolean.
+        Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
+        if (symbol != null && !dataTypes.contains(symbol.getDataType())) {
+            errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
+            return false;
+        }
+        return true;
     }
 
     /**
