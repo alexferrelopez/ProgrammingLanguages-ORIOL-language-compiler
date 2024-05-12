@@ -9,7 +9,6 @@ import frontEnd.lexic.dictionary.Token;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.*;
-import frontEnd.sintaxis.Tree;
 
 import java.util.*;
 
@@ -19,7 +18,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private Token lookahead;
 
-    private Tree tree;
+    private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStck = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private String[] startTokens = new String[]{"program", "func_decl", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
@@ -80,11 +79,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     //If any of the children of the actual node of the tree is different from the symbol that we are
                     // analyzing we have to go up in the tree
                     if(!((NonTerminalSymbol) tree.getNode()).getName().equals(symbol.getName())){
-                        LinkedList<Tree<AbstractSymbol>> children = tree.getChildren();
+                        List<Tree<AbstractSymbol>> children = tree.getChildren();
                         boolean found = false;
                         do{
-                            for(Tree child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
-                                if(((AbstractSymbol)child.getNode()).getName().equals(symbol.getName())){
+                            for(Tree<AbstractSymbol> child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
+                                if((child.getNode()).getName().equals(symbol.getName())){
                                     tree = child;
                                     found = true;
                                     break;
@@ -92,7 +91,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                             }
                             if(!found){//If none of the children is the symbol that we are analyzing we go up in the tree
                                 if(!Objects.isNull(tree.getParent())){
-                                    tree = (Tree) tree.getParent();
+                                    tree = tree.getParent();
                                     children = tree.getChildren();
                                 }
                             }
@@ -103,7 +102,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         tree.addChild(as);
                         if(as.getName().equals(TerminalSymbol.EPSILON)){//If the children is epsilon we have to go up in the tree
                             if(!Objects.isNull(tree.getParent())){
-                                tree = (Tree) tree.getParent();
+                                tree = tree.getParent();
                             }
 
                         }
@@ -129,17 +128,25 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private void match(TerminalSymbol terminal) {
         if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
             System.out.println("MATCH: " + terminal.getName());
-            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CT")){//If we ended a sentence or a block of code
+            terminal.setToken(lookahead);
+            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
                 System.out.println("\n\n-----------------TREE-----------------");
-                Tree parent = (Tree) tree.getParent();
-                String nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                Tree<AbstractSymbol> parent = tree.getParent();
+                String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStck.pop();
+                if(terminal.getName().equals("CO")){
+                    startTokensStck.push(symbolToSend);
+                }
                 while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                 ){
-                    parent = (Tree) parent.getParent();
-                    nodeName = ((AbstractSymbol)parent.getNode()).getName();
+                    parent = parent.getParent();
+                    nodeName = (parent.getNode()).getName();
+                }
+                if(terminal.getName().equals("CT")){
+                    parent = new Tree<>(terminal);
                 }
                 printTree(parent);//TODO send this tree to the semantical analyzer
+                System.out.println();
                 //SemanticAnalyzer.sendTree(parent);
             }
             try {
@@ -149,14 +156,16 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             }
         }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
+            // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
         }
     }
 
-    private void printTree(Tree tree) {
-        var pt = new PrettyPrintTree<Tree<AbstractSymbol>>(
+    private void printTree(Tree<AbstractSymbol> tree) {
+        PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
                 Tree::getChildren,
                 Tree::getNode
         );
-        pt.display(tree);
+
+        printTree.display(tree);
     }
 }

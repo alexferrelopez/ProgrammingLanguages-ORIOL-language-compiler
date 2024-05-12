@@ -21,10 +21,16 @@ public class SymbolTableTree implements SymbolTableInterface {
 	 * Add a scope to the tree
 	 */
 	@Override
-	public void addScope(ScopeNode scopeNode) {
+	public void addScope(ScopeType scopeType) {
+		currentScopeLevel++;
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType);
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
-		currentScopeLevel++;
+	}
+
+	@Override
+	public void exitScope() {
+		this.currentScope = this.currentScope.getParent();
 	}
 
 	/**
@@ -46,6 +52,17 @@ public class SymbolTableTree implements SymbolTableInterface {
 	@Override
 	public Symbol<?> findSymbol(String symbolName) {
 		return this.currentScope.findSymbol(symbolName);
+	}
+
+	/**
+	 * Find if a symbol exists in the whole symbols table.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return true if the symbol exists; false otherwise.
+	 */
+	@Override
+	public boolean containsSymbol(String symbolName) {
+		return (this.currentScope.findSymbol(symbolName) != null);
 	}
 
 	/**
