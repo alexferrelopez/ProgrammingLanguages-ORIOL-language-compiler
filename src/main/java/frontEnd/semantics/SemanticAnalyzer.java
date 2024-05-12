@@ -505,7 +505,7 @@ public class SemanticAnalyzer {
         DataType expectedType = expectedParameterSymbol.getDataType();
 
         if (currentType != expectedType) {
-            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_NOT_MATCH, funcList.getToken().getLine(), funcList.getToken().getColumn(), SemanticErrorType.FUNCTION_PARAMETERS_NOT_MATCH.getMessage());
+            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_DONT_MATCH, funcList.getToken().getLine(), funcList.getToken().getColumn(), funcList.getName());
         }
     }
 
@@ -514,7 +514,7 @@ public class SemanticAnalyzer {
      */
     private void checkEOFSematics() {
         if (!mainFound) {
-            errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_MISSING, null, null, SemanticErrorType.MAIN_FUNCTION_MISSING.getMessage());
+            errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_MISSING, null, null, "");
         }
     }
 
@@ -526,7 +526,7 @@ public class SemanticAnalyzer {
     private void checkCloseBracketsSemantics(List<Token> tokens) {
         if (symbolTable.getCurrentScope().getScopeType() == ScopeType.FUNCTION) {
             if (!returnFound) {
-                errorHandler.reportError(SemanticErrorType.RETURN_STATEMENT_MISSING, tokens.get(0).getLine(), 0, SemanticErrorType.RETURN_STATEMENT_MISSING.getMessage());
+                errorHandler.reportError(SemanticErrorType.RETURN_STATEMENT_MISSING, tokens.get(0).getLine(), null, "");
             }
         }
     }
@@ -541,7 +541,7 @@ public class SemanticAnalyzer {
         if (token.getLexeme().equals("void")) {
             DataType functionReturnType = symbolTable.getCurrentScope().getReturnType();
             if (functionReturnType != DataType.VOID) {
-                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), 0, "Return type is not correct expected " + functionReturnType + " but received void");
+                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), null, "Expected " + functionReturnType + " but received void");
             }
         } else {
             ValueSymbol type = (ValueSymbol) token.getType();
@@ -549,7 +549,7 @@ public class SemanticAnalyzer {
             if (type == ValueSymbol.VARIABLE) {
                 Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
                 if (Objects.isNull(symbol)) {
-                    errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), 0, "Variable " + token.getLexeme() + " not declared");
+                    errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), null, "Variable " + token.getLexeme() + " not declared");
                 }
                 returnType = symbol.getDataType();
             } else {
@@ -565,11 +565,11 @@ public class SemanticAnalyzer {
 
             DataType functionReturnType = symbolTable.getCurrentScope().getReturnType();
             if (returnType != functionReturnType) {
-                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), 0, "Return type is not correct expected " + functionReturnType + " but received " + returnType);
+                errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), null, "Return type is not correct expected " + functionReturnType + " but received " + returnType);
             }
         }
         if (returnFound) {
-            errorHandler.reportError(SemanticErrorType.RETURN_SECOND, token.getLine(), 0, SemanticErrorType.RETURN_SECOND.getMessage());
+            errorHandler.reportError(SemanticErrorType.RETURN_SECOND, token.getLine(), null, token.getLexeme());
         }
     }
 
@@ -610,7 +610,7 @@ public class SemanticAnalyzer {
     private void checkMainFunction(Token token) {
         if (token.getType() == ReservedSymbol.MAIN) {
             if (mainFound) {
-                errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_ALREADY_DEFINED, token.getLine(), 0, SemanticErrorType.MAIN_FUNCTION_ALREADY_DEFINED.getMessage());
+                errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_ALREADY_DEFINED, token.getLine(), token.getColumn(), token.getLexeme());
             } else {
                 mainFound = true;
             }
@@ -621,7 +621,7 @@ public class SemanticAnalyzer {
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 if (variables.get(i).getName().equals(variables.get(j).getName())) {
-                    errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int) variables.get(i).getLineDeclaration(), 0, variables.get(i).getName());
+                    errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int) variables.get(i).getLineDeclaration(), null, variables.get(i).getName());
                     return true;
                 }
             }
@@ -670,7 +670,7 @@ public class SemanticAnalyzer {
             }
         }
 
-        Token numericValueToken = forTokens.get(indexLastTokenInCondition + 2);
+        Token numericValueToken = forTokens.get(indexLastTokenInCondition + 1);
         //TODO
         if (checkVariableExists(numericValueToken) != null) {
             DataType operandDataType = getOperandDataType(numericValueToken);

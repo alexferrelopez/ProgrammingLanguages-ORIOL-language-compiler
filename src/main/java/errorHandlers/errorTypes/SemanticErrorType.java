@@ -11,7 +11,7 @@ public enum SemanticErrorType implements ErrorType {
     FUNCTION_NOT_DECLARED("Function not declared"),
 	FUNCTION_ALREADY_DEFINED("Function already defined"),
     FUNCTION_NOT_CALLED_CORRECTLY("Function not called correctly"),
-    FUNCTION_PARAMETERS_NOT_MATCH("Function parameters not match"),
+    FUNCTION_PARAMETERS_DONT_MATCH("Function parameters don't match"),
     FUNCTION_PARAMETERS_INVALID("Function parameter cannot be a function call"),
     FUNCTION_RETURN_TYPE_NOT_CORRECT("Function return type not correct"),
     FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
