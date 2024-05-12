@@ -3,6 +3,8 @@ package frontEnd.semantics;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.exceptions.InvalidAssignmentException;
+import frontEnd.exceptions.InvalidValueException;
+import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
@@ -45,6 +47,7 @@ public class SemanticAnalyzer {
         }
         return tokens;
     }
+
     /**
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
@@ -200,6 +203,7 @@ public class SemanticAnalyzer {
                     isValid = false;
                 }
             }
+
             // Check the operation (sum, sub...) is done between same type of variables / values.
             if (isValid == validArithmeticOperatorsTokens.contains(token.getType())) {
                 // Check if the previous and next tokens are compatible.
