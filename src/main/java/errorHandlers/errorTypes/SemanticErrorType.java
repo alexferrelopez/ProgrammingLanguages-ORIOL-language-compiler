@@ -17,7 +17,7 @@ public enum SemanticErrorType implements ErrorType {
     FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
 	RETURN_SECOND("Only one return statement is allowed"),
 	RETURN_STATEMENT_MISSING("Function must have a return statement"),
-    NOT_A_VARIABLE("Function is not a variable"),
+    ALREADY_USED_IDENTIFIER("The name of the identifier is already used"),
     INVALID_VALUE("Invalid value"),
     INVALID_BOOLEAN_EXPRESSION("Invalid boolean expression"),
     INVALID_ARITHMETIC_EXPRESSION("Invalid arithmetic expression"),

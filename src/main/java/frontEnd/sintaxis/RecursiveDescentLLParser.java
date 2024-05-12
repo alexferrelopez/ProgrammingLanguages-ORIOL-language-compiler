@@ -120,8 +120,9 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             }
 
 			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
+
 			try {
-				semanticAnalyzer.sendTree(new Tree(new TerminalSymbol("EOF")));
+				semanticAnalyzer.sendTree(new Tree<>(new TerminalSymbol("EOF")));
 			} catch (InvalidAssignmentException e) {
 				// Theoretically there should never be an invalid assignment exception.
 			}
@@ -177,7 +178,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 if(terminal.getName().equals("CT")){
                     parent = new Tree<>(terminal);
                 }
-                //printTree(parent);//TODO send this tree to the semantical analyzer
+                printTree(parent);//TODO send this tree to the semantical analyzer
+
 				try {
 					semanticAnalyzer.sendTree(parent);
 				} catch (InvalidAssignmentException e) {
