@@ -119,10 +119,6 @@ public class ScopeNode {
 		return children;
 	}
 
-
-	public ScopeNode getParent() {
-		return parent;
-	}
 	public Map<String, Symbol<?>> getSymbols() {
 		return symbols;
 	}
@@ -132,6 +128,10 @@ public class ScopeNode {
 	}
 
 	public DataType getReturnType() {
-		return returnType;
+		// If the node is a function or is root, just search the type in the same scope.
+		if (this.scopeType == ScopeType.FUNCTION || this.parent == null) {
+			return returnType;
+		}
+		return this.parent.getReturnType();
 	}
 }

@@ -7,13 +7,13 @@ import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
+import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
-import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.sintaxis.Tree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class SemanticAnalyzer {
+public class SemanticAnalyzer implements SemanticAnalyzerInterface {
     private final SemanticErrorHandler errorHandler;
-    private final SymbolTableTree symbolTable;
+    private final SymbolTableInterface symbolTable;
 	private boolean returnFound = false;
 	private boolean mainFound = false;
 
-    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableTree symbolTable) {
+    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableInterface symbolTable) {
         this.errorHandler = semanticErrorHandler;
         this.symbolTable = symbolTable;
     }
@@ -55,12 +55,12 @@ public class SemanticAnalyzer {
         return tokens;
     }
 
-    /**
-     * Function to check the semantic of the tree received from the parser.
-     * @param tree the tree that we receive from the parser.
-     */
-	// TODO: Make it throw a generic "SemanticsException" class
-    public void sendTree(Tree<AbstractSymbol> tree) throws SemanticException {
+	/**
+	 * Receive the syntactic tree (from the parser) to analyze it semantically.
+	 * @param tree Parsing tree (syntactic) to analyze.
+	 */
+	@Override
+	public void receiveSyntacticTree(Tree<AbstractSymbol> tree) throws SemanticException {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
@@ -665,5 +665,4 @@ public class SemanticAnalyzer {
 		}
 		return false;
 	}
-
 }

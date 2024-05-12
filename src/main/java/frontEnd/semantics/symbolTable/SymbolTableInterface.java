@@ -68,4 +68,6 @@ public interface SymbolTableInterface {
      *
      */
     void leaveCurrentScope();
+
+    ScopeNode getCurrentScope();
 }
