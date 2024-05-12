@@ -1,14 +1,20 @@
 package frontEnd.semantics.symbolTable;
 
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
+import frontEnd.semantics.symbolTable.scope.ScopeType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 public interface SymbolTableInterface {
     /**
      * Add a scope to the tree
+     * @param scopeType the type of the scope to add (function or conditional-loop).
      */
-    void addScope(ScopeNode scopeNode);
-    void exitScope();   // Move the scope to his parent
+    void addScope(ScopeType scopeType);
+
+    /**
+     * Exit the current scope.
+     */
+    void exitScope();
 
     /**
      * Add a symbol at the current scope of the tree.
@@ -29,7 +35,7 @@ public interface SymbolTableInterface {
      * @param symbolName the name of the symbol.
      * @return true if the symbol exists; false otherwise.
      */
-    public boolean containsSymbol(String symbolName);
+    boolean containsSymbol(String symbolName);
 
     /**
      * Find a scope at a given level (scope level)
