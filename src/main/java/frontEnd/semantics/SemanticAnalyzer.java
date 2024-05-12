@@ -6,6 +6,7 @@ import frontEnd.exceptions.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
+import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
@@ -64,7 +65,7 @@ public class SemanticAnalyzer {
                 if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
                     // Check if it's a function call.
                     if (statementIsFuncCall(tree)) {
-                        checkFunctionCall(tree);
+                        checkFunctionCall(tree, 0);
                     }
                 }
                 else {
@@ -215,7 +216,7 @@ public class SemanticAnalyzer {
     // Method to determine the data type of a token.
     private DataType getOperandDataType(Token token) {
         if (token.getType() == ValueSymbol.VARIABLE) {
-            Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
+            Symbol<?> symbol = checkVariableExists(token);
             return symbol.getDataType();
         } else if (token.getType() instanceof ValueSymbol) {
             return ((ValueSymbol) token.getType()).getDataType();
@@ -232,7 +233,7 @@ public class SemanticAnalyzer {
     private Symbol<?> checkVariableExists(Token token) {
         // Check if the variable exists and it's a boolean.
         Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
-        if (symbol == null) {
+        if (symbol == null || !symbol.isVariable()) {
             errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), token.getColumn(), SemanticErrorType.VARIABLE_NOT_DECLARED.getMessage());
         }
         return symbol;
@@ -324,11 +325,22 @@ public class SemanticAnalyzer {
         }*/
     }
 
+    private Symbol<?> checkFunctionExists(TerminalSymbol variable) {
+        String functionName = variable.getToken().getLexeme();
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
+
+        // Check if the function is declared (exists in the table).
+        if (functionSymbol == null || !functionSymbol.isVariable()) {
+            errorHandler.reportError(SemanticErrorType.FUNCTION_NOT_DECLARED, variable.getToken().getLine(), variable.getToken().getColumn(), SemanticErrorType.FUNCTION_NOT_DECLARED.getMessage());
+        }
+
+        return functionSymbol;
+    }
+
     /**
-     * Function to check if a function is called correctly.
-     * @param symbol the symbol to check.
+     * Function to check if a function is called correctly (using DFS for the tree).
      */
-    public void checkFunctionCall(Tree<AbstractSymbol> funcCallTree) {
+    private void checkFunctionCall(Tree<AbstractSymbol> funcCallTree, int currentParameter) {
         // We are on a leaf, check what type of terminal it is.
         if (funcCallTree.getChildren().isEmpty()) {
             TerminalSymbol terminal = (TerminalSymbol) funcCallTree.getNode();
@@ -336,31 +348,58 @@ public class SemanticAnalyzer {
             // Check what terminal we are in to see what part of the statement we are in.
             if (!terminal.isEpsilon()) {
 
-                // Get the name of the function and check it's previously declared.
+                // Get the name of the variable (or function) and check it's previously declared.
                 if (terminal.getToken().getType() == ValueSymbol.VARIABLE) {
-                    String functionName = terminal.getToken().getLexeme();
+                    AbstractSymbol variableParentSymbol = funcCallTree.getParent().getNode();
 
+                    // Get the name of the variable
+                    if (variableParentSymbol.getName().equals("assignation")) {
+                        checkFunctionExists(terminal);
+                    }
+
+                    // Get the name of the parameters
+                    if (variableParentSymbol.getName().equals("func_call")) {
+                        // Check if the parameter is a function = invalid.
+                        String functionName = terminal.getToken().getLexeme();
+                        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
+                        if (functionSymbol != null && !functionSymbol.isVariable()) {
+                            checkFunctionParameters(funcCallTree.getParent(), (FunctionSymbol<?>) functionSymbol, currentParameter);
+                        }
+
+                        currentParameter++;
+                    }
                 }
 
             }
         }
         for (Tree<AbstractSymbol> child : funcCallTree.getChildren()) {
-            checkFunctionCall(child);
+            checkFunctionCall(child, currentParameter);
         }
 	}
 
     /**
      * Function to check if the parameters of a function are correct.
-     * @param symbol the symbol to check.
      */
-    private void checkFunctionParameters(Symbol symbol) {
-        // Check if the parameters of the function are correct
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
+    private void checkFunctionParameters(Tree<AbstractSymbol> functionParameters, FunctionSymbol<?> functionSymbol, int numParameter) {
+        // Check there is no function in the parameters.
+        Tree<AbstractSymbol> funcParamName = functionParameters.getChildren().get(0);
+        Tree<AbstractSymbol> funcParamList = functionParameters.getChildren().get(1);
+
+        // Check if the func_call' statement derives in epsilon (it's okay) or not (calling a func = invalid).
+        TerminalSymbol funcList = (TerminalSymbol) funcParamList.getNode();
+        if (!funcList.isEpsilon()) {
+            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_INVALID, funcList.getToken().getLine(), funcList.getToken().getColumn(), SemanticErrorType.FUNCTION_PARAMETERS_INVALID.getMessage());
+        }
+
+        // Check if the parameters from the function have the same type as expected (declaration).
+        TerminalSymbol parameter = (TerminalSymbol) funcParamName.getNode();
+        VariableSymbol<?> expectedParameterSymbol = functionSymbol.getParameters().get(numParameter);
+        DataType currentType = getOperandDataType(parameter.getToken());
+        DataType expectedType = expectedParameterSymbol.getDataType();
+
+        if (currentType != expectedType) {
+            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_NOT_MATCH, funcList.getToken().getLine(), funcList.getToken().getColumn(), SemanticErrorType.FUNCTION_PARAMETERS_NOT_MATCH.getMessage());
+        }
     }
 
     // Additional methods for semantic checks can be added here
