@@ -30,12 +30,27 @@ public interface SymbolTableInterface {
     Symbol<?> findSymbol(String symbolName);
 
     /**
-     * Find if a symbol exists in the whole symbols table.
+     * Find a symbol globally in all the scopes.
+     * @param symbolName	the name of the symbol.
+     * @return	the symbol with the given name, or null if the symbol is not in the scope.
+     */
+    Symbol<?> findSymbolGlobally(String symbolName);
+
+    /**
+     * Find if a symbol exists in the current scope.
      *
      * @param symbolName the name of the symbol.
      * @return true if the symbol exists; false otherwise.
      */
     boolean containsSymbol(String symbolName);
+
+    /**
+     * Find if a symbol exists in the whole symbols table.
+     *
+     * @param symbolName the name of the symbol.
+     * @return true if the symbol exists; false otherwise.
+     */
+    boolean containsSymbolGlobally(String symbolName);
 
     /**
      * Find a scope at a given level (scope level)
