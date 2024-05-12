@@ -1,6 +1,8 @@
 package frontEnd.exceptions.lexic;
 
-public class InvalidTokenException extends Exception {
+import frontEnd.exceptions.LexicException;
+
+public class InvalidTokenException extends LexicException {
 
     private final static String ERROR_MESSAGE = "LEXIC: Error while lexical analysis of file";
 
