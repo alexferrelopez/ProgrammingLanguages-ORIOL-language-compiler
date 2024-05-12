@@ -3,23 +3,15 @@ package frontEnd.semantics;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.exceptions.InvalidAssignmentException;
-import frontEnd.exceptions.InvalidValueException;
-import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
-import frontEnd.lexic.dictionary.tokenEnums.BinaryOperator;
-import frontEnd.lexic.dictionary.tokenEnums.DataType;
-import frontEnd.lexic.dictionary.tokenEnums.MathOperator;
-import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
+import frontEnd.lexic.dictionary.tokenEnums.*;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +62,10 @@ public class SemanticAnalyzer {
             case "declaration":
                 // Check if it's an assignment or a declaration
                 if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
-                    // Declaration
+                    // Check if it's a function call.
+                    if (statementIsFuncCall(tree)) {
+                        checkFunctionCall(tree);
+                    }
                 }
                 else {
                     // Assignment
@@ -79,6 +74,18 @@ public class SemanticAnalyzer {
                 break;
             // ...
         }
+    }
+
+    // Main function to determine if "assignation'" node has "var_assignation" or "func_call"
+    public <T> boolean statementIsFuncCall(Tree<T> rootNode) {
+        for (Tree<T> child : rootNode.getChildren()) {
+            // Traverse to find "assignation'" node
+            if (child.getNode().equals("assignation'")) {
+                // Check for "func_call" in the subtree of "assignation'"
+				return TreeTraversal.hasSpecificChildType(child, "func_call'");
+            }
+        }
+        return false;
     }
 
     // Check if the statement is a valid expression (only one function allowed).
@@ -321,14 +328,25 @@ public class SemanticAnalyzer {
      * Function to check if a function is called correctly.
      * @param symbol the symbol to check.
      */
-    public void checkFunctionCall(Symbol symbol) {
-        // Check if the function is called correctly
-        /*
-        if (symbolTable.currentScope().contains(symbol.getName())) {
-            errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-        } else {
-            symbolTable.addSymbol(symbol);
-        }*/
+    public void checkFunctionCall(Tree<AbstractSymbol> funcCallTree) {
+        // We are on a leaf, check what type of terminal it is.
+        if (funcCallTree.getChildren().isEmpty()) {
+            TerminalSymbol terminal = (TerminalSymbol) funcCallTree.getNode();
+
+            // Check what terminal we are in to see what part of the statement we are in.
+            if (!terminal.isEpsilon()) {
+
+                // Get the name of the function and check it's previously declared.
+                if (terminal.getToken().getType() == ValueSymbol.VARIABLE) {
+                    String functionName = terminal.getToken().getLexeme();
+
+                }
+
+            }
+        }
+        for (Tree<AbstractSymbol> child : funcCallTree.getChildren()) {
+            checkFunctionCall(child);
+        }
 	}
 
     /**
