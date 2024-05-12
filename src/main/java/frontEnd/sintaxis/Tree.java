@@ -1,11 +1,12 @@
 package frontEnd.sintaxis;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class Tree<T> {
     private final T node;
-    private final LinkedList<Tree<T>> children;
-    private T parent;
+    private final List<Tree<T>> children;
+    private Tree<T> parent;
 
     public Tree(T node){
         this.node = node;
@@ -13,19 +14,19 @@ public class Tree<T> {
         parent = null;
     }
 
-    public Tree(Tree t){
-        this.node = (T) t.node;
+    public Tree(Tree<T> t){
+        this.node = t.node;
         children = new LinkedList<>();
-        parent = (T) t.parent;
+        parent = t.parent;
         for (var c : t.children){
-            children.add(new Tree(c));
+            children.add(new Tree<>(c));
         }
     }
 
     public Tree<T> addChild(T child){
         var c = new Tree<T>(child);
         children.add(c);
-        c.parent = (T) this;
+        c.parent = this;
         return c;
     }
 
@@ -37,11 +38,11 @@ public class Tree<T> {
         return node;
     }
 
-    public LinkedList<Tree<T>> getChildren() {
+    public List<Tree<T>> getChildren() {
         return children;
     }
 
-    public T getParent() {
+    public Tree<T> getParent() {
         return parent;
     }
 }

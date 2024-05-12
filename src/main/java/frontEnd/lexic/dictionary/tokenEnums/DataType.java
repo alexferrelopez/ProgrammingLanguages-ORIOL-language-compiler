@@ -19,6 +19,7 @@ public enum DataType implements TokenType {
     private final int size; // Size of the data type in Bytes
     private final Number maxValue; // Maximum value that this data type can hold
     private final Number minValue; // Minimum value that this data type can hold
+    private final static String TRUE_BOOLEAN = "alive"; // String representation of a boolean true
 
     // Constructor to initialize the instance fields (allow it to have a string value and its size in Bytes).
     DataType(String pattern, List<String> translation, int size, Number maxValue, Number minValue) {
@@ -63,5 +64,28 @@ public enum DataType implements TokenType {
     // Convert any Number to double
     private static double convertToDouble(Number number) {
         return number.doubleValue();
+    }
+
+    public boolean isValidType(ValueSymbol valueSymbol) {
+		return switch (this) {
+			case INTEGER -> valueSymbol == ValueSymbol.VALUE_INT;
+			case FLOAT -> valueSymbol == ValueSymbol.VALUE_FLOAT;
+			case STRING -> valueSymbol == ValueSymbol.VALUE_STRING;
+			case CHAR -> valueSymbol == ValueSymbol.VALUE_CHAR;
+			case BOOLEAN -> valueSymbol == ValueSymbol.VALUE_TRUE || valueSymbol == ValueSymbol.VALUE_FALSE;
+			default -> false;
+		};
+    }
+
+    public Object convertValue(String value) {
+        // Conversion logic based on dataType
+        return switch (this) {
+            case INTEGER -> Integer.parseInt(value);
+            case FLOAT -> Float.parseFloat(value);
+            case BOOLEAN -> value.equalsIgnoreCase(TRUE_BOOLEAN);
+            case CHAR -> value.charAt(0);
+            case STRING -> value;
+            default -> value; // No conversion needed
+        };
     }
 }
