@@ -22,7 +22,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
-    private Stack<AbstractSymbol> startTokensStck = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
+    private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
@@ -51,7 +51,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         } else {
             stack.push(new TerminalSymbol("EOF")); //Push the $ and the axioma to the stack
             stack.push(axioma);
-            startTokensStck.push(axioma);
+            startTokensStack.push(axioma);
         }
         try {
             lexicalAnalyzer.startLexicalAnalysis();
@@ -75,7 +75,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
                             stack.push(newOutput.get(i));
                             if(Arrays.asList(startTokens).contains(((AbstractSymbol)newOutput.get(i)).getName())){
-                                startTokensStck.push(newOutput.get(i));
+                                startTokensStack.push(newOutput.get(i));
                             }
                         }
                     }
@@ -150,15 +150,15 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
      */
     private void match(TerminalSymbol terminal) {
         if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
-            //System.out.println("MATCH: " + terminal.getName());
+            System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
             if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
                 //System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
-                AbstractSymbol symbolToSend = startTokensStck.pop();
+                AbstractSymbol symbolToSend = startTokensStack.pop();
                 if(terminal.getName().equals("CO")){
-                    startTokensStck.push(symbolToSend);
+                    startTokensStack.push(symbolToSend);
                 }
                 while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                 ){

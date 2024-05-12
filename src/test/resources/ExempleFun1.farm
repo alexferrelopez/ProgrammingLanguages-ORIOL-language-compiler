@@ -1,6 +1,6 @@
 oink : sumRange2 ( miau numA , oink numB , oink increment ) {
     oink result is 0.0 ;
-    poop void ;
+    poop result ;
 }
 
 oink : sumRange ( oink numA , oink numB , oink increment ) {
