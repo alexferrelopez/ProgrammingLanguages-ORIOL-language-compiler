@@ -3,8 +3,6 @@ package frontEnd.semantics;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.exceptions.InvalidAssignmentException;
-import frontEnd.exceptions.InvalidValueException;
-import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.BinaryOperator;
@@ -15,6 +13,7 @@ import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
+import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,26 @@ public class SemanticAnalyzer {
         this.symbolTable = symbolTable;
     }
 
+    private List<Token> convertSymbolsIntoTokens(List<AbstractSymbol> terminalSymbols) {
+        List<Token> tokens = new ArrayList<>();
+
+        // Loop through all leave symbols (which can only be terminals or EPSILON).
+        for (int i = terminalSymbols.size() - 1; i >= 0; i--) {
+
+            // Loop in inverse order since the first token is in the last terminal read.
+            AbstractSymbol symbol = terminalSymbols.get(i);
+            if (symbol.isTerminal()) {  // Safe check, not really necessary.
+                TerminalSymbol terminal = (TerminalSymbol) symbol;
+
+                // Only get token from the terminals that have any lexical meaning.
+                if (!terminal.isEpsilon()) {
+                    tokens.add(terminal.getToken());
+                }
+            }
+        }
+        return tokens;
+    }
+
     /**
      * Function to check the semantic of the tree received from the parser.
      * @param tree the tree that we receive from the parser.
@@ -38,7 +57,8 @@ public class SemanticAnalyzer {
         // We can use a switch statement to check the type of each node
         // We can use the method getType() to get the type of the node
         // Get a list of terminal symbols (tokens with lexical meaning).
-        List<Token> tokens = new ArrayList<>();
+        List<AbstractSymbol> terminalSymbols = TreeTraversal.getLeafNodesIterative(tree);
+        List<Token> tokens = convertSymbolsIntoTokens(terminalSymbols);
 
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
         switch (tree.getNode().toString()) {
@@ -46,7 +66,6 @@ public class SemanticAnalyzer {
                 break;
             case "assignation":
                 checkAssignationSemantics(tokens);
-                //generateAddressAssignation()
                 break;
             // ...
         }
@@ -67,6 +86,7 @@ public class SemanticAnalyzer {
     public void checkAssignationSemantics(List<Token> assignationTokens) {
         // Expected format: VARIABLE IS <value> PUNT_COMMA
         Token variableName = assignationTokens.get(0);
+        Token value = assignationTokens.get(2);
 
         // Check if the current symbol exists.
         Symbol<?> symbol = symbolTable.findSymbol(variableName.getLexeme());

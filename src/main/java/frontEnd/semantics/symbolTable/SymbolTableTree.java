@@ -21,10 +21,11 @@ public class SymbolTableTree implements SymbolTableInterface {
 	 * Add a scope to the tree
 	 */
 	@Override
-	public void addScope(ScopeNode scopeNode) {
+	public void addScope(ScopeType scopeType) {
+		currentScopeLevel++;
+		ScopeNode scopeNode = new ScopeNode(currentScopeLevel, scopeType);
 		currentScope.addChild(scopeNode);
 		currentScope = scopeNode;
-		currentScopeLevel++;
 	}
 
 	@Override
