@@ -70,7 +70,7 @@ public class SemanticAnalyzer {
                 }
                 else {
                     // Assignment
-                    checkAssignationSemantics(tokens);
+                    checkAssignationSemantics(tokens, tree);
                 }
                 break;
             // ...
@@ -81,9 +81,20 @@ public class SemanticAnalyzer {
     public <T> boolean statementIsFuncCall(Tree<T> rootNode) {
         for (Tree<T> child : rootNode.getChildren()) {
             // Traverse to find "assignation'" node
-            if (child.getNode().equals("assignation'")) {
+            if (child.getNode().equals("assignation")) {
                 // Check for "func_call" in the subtree of "assignation'"
-				return TreeTraversal.hasSpecificChildType(child, "func_call'");
+				return TreeTraversal.hasSpecificChildType(child, "arg");
+            }
+        }
+        return false;
+    }
+
+    public <T> boolean assignmentIsFunction(Tree<T> rootNode) {
+        for (Tree<T> child : rootNode.getChildren()) {
+            // Traverse to find "assignation'" node
+            if (child.getNode().equals("assignation")) {
+                // Check for "func_call" in the subtree of "assignation'"
+                return TreeTraversal.hasSpecificChildType(child, "arg");
             }
         }
         return false;
@@ -101,7 +112,7 @@ public class SemanticAnalyzer {
         return true;
     }
 
-    public void checkAssignationSemantics(List<Token> assignationTokens) {
+    public void checkAssignationSemantics(List<Token> assignationTokens, Tree<AbstractSymbol> rootTree) {
         // Expected format: VARIABLE IS <value> PUNT_COMMA
         Token variableName = assignationTokens.get(0);
 
@@ -127,6 +138,11 @@ public class SemanticAnalyzer {
         // Check if the statement is a valid expression (only one function allowed).
         if (!hasSingleFunction(expressionTokens)) {
             return;
+        }
+
+        // Check if assignment is done with a function.
+        if (!variable.isVariable()) {
+            // TODO: Check valid function call, it is different than normal statementFuncCall.
         }
 
         switch (variable.getDataType()) {
@@ -376,6 +392,43 @@ public class SemanticAnalyzer {
             checkFunctionCall(child, currentParameter);
         }
 	}
+
+    private void checkFunctionAssignment(Tree<AbstractSymbol> funcCallTree, int currentParameter) {
+        // We are on a leaf, check what type of terminal it is.
+        if (funcCallTree.getChildren().isEmpty()) {
+            TerminalSymbol terminal = (TerminalSymbol) funcCallTree.getNode();
+
+            // Check what terminal we are in to see what part of the statement we are in.
+            if (!terminal.isEpsilon()) {
+
+                // Get the name of the variable (or function) and check it's previously declared.
+                if (terminal.getToken().getType() == ValueSymbol.VARIABLE) {
+                    AbstractSymbol variableParentSymbol = funcCallTree.getParent().getNode();
+
+                    // Get the name of the variable
+                    if (variableParentSymbol.getName().equals("assignation")) {
+                        checkFunctionExists(terminal);
+                    }
+
+                    // Get the name of the parameters
+                    if (variableParentSymbol.getName().equals("func_call")) {
+                        // Check if the parameter is a function = invalid.
+                        String functionName = terminal.getToken().getLexeme();
+                        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
+                        if (functionSymbol != null && !functionSymbol.isVariable()) {
+                            checkFunctionParameters(funcCallTree.getParent(), (FunctionSymbol<?>) functionSymbol, currentParameter);
+                        }
+
+                        currentParameter++;
+                    }
+                }
+
+            }
+        }
+        for (Tree<AbstractSymbol> child : funcCallTree.getChildren()) {
+            checkFunctionCall(child, currentParameter);
+        }
+    }
 
     /**
      * Function to check if the parameters of a function are correct.
