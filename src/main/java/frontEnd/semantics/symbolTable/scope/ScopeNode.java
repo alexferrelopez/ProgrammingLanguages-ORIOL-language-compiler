@@ -1,5 +1,6 @@
 package frontEnd.semantics.symbolTable.scope;
 
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import java.util.ArrayList;
@@ -13,12 +14,23 @@ public class ScopeNode {
 	private final int scopeLevel; 								// Level of the scope
 	private final Map<String, Symbol<?>> symbols; 				// List of symbols in the scopes (key = symbol name, value = symbol).
 	private final ScopeType scopeType;
+	private final DataType returnType;
 
-	public ScopeNode(int scopeLevel, ScopeType scopeType) {
+	public ScopeNode(int scopeLevel, ScopeType scopeType, ScopeNode parent) {
 		this.symbols = new HashMap<>();
 		this.scopeLevel = scopeLevel;
-		this.parent = null;
+		this.parent = parent;
 		this.scopeType = scopeType;
+		this.returnType = null;
+	}
+
+	public ScopeNode(int scopeLevel, ScopeType scopeType, ScopeNode parent, DataType returnType) {
+		this.symbols = new HashMap<>();
+		this.scopeLevel = scopeLevel;
+		this.parent = parent;
+		this.scopeType = scopeType;
+		this.returnType = scopeType == ScopeType.FUNCTION ? returnType : null;
+
 	}
 
 	/**
@@ -105,5 +117,21 @@ public class ScopeNode {
 	 */
 	public List<ScopeNode> getChildren() {
 		return children;
+	}
+
+
+	public ScopeNode getParent() {
+		return parent;
+	}
+	public Map<String, Symbol<?>> getSymbols() {
+		return symbols;
+	}
+
+	public ScopeType getScopeType() {
+		return scopeType;
+	}
+
+	public DataType getReturnType() {
+		return returnType;
 	}
 }
