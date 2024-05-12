@@ -7,6 +7,19 @@ import java.util.List;
 import java.util.Stack;
 
 public class TreeTraversal {
+	// Utility function to check if a node has a specific child type
+	public static <T> boolean hasSpecificChildType(Tree<T> node, String childType) {
+		if (node.getNode().equals(childType)) {
+			return true;
+		}
+		for (Tree<T> child : node.getChildren()) {
+			if (hasSpecificChildType(child, childType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// Function used to navigate through the whole tree using DFS approach and get only the leaf nodes (which are the tokens).
 	public static <T> List<T> getLeafNodesIterative(Tree<T> root) {
 		List<T> leaves = new ArrayList<>();
