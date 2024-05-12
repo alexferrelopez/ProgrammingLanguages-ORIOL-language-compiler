@@ -1,4 +1,4 @@
-package frontEnd.exceptions;
+package frontEnd.exceptions.lexic;
 
 public class InvalidFileException extends Exception {
 

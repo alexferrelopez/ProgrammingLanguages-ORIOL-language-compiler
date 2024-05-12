@@ -1,7 +1,10 @@
 package frontEnd.semantics.symbolTable.symbol;
 
+import frontEnd.exceptions.semantics.InvalidValueException;
+import frontEnd.exceptions.semantics.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
+import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +21,17 @@ public abstract class Symbol<Type> {
     private final long lineDeclaration;
     private final List<Long> lineUsage;
     private Type value;                 // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
-    private long offset;	            // Used in code generation to calculate the offset of the symbol in the stack.
+    private long offset;                // Used in code generation to calculate the offset of the symbol in the stack.
     // Offset for a variable is the distance from the base pointer to the variable.
     // Offset for a function is the label in the assembler code.
-	private final Class<Type> typeClass; // Class token to maintain type safety
+    private final Class<Type> typeClass; // Class token to maintain type safety
 
-	public Symbol(String name, DataType dataType, long lineDeclaration, Class<Type> typeClass) {
+    public Symbol(String name, DataType dataType, long lineDeclaration, Class<Type> typeClass) {
         this.name = name;
         this.dataType = dataType;
         this.lineDeclaration = lineDeclaration;
-		this.typeClass = typeClass;
-		this.lineUsage = new ArrayList<>();
+        this.typeClass = typeClass;
+        this.lineUsage = new ArrayList<>();
     }
 
     public String getName() {
@@ -84,7 +87,8 @@ public abstract class Symbol<Type> {
 
     /**
      * Check if a symbol is a variable.
-     * @return  true if the symbol is a variable; false otherwise.
+     *
+     * @return true if the symbol is a variable; false otherwise.
      */
     public abstract boolean isVariable();
 
@@ -95,3 +99,4 @@ public abstract class Symbol<Type> {
     public boolean isValidType(ValueSymbol valueSymbol) {
         return this.dataType.isValidType(valueSymbol);
     }
+}

@@ -1,6 +1,8 @@
-package frontEnd.exceptions;
+package frontEnd.exceptions.semantics;
 
-public class InvalidValueTypeException extends Exception {
+import frontEnd.exceptions.SemanticException;
+
+public class InvalidValueTypeException extends SemanticException {
 
     private final static String ERROR_MESSAGE = "LEXIC: Error while lexical analysis of file";
 

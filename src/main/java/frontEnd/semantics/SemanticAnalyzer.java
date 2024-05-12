@@ -2,7 +2,8 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
-import frontEnd.exceptions.InvalidAssignmentException;
+import frontEnd.exceptions.SemanticException;
+import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
@@ -59,7 +60,7 @@ public class SemanticAnalyzer {
      * @param tree the tree that we receive from the parser.
      */
 	// TODO: Make it throw a generic "SemanticsException" class
-    public void sendTree(Tree<AbstractSymbol> tree) throws InvalidAssignmentException {
+    public void sendTree(Tree<AbstractSymbol> tree) throws SemanticException {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node

@@ -2,9 +2,10 @@ package frontEnd.sintaxis;
 
 import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
-import frontEnd.exceptions.InvalidAssignmentException;
-import frontEnd.exceptions.InvalidFileException;
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.SemanticException;
+import frontEnd.exceptions.semantics.InvalidAssignmentException;
+import frontEnd.exceptions.lexic.InvalidFileException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.semantics.SemanticAnalyzer;
@@ -122,7 +123,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
 			try {
 				semanticAnalyzer.sendTree(new Tree(new TerminalSymbol("EOF")));
-			} catch (InvalidAssignmentException e) {
+			} catch (SemanticException e) {
 				// Theoretically there should never be an invalid assignment exception.
 			}
 
@@ -180,7 +181,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 //printTree(parent);//TODO send this tree to the semantical analyzer
 				try {
 					semanticAnalyzer.sendTree(parent);
-				} catch (InvalidAssignmentException e) {
+				} catch (SemanticException e) {
 					// TODO: Veure que fer :) - Recuperació d'errors?
 				}
 			}
