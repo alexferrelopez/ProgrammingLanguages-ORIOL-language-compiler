@@ -6,6 +6,8 @@ import frontEnd.exceptions.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
+import frontEnd.semantics.symbolTable.scope.ScopeType;
+import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -609,20 +611,20 @@ public class SemanticAnalyzer {
 
 	private boolean checkUniquevariableNames(List<VariableSymbol<?>> variables) {
 		for(int i = 0; i < variables.size(); i++){
-			for(int j = i+1; j < variables.size(); j++){
-				if(variables.get(i).getName().equals(variables.get(j).getName())){
-					errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int)variables.get(i).getLineDeclaration(), 0, "Variable " + variables.get(i).getName() + " is already defined");
-					return true;
-				}
-			}
-		}
+			for(int j = i + 1; j < variables.size(); j++) {
+                if (variables.get(i).getName().equals(variables.get(j).getName())) {
+                    errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int) variables.get(i).getLineDeclaration(), 0, "Variable " + variables.get(i).getName() + " is already defined");
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
     // Additional methods for semantic checks can be added here
     public void checkWhileLoopSemantics(List<Token> whileLoopTokens) {
         // Expected format: WHILE (<boolean_expression>) {}
-        int indexLastTokenInCondition = getIndexLastTokenUntilSeparator(whileLoopTokens, SpecialSymbol.PT);
+        int indexLastTokenInCondition = getIndexOfLastTokenUntilSeparator(whileLoopTokens, SpecialSymbol.PT);
         List<Token> expressionTokens = whileLoopTokens.subList(2, indexLastTokenInCondition);
 
         // Check if the condition expression is valid.
@@ -636,7 +638,7 @@ public class SemanticAnalyzer {
 
     public void checkIfSemantics(List<Token> ifTokens) {
         // Expected format: IF (<boolean_expression>) {}
-        int indexLastTokenInCondition = getIndexLastTokenUntilSeparator(ifTokens, SpecialSymbol.PT);
+        int indexLastTokenInCondition = getIndexOfLastTokenUntilSeparator(ifTokens, SpecialSymbol.PT);
         List<Token> expressionTokens = ifTokens.subList(2, indexLastTokenInCondition);
 
         // Check if the condition expression is valid.
@@ -649,27 +651,35 @@ public class SemanticAnalyzer {
     }
 
     public void checkForSemantics(List<Token> forTokens) {
-        // Expected format: IF (<boolean_expression>) {}
-        int indexLastTokenInCondition = getIndexLastTokenUntilSeparator(forTokens, ReservedSymbol.TO);
+        // Expected format: FOR (<declaration> TO <literal_num>, <assignation> ) {}
+        int indexLastTokenInCondition = getIndexOfLastTokenUntilSeparator(forTokens, ReservedSymbol.TO);
         List<Token> declarationTokens = forTokens.subList(2, indexLastTokenInCondition);
 
         // Check if the declaration is valid.
         checkDeclaration(declarationTokens);
         //TODO, NO ERROR CHECKING? ALSO SHOULD PROBABLY RETURN THE TYPE OF THE VARIABLE DECLARED
 
-        //TODO CHECK literal_num type
+        Token numericValueToken = forTokens.get(indexLastTokenInCondition + 2);
 
-        int indexLastTokenUntilSeparator = getIndexLastTokenUntilSeparator(forTokens, SpecialSymbol.PT);
+        if (checkVariableExists(numericValueToken) != null) {
+            DataType operandDataType = getOperandDataType(numericValueToken);
+        } else {
+            errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, numericValueToken.getLine(), numericValueToken.getColumn(), SemanticErrorType.VARIABLE_NOT_DECLARED.getMessage());
+
+        }
+        // Check if the numeric value is the same type as the variable declared.
+
+        int indexLastTokenUntilSeparator = getIndexOfLastTokenUntilSeparator(forTokens, SpecialSymbol.PT);
         List<Token> assignationTokens = forTokens.subList(indexLastTokenInCondition + 3, indexLastTokenUntilSeparator);
         try {
             checkAssignationSemantics(assignationTokens, null);
-            //TODO WARNING IF THE VARIABLE IS NOT THE SAME AS THE ONE DECLARED, NOT ERROR
+            //TODO WARNING IF THE VARIABLE IS NOT THE SAME AS THE ONE DECLARED
         } catch (InvalidAssignmentException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private int getIndexLastTokenUntilSeparator(List<Token> tokenList, TokenType separator) {
+    private int getIndexOfLastTokenUntilSeparator(List<Token> tokenList, TokenType separator) {
         int indexLastTokenInCondition = 0;
         for (int i = 0; i < tokenList.size(); i++) {
             Token ifToken = tokenList.get(i);
@@ -680,7 +690,6 @@ public class SemanticAnalyzer {
         }
         return indexLastTokenInCondition;
     }
-}
 
 	private List<VariableSymbol<?>> getFunctionParameters(List<Token> tokens) {
 		List<VariableSymbol<?>> parameters = new ArrayList<>();
