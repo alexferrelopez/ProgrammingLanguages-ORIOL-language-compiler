@@ -62,6 +62,37 @@ public class SymbolTableTree implements SymbolTableInterface {
 	}
 
 	/**
+	 * Find a symbol globally in all the scopes.
+	 * @param symbolName	the name of the symbol.
+	 * @return	the symbol with the given name, or null if the symbol is not in the scope.
+	 */
+	@Override
+	public Symbol<?> findSymbolGlobally(String symbolName) {
+		return this.currentScope.findSymbolGlobally(symbolName);
+	}
+
+	/**
+	 * Find if a symbol exists in the whole symbols table.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return true if the symbol exists; false otherwise.
+	 */
+	@Override
+	public boolean containsSymbol(String symbolName) {
+		return (this.currentScope.findSymbol(symbolName) != null);
+	}
+
+	/**
+	 * Find if a symbol exists in the whole symbols table.
+	 *
+	 * @param symbolName the name of the symbol.
+	 * @return true if the symbol exists; false otherwise.
+	 */
+	public boolean containsSymbolGlobally(String symbolName) {
+		return (this.currentScope.findSymbolGlobally(symbolName) != null);
+	}
+
+	/**
 	 * Find a scope at a given level (scope level)
 	 */
 	@Override
@@ -90,8 +121,7 @@ public class SymbolTableTree implements SymbolTableInterface {
 	@Override
 	public void leaveCurrentScope() {
 		currentScopeLevel--;
-		ScopeNode parent = currentScope.getParent();
-		currentScope = parent;
+		this.currentScope = this.currentScope.getParent();
 	}
 
 	public ScopeNode getCurrentScope() {

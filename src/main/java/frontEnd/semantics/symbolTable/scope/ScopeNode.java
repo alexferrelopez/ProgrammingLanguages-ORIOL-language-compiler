@@ -71,6 +71,31 @@ public class ScopeNode {
 	}
 
 	/**
+	 * Find a symbol globally.
+	 * @param symbolName	the name of the symbol.
+	 * @return	the symbol with the given name, or null if the symbol is not in the scope.
+	 */
+	public Symbol<?> findSymbolGlobally(String symbolName) {
+		// If the node is root, just search the variable in the same scope (top-level).
+		if (this.scopeType == ScopeType.GLOBAL || this.parent == null) {
+			return searchSymbolInScope(symbolName);
+		}
+
+		// In any other scope, we have to check on the same scope and their parent's (until reaching root).
+		Symbol<?> symbol = searchSymbolInScope(symbolName);
+		if (symbol != null) {
+			return symbol;
+		}
+
+		// If the symbol is not found, search on the parent's scope.
+		return this.parent.findSymbol(symbolName);
+	}
+
+	public ScopeNode getParent() {
+		return parent;
+	}
+
+	/**
 	 * Get the level of the scope.
 	 * @return	the level of the scope.
 	 */

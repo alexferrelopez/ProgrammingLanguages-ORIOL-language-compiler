@@ -70,6 +70,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         System.out.println("Error gramatical"); //TODO throw exception
                         break;
                     }
+
+					//Get the unique symbols of the production (without same reference)
                     List<AbstractSymbol> newOutput = getUniqueReferenceSymbols(output);
                     for (int i = newOutput.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
                         if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
@@ -115,6 +117,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 }
                 //System.out.println("Stack: " + stack);
             }
+
+			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
             semanticAnalyzer.sendTree(new Tree(new TerminalSymbol("EOF")));
 
         } catch (InvalidFileException | InvalidTokenException invalidFile) {
@@ -189,5 +193,9 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         );
 
         printTree.display(tree);
+    }
+
+    public Tree<AbstractSymbol> getTree() {
+        return tree;
     }
 }
