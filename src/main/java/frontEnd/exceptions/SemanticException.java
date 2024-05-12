@@ -2,7 +2,7 @@ package frontEnd.exceptions;
 
 public class SemanticException extends Exception {
 
-    private final static String ERROR_MESSAGE = "LEXIC: Error while lexical analysis of file";
+    private final static String ERROR_MESSAGE = "SEMANTIC: Error while semantic analysis of code.";
 
     public SemanticException() {
         super(ERROR_MESSAGE);
