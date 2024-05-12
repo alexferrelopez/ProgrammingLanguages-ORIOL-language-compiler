@@ -2,6 +2,7 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
+import frontEnd.exceptions.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.*;
@@ -585,7 +586,7 @@ public class SemanticAnalyzer {
 		DataType dataTypeReturn = (DataType) tokens.get(0).getType();
 		long lineDeclaration = tokens.get(0).getLine();
 
-		FunctionSymbol functionSymbol = new FunctionSymbol(functionName, dataTypeReturn, functionParameters, lineDeclaration);
+		FunctionSymbol functionSymbol = new FunctionSymbol(functionName, dataTypeReturn, functionParameters, lineDeclaration, null);
 
 		symbolTable.addSymbol(functionSymbol);
 		symbolTable.addScope(ScopeType.FUNCTION, dataTypeReturn);
@@ -644,7 +645,7 @@ public class SemanticAnalyzer {
 							String name = token.getLexeme();
 							long lineDeclaration = token.getLine();
 							DataType dt = (DataType) tokens.get(i-1).getType();
-							parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true));
+							parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
 						}
 
 						System.out.println(tt.toString());
