@@ -19,8 +19,10 @@
 <arg_list> ::= COMMA <value> <arg_list>  | ε
 <declaration> ::= <data_type> <assignation> PUNT_COMMA | <assignation> PUNT_COMMA
 <data_type> ::= INTEGER | FLOAT | CHAR | STRING | BOOLEAN | VOID
-<assignation> ::= VARIABLE IS <assignation'>
-<assignation'> ::= <log_1>
+<assignation> ::= VARIABLE <assignation'>
+<assignation'> ::= <var_assignation> | <func_call'>
+<var_assignation> ::= IS <var_assignation'>
+<var_assignation'> ::= <log_1>
 <expression> ::= <declaration> | <condition> | <loop> | <func_call> PUNT_COMMA | <return_stmt>
 <value> ::= <literal_num> | <literal_bool> | VALUE_CHAR | <func_call>
 <literal_num> ::= VALUE_FLOAT | VALUE_INT
@@ -30,7 +32,8 @@
 <condition_expr> ::= PO <expr_bool> PT <func_body>
 <condition_else> ::= ELSE <func_body> | ε
 <loop> ::= <loop_for> | <loop_while>
-<loop_for> ::= FOR PO <declaration> TO <literal_num> COMMA <assignation> PT <func_body>
+<loop_for> ::= FOR PO <loop_variable> TO <value> COMMA <assignation> PT <func_body>
+<loop_variable> ::= <data_type> <assignation> | <assignation>
 <loop_while> ::= WHILE <condition_expr>
 <log_1> ::= <log_2> <log_1'>
 <log_1'> ::= OR <log_2> <log_1'> | ε

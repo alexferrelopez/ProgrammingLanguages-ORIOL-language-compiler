@@ -3,6 +3,8 @@ package frontEnd.semantics;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.exceptions.InvalidAssignmentException;
+import frontEnd.exceptions.InvalidValueException;
+import frontEnd.exceptions.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
 import frontEnd.lexic.dictionary.tokenEnums.BinaryOperator;
@@ -64,9 +66,15 @@ public class SemanticAnalyzer {
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
         switch (tree.getNode().toString()) {
             case "declaration":
-                break;
-            case "assignation":
-                checkAssignationSemantics(tokens);
+				checkAssignationSemantics(tokens);
+				// Check if it's an assignment or a declaration
+				if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
+					// Declaration
+				}
+				else {
+					// Assignment
+					checkAssignationSemantics(tokens);
+				}
                 break;
             // ...
         }
@@ -87,7 +95,6 @@ public class SemanticAnalyzer {
     public void checkAssignationSemantics(List<Token> assignationTokens) {
         // Expected format: VARIABLE IS <value> PUNT_COMMA
         Token variableName = assignationTokens.get(0);
-        Token value = assignationTokens.get(2);
 
         // Check if the current symbol exists.
         Symbol<?> symbol = symbolTable.findSymbol(variableName.getLexeme());
@@ -235,11 +242,15 @@ public class SemanticAnalyzer {
     }
 
     private void checkValidBooleanExpression(List<Token> expressionTokens) throws InvalidAssignmentException {
-        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
-        List<TokenType> validTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
+        checkLogicalExpression(expressionTokens);
+        checkRelationalExpression(expressionTokens);
+    }
 
+    private void validateLogicalRelationalTokens(List<Token> expressionTokens, List<TokenType> validTokens) throws InvalidAssignmentException {
         boolean validExpression = true;
         for (Token token : expressionTokens) {
+
+            // Check if the token is valid (it is inside the list of "validTokens" which is filled previously).
             if (!validTokens.contains(token.getType())) {
                 validExpression = false;
                 errorHandler.reportError(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
@@ -254,8 +265,21 @@ public class SemanticAnalyzer {
 
         // Check if the expression is valid
         if (!validExpression) {
-           throw new InvalidAssignmentException(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
+            throw new InvalidAssignmentException(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION.getMessage());
         }
+    }
+
+    private void checkRelationalExpression(List<Token> relationalTokens) throws InvalidAssignmentException {
+        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
+        List<TokenType> validRelationalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ);
+        validateLogicalRelationalTokens(relationalTokens, validRelationalTokens);
+    }
+
+    private void checkLogicalExpression(List<Token> logicalTokens) throws InvalidAssignmentException {
+        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
+        List<TokenType> validLogicalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
+
+        validateLogicalRelationalTokens(logicalTokens, validLogicalTokens);
     }
 
     private boolean checkVariableSameType(Token token, List<DataType> dataTypes) {

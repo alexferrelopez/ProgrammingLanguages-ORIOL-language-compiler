@@ -20,7 +20,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStck = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
-    private String[] startTokens = new String[]{"program", "func_decl", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
+    private String[] startTokens = new String[]{"program", "func_type", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler) {
@@ -66,11 +66,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         System.out.println("Error gramatical"); //TODO throw exception
                         break;
                     }
-                    for (int i = output.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
-                        if (!output.get(i).getName().equals(TerminalSymbol.EPSILON)) {
-                            stack.push(output.get(i));
-                            if(Arrays.asList(startTokens).contains(((AbstractSymbol)output.get(i)).getName())){
-                                startTokensStck.push(output.get(i));
+                    //Get the unique symbols of the production (without same reference)
+                    List<AbstractSymbol> newOutput = getUniqueReferenceSymbols(output);
+
+                    for (int i = newOutput.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
+                        if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
+                            stack.push(newOutput.get(i));
+                            if(Arrays.asList(startTokens).contains(newOutput.get(i).getName())){
+                                startTokensStck.push(newOutput.get(i));
                             }
                         }
                     }
@@ -98,7 +101,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         }while (!found);//We sholud always find the symbol that we are analyzing. Gramatical error if we don't
                     }
                     //Once we found the symbol that we are analyzing we add the children to the tree
-                    for(AbstractSymbol as: output){
+                    for(AbstractSymbol as: newOutput){
                         tree.addChild(as);
                         if(as.getName().equals(TerminalSymbol.EPSILON)){//If the children is epsilon we have to go up in the tree
                             if(!Objects.isNull(tree.getParent())){
@@ -110,6 +113,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 }
                 System.out.println("Stack: " + stack);
             }
+            //Go to the root of the tree
+            while(!Objects.isNull(tree.getParent())){
+                tree = tree.getParent();
+            }
+            printTree(tree);
+
+
+
 
         } catch (InvalidFileException | InvalidTokenException invalidFile) {
             invalidFile.printStackTrace();
@@ -118,6 +129,23 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         //Display the firsts and follows of the grammar for debugging purposes
         //First.displayAllFirsts(grammarMap);
         //Follow.displayAllFollows(grammarMap);
+    }
+
+    /**
+     * Obtain a list of unique reference symbols from the output of the parsing table
+     * @param output The output of the parsing table
+     * @return new list of unique reference symbols
+     */
+    private List<AbstractSymbol> getUniqueReferenceSymbols(List<AbstractSymbol> output) {
+        List<AbstractSymbol> newOutput = new LinkedList<>();
+        for(AbstractSymbol as: output){
+            if(as.isTerminal()) {
+                newOutput.add(new TerminalSymbol(as.getName()));
+            } else {
+                newOutput.add(new NonTerminalSymbol(as.getName()));
+            }
+        }
+        return newOutput;
     }
 
 
@@ -146,7 +174,6 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     parent = new Tree<>(terminal);
                 }
                 printTree(parent);//TODO send this tree to the semantical analyzer
-                System.out.println();
                 //SemanticAnalyzer.sendTree(parent);
             }
             try {
@@ -167,5 +194,9 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         );
 
         printTree.display(tree);
+    }
+
+    public Tree<AbstractSymbol> getTree() {
+        return tree;
     }
 }
