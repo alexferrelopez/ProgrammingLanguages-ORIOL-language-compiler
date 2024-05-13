@@ -2,12 +2,14 @@ package frontEnd.sintaxis;
 
 import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
-import frontEnd.exceptions.InvalidAssignmentException;
-import frontEnd.exceptions.InvalidFileException;
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.SemanticException;
+import frontEnd.exceptions.semantics.InvalidAssignmentException;
+import frontEnd.exceptions.lexic.InvalidFileException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.semantics.SemanticAnalyzer;
+import frontEnd.semantics.SemanticAnalyzerInterface;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.*;
@@ -18,16 +20,16 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private final LexicalAnalyzerInterface lexicalAnalyzer;
     private final SyntacticErrorHandler errorHandler;
 
-    private final SemanticAnalyzer semanticAnalyzer;
+    private final SemanticAnalyzerInterface semanticAnalyzer;
 
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
-    private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
+    private final String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
-    public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzer semanticAnalyzer) {
+    public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
         this.lexicalAnalyzer = lexicalAnalyzer;
         this.errorHandler = parserErrorHandler;
         this.semanticAnalyzer = semanticAnalyzer;
@@ -122,8 +124,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
 
 			try {
-				semanticAnalyzer.sendTree(new Tree<>(new TerminalSymbol("EOF")));
-			} catch (InvalidAssignmentException e) {
+				semanticAnalyzer.receiveSyntacticTree(new Tree<>(new TerminalSymbol("EOF")));
+			} catch (SemanticException e) {
 				// Theoretically there should never be an invalid assignment exception.
 			}
 
@@ -178,11 +180,10 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 if(terminal.getName().equals("CT")){
                     parent = new Tree<>(terminal);
                 }
-                printTree(parent);//TODO send this tree to the semantical analyzer
-
+                //printTree(parent);//TODO send this tree to the semantical analyzer
 				try {
-					semanticAnalyzer.sendTree(parent);
-				} catch (InvalidAssignmentException e) {
+					semanticAnalyzer.receiveSyntacticTree(parent);
+				} catch (SemanticException e) {
 					// TODO: Veure que fer :) - Recuperació d'errors?
 				}
 			}

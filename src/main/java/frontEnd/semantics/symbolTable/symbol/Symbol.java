@@ -1,7 +1,7 @@
 package frontEnd.semantics.symbolTable.symbol;
 
-import frontEnd.exceptions.InvalidValueException;
-import frontEnd.exceptions.InvalidValueTypeException;
+import frontEnd.exceptions.semantics.InvalidValueException;
+import frontEnd.exceptions.semantics.InvalidValueTypeException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;

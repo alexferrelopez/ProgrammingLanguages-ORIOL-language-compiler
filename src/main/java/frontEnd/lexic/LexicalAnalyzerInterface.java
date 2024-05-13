@@ -1,7 +1,7 @@
 package frontEnd.lexic;
 
-import frontEnd.exceptions.InvalidFileException;
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.lexic.InvalidFileException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Token;
 
 public interface LexicalAnalyzerInterface {
