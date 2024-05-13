@@ -646,6 +646,7 @@ public class SemanticAnalyzer {
 
     public void checkForSemantics(List<Token> forTokens, Tree<AbstractSymbol> tree) {
         // Expected format: FOR (<declaration> TO <literal_num>, <assignation> ) {}
+
         int indexLastTokenInCondition = getIndexOfFirstSeparator(forTokens, ReservedSymbol.TO);
         List<Token> declarationTokens = forTokens.subList(2, indexLastTokenInCondition);
 
@@ -653,14 +654,18 @@ public class SemanticAnalyzer {
         Tree<AbstractSymbol> abstractSymbolTree = tree.getChildren().get(2);
         String firstTokenName = abstractSymbolTree.getChildren().get(0).getNode().getName();
 
+        // Case where the first token starts a declaration
         if (firstTokenName.equals("data_type")) {
             // check if the declaration is a function call
             Symbol<?> symbol = symbolTable.findSymbolGlobally(declarationTokens.get(1).getLexeme());
-            if (symbol == null || !symbol.isVariable()) {
-                checkFunctionCall(abstractSymbolTree, 0);
-            } else {
+            if (symbol == null) {
                 checkDeclaration(declarationTokens);
+            } else if (!symbol.isVariable()) {
+                errorHandler.reportError(SemanticErrorType.ALREADY_USED_IDENTIFIER, declarationTokens.get(1).getLine(), declarationTokens.get(1).getColumn(), declarationTokens.get(1).getLexeme());
+            } else {
+                errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, declarationTokens.get(1).getLine(), declarationTokens.get(1).getColumn(), declarationTokens.get(1).getLexeme());
             }
+        // Case where the first token starts an assignment
         } else {
             // Assignment
             try {
@@ -670,12 +675,12 @@ public class SemanticAnalyzer {
             }
         }
 
-        Token numericValueToken = forTokens.get(indexLastTokenInCondition + 1);
+        Token limitValue = forTokens.get(indexLastTokenInCondition + 1);
         //TODO
-        if (checkVariableExists(numericValueToken) != null) {
-            DataType operandDataType = getOperandDataType(numericValueToken);
+        if (checkVariableExists(limitValue) != null) {
+            DataType operandDataType = getOperandDataType(limitValue);
         } else {
-            errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, numericValueToken.getLine(), numericValueToken.getColumn(), numericValueToken.getLexeme());
+            errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, limitValue.getLine(), limitValue.getColumn(), limitValue.getLexeme());
         }
         // Check if the numeric value is the same type as the variable declared.
 
