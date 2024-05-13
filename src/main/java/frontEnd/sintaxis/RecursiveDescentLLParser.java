@@ -122,6 +122,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             }
 
 			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
+
 			try {
 				semanticAnalyzer.receiveSyntacticTree(new Tree<>(new TerminalSymbol("EOF")));
 			} catch (SemanticException e) {
