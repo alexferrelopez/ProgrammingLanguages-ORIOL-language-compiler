@@ -1,16 +1,16 @@
 package errorHandlers.warningTypes;
 
 /**
- * Enum for different types of parser warnings
+ * Enum for different types of parser/syntactic analyzer warnings
  */
-public enum ParserWarningType implements WarningType {
+public enum SyntacticWarningType implements WarningType {
 
     ;
     //TODO: Add different types of warnings
 
     final String message;
 
-    ParserWarningType(String message) {
+    SyntacticWarningType(String message) {
         this.message = message;
     }
 

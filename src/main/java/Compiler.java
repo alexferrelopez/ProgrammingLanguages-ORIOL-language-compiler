@@ -2,6 +2,8 @@ import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
+import errorHandlers.errorTypes.ErrorType;
+import errorHandlers.warningTypes.WarningType;
 import frontEnd.intermediateCode.TACGenerator;
 import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
@@ -19,7 +21,7 @@ public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
     private TACGenerator tacGenerator;
-    private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
+    private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
@@ -38,7 +40,7 @@ public class Compiler implements CompilerInterface {
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
-
+        // ---- BACK END ---- //
     }
 
     /**
@@ -72,7 +74,7 @@ public class Compiler implements CompilerInterface {
      */
     @Override
     public boolean hasErrors() {
-        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
             if (abstractErrorHandler.hasErrors()) {
                 return true;
             }
@@ -81,9 +83,26 @@ public class Compiler implements CompilerInterface {
     }
 
     @Override
+    public boolean hasWarnings() {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+            if (abstractErrorHandler.hasWarnings()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void printErrors() {
-        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
             abstractErrorHandler.printErrors();
+        }
+    }
+
+    @Override
+    public void printWarnings() {
+        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+            abstractErrorHandler.printWarnings();
         }
     }
 }

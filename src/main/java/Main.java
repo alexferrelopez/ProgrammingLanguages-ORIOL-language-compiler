@@ -35,6 +35,10 @@ public class Main {
         CompilerInterface compiler = new Compiler(codeFilePath);
         compiler.compileCode();
 
+        if (compiler.hasWarnings()) {
+            compiler.printWarnings();
+        }
+
         // Prints for Debugging purpose
         if (compiler.hasErrors()) {
             System.out.println("Compilation failed!");
