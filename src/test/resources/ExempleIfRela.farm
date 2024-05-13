@@ -1,8 +1,21 @@
-miau : ranch ( ) {
-    miau a is 2;
-    miau b is 3;
-    check ( a sm b ) {
-        miau a is 4;
-    }
+miau : f1 ( miau tio, miau tia ) {
     poop 0 ;
+}
+
+miau : f2 ( miau tio, miau tia ) {
+    poop tio ;
+}
+
+miau : ranch ( ) {
+    miau a is 2 ;
+
+    check ( a sm a ) {
+        miau b is 3 ;
+        b is 4 ;
+    }
+
+    f1 ( a, b ) ;
+
+    miau abcd is 0 ;
+    poop 0;
 }

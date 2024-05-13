@@ -22,7 +22,31 @@ public class TACGenerator {
         this.funcTreeList = getFunctionNodes(tree);
         // Remove the last element of the list, which is the program node
         this.funcTreeList.remove(this.funcTreeList.size() - 1);
+
+        // Generate TAC code for each function
+        for (Tree<AbstractSymbol> funcTree : this.funcTreeList) {
+            // Add a label for the function, result: name:
+            List<Tree<AbstractSymbol>> leafNodes = funcTree.getLeafNodes(tree);
+            String functionName = ((TerminalSymbol) funcTree.getChildren().get(2).getChildren().get(0).getChildren().get(0).getNode()).getToken().getLexeme();
+            tacModule.addFunctionLabel(functionName);
+
+            // Start the function with result: BeginFunc, operand1: bytes_needed
+            // The bytes_needed are calculated by the number of variables declared in the function
+            int bytesNeeded = 0;
+            // Use symbolTable to get the number of bytes needed. The node of the function has a hash table with the variables declared in the function
+            // TODO -> calculate bytesNeeded
+            tacModule.addUnaryInstruction(null, "BeginFunc", Integer.toString(bytesNeeded));
+
+            generateCode(funcTree);
+
+            // End the function with result: EndFunc
+            tacModule.addUnaryInstruction(null, "EndFunc", null);
+        }
+
+        tacModule.addFunctionLabel("ranch");
+        // Generate TAC code for main program
         generateCode(program);
+        tacModule.addUnaryInstruction(null, "EndFunc", null);
     }
 
     private List<Tree<AbstractSymbol>> getFunctionNodes(Tree<AbstractSymbol> tree) {
@@ -102,7 +126,14 @@ public class TACGenerator {
             }
         }
 
-        tacModule.addUnaryInstruction(functionName, "call", parameters.toString());
+        for (String parameter : parameters) {
+            tacModule.addUnaryInstruction("", "PushParam", parameter);
+        }
+
+        int numberOfParameters = parameters.size();
+        // Create a new temporary variable to store the result of the function call
+        tacModule.addUnaryInstruction(functionName, "LCall","");
+        tacModule.addUnaryInstruction("", "PopParams", Integer.toString(numberOfParameters));
     }
 
     private void handleReturn(Tree<AbstractSymbol> tree) {
@@ -113,12 +144,12 @@ public class TACGenerator {
 
         if (leafNodes.size() == 1 && ((TerminalSymbol) leafNodes.get(0).getNode()).isEpsilon()) {
             // Return statement without a return value
-            tacModule.addUnaryInstruction(null, "poop", null);
+            tacModule.addUnaryInstruction("", "PopParams", "");
             return;
         }
 
         TerminalSymbol returnSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
-        tacModule.addUnaryInstruction(returnSymbol.getToken().getLexeme(), "poop", null);
+        tacModule.addUnaryInstruction("", "PopParams", returnSymbol.getToken().getLexeme());
     }
 
 

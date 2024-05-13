@@ -35,12 +35,13 @@ public class TACModule {
     }
 
     public void addConditionalJump(String condition, String targetLabel) {
-        this.instructions.add(new TACInstruction(targetLabel, "goto", condition , null));
+        this.instructions.add(new TACInstruction(null, "IfZ", condition, null));
+        this.instructions.add(new TACInstruction(targetLabel, "Goto", null , null));
     }
 
 
     public void addUnconditionalJump(String label) {
-        this.instructions.add(new TACInstruction("goto", label, null, null));
+        this.instructions.add(new TACInstruction( label,"Goto", null, null));
     }
 
     private String getNextTempVar() {
@@ -63,10 +64,10 @@ public class TACModule {
 
         // Iterar sobre todas las instrucciones y formatearlas según el encabezado
         for (TACInstruction instruction : instructions) {
-            String result = instruction.getResult();
-            String operator = instruction.getOperator();
-            String operand1 = instruction.getOperand1() != null ? instruction.getOperand1() : "-";
-            String operand2 = instruction.getOperand2() != null ? instruction.getOperand2() : "-";
+            String result = instruction.getResult() != null ? instruction.getResult() : "";
+            String operator = instruction.getOperator() != null ? instruction.getOperator() : "";
+            String operand1 = instruction.getOperand1() != null ? instruction.getOperand1() : "";
+            String operand2 = instruction.getOperand2() != null ? instruction.getOperand2() : "";
 
             System.out.println(String.format("%-15s | %-10s | %-10s | %-10s", result, operator, operand1, operand2));
         }
@@ -75,5 +76,9 @@ public class TACModule {
 
     public void addDeclaration(String variableName, String variableType) {
         this.instructions.add(new TACInstruction(variableName, "declaration", variableType, null));
+    }
+
+    public void addFunctionLabel(String functionName) {
+        this.instructions.add(new TACInstruction(functionName, "function"));
     }
 }
