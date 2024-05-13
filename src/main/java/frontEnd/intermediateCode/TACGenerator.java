@@ -7,6 +7,7 @@ import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TACGenerator {
     private TACModule tacModule;
@@ -44,6 +45,7 @@ public class TACGenerator {
         }
 
         tacModule.addFunctionLabel("ranch");
+        tacModule.addUnaryInstruction(null, "BeginFunc", "0");
         // Generate TAC code for main program
         generateCode(program);
         tacModule.addUnaryInstruction(null, "EndFunc", null);
@@ -87,18 +89,14 @@ public class TACGenerator {
             switch (symbol.getName()) {
                 case "condition":
                     handleIf(tree);
-                    return;  // Evita procesamiento adicional de los hijos
-                case "while":
+                    return;  // Skip processing of children
+                case "loop_while":
                     handleWhile(tree);
-                    return;  // Evita procesamiento adicional de los hijos
+                    return; // Skip processing of children
                 case "assignation":
                     handleAssignment(tree);
-                    break;  // Asumimos que handleAssignment no procesa completamente todos los hijos
-                case "func_params":
-                    // Manejar los parámetros de una función
                     break;
                 case "return_stmt":
-                    // Manejar la sentencia 'return'
                     handleReturn(tree);
                     break;
             }
@@ -144,12 +142,12 @@ public class TACGenerator {
 
         if (leafNodes.size() == 1 && ((TerminalSymbol) leafNodes.get(0).getNode()).isEpsilon()) {
             // Return statement without a return value
-            tacModule.addUnaryInstruction("", "PopParams", "");
+            tacModule.addUnaryInstruction("", "Return", "");
             return;
         }
 
         TerminalSymbol returnSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
-        tacModule.addUnaryInstruction("", "PopParams", returnSymbol.getToken().getLexeme());
+        tacModule.addUnaryInstruction("", "Return", returnSymbol.getToken().getLexeme());
     }
 
 
@@ -160,16 +158,14 @@ public class TACGenerator {
         String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
 
         // Labels
-        String labelTrue = tacModule.createLabel();
         String labelFalse = tacModule.createLabel();
+        String labelTrue = tacModule.createLabel();
         String labelEnd = tacModule.createLabel();
 
         // Jump instructions
-        tacModule.addConditionalJump(tempVar, labelTrue);
-        tacModule.addUnconditionalJump(labelFalse);
+        tacModule.addConditionalJump(tempVar, labelFalse);
 
-        // 'then' block
-        tacModule.addLabel(labelTrue);
+        // True block
         Tree<AbstractSymbol> func_body = tree.getChildren().get(1).getChildren().get(3);
         generateCode(func_body);
         tacModule.addUnconditionalJump(labelEnd);
@@ -188,7 +184,31 @@ public class TACGenerator {
 
 
     private void handleWhile(Tree<AbstractSymbol> tree) {
-        // Similar a handleIf, pero adaptado para bucles 'while'
+        // Condition
+        Tree<AbstractSymbol> condition_expr = tree.getChildren().get(1).getChildren().get(1); // expr_bool
+        Expression expr = generateExpressionCode(condition_expr);
+
+        // Labels
+        String labelStart = tacModule.createLabel();
+        String labelEnd = tacModule.createLabel();
+
+        // Add label for the start of the while loop
+        tacModule.addLabel(labelStart);
+
+        if (!Objects.equals(expr.getOperator(), "") && !Objects.equals(expr.getRightOperand(), "")) {
+            String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
+            tacModule.addConditionalJump(tempVar, labelEnd);
+        } else {
+            tacModule.addConditionalJump(expr.getLeftOperand(), labelEnd);
+        }
+
+        // 'do' block
+        Tree<AbstractSymbol> func_body = tree.getChildren().get(1).getChildren().get(3);
+        generateCode(func_body);
+        tacModule.addUnconditionalJump(labelStart);
+
+        // End label for the while loop
+        tacModule.addUnconditionalJump(labelStart);
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
@@ -214,7 +234,10 @@ public class TACGenerator {
 
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
-
+        if (leafNodes.size() == 1) {
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+            return new Expression(terminalSymbol.getToken().getLexeme(), "", "");
+        }
         TerminalSymbol operatorSymbol = (TerminalSymbol) leafNodes.get(1).getNode();
         String operator = operatorSymbol.getToken().getLexeme();
 
