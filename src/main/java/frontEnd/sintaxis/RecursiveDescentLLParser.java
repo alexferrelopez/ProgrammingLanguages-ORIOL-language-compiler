@@ -82,12 +82,12 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
                     //If any of the children of the actual node of the tree is different from the symbol that we are
                     // analyzing we have to go up in the tree
-                    if(!((NonTerminalSymbol) tree.getNode()).getName().equals(symbol.getName())){
+                    if(!tree.getNode().getName().equals(symbol.getName()) || !tree.getChildren().isEmpty() ){
                         List<Tree<AbstractSymbol>> children = tree.getChildren();
                         boolean found = false;
                         do{
                             for(Tree<AbstractSymbol> child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
-                                if((child.getNode()).getName().equals(symbol.getName())){
+                                if( child.getChildren().isEmpty() && child.getNode().getName().equals(symbol.getName())){
                                     tree = child;
                                     found = true;
                                     break;
@@ -118,7 +118,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 tree = tree.getParent();
             }
             //TODO: send full tree to T@C
-            //printTree(tree);
+            printTree(tree);
 
 
 
