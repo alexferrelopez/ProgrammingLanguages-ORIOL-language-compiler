@@ -17,6 +17,7 @@ class RecursiveDescentLLParserTest {
     private final static String TEST_FILE_FOLDER = "src/test/resources/";
     private final static String ASSIGNMENTS_FILE_FOLDER = TEST_FILE_FOLDER + "assignments/";
     private final static String DECLARATIONS_FILE_FOLDER = TEST_FILE_FOLDER + "declarations/";
+    private final static String FOR_LOOPS_FILE_FOLDER = TEST_FILE_FOLDER + "loops/";
 
     private RecursiveDescentLLParser parser;
     private LexicalAnalyzerInterface lexicalAnalyzer;
@@ -112,6 +113,33 @@ class RecursiveDescentLLParserTest {
     @Description("Test that checks if the arithmetic assignments are accepted syntactically.")
     public void test_arithmeticAssignments() {
         setupCompiler(ASSIGNMENTS_FILE_FOLDER + "ExempleAssignacionsAritmètiques.farm");
+        compileCode();
+    }
+
+    // ** CONDITIONALS ** //
+    @Test
+    @DisplayName("Check conditionals.")
+    @Description("Test that checks if the for loops are accepted syntactically.")
+    public void test_conditionals() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        compileCode();
+    }
+
+    // ** FOR LOOP ** //
+    @Test
+    @DisplayName("Check for loops.")
+    @Description("Test that checks if the for loops are accepted syntactically.")
+    public void test_forLoops() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        compileCode();
+    }
+
+    // ** WHILE LOOP ** //
+    @Test
+    @DisplayName("Check while loops.")
+    @Description("Test that checks if the for loops are accepted syntactically.")
+    public void test_whileLoops() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleWhile.farm");
         compileCode();
     }
 
