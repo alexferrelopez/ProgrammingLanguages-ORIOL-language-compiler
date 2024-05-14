@@ -233,10 +233,12 @@ public class TACGenerator {
         String increment = ((TerminalSymbol) incrementTree.getNode()).getToken().getLexeme();
 
         // Get the assigment operation
+
         String assigmentOperation = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
 
-        // Increment the loop variable
-        tacModule.addUnaryInstruction(firstVar, assigmentOperation, increment);
+        // Modify the value of the loop variable with a temporary variable
+        String tempVar2 = tacModule.addBinaryInstruction(assigmentOperation, firstVar, increment);
+        tacModule.addUnaryInstruction(firstVar, "=", tempVar2);
 
         tacModule.addUnconditionalJump(labelStart);
 
