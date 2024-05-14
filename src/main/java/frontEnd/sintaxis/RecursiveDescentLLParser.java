@@ -10,6 +10,7 @@ import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.semantics.SemanticAnalyzerInterface;
+import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.*;
@@ -26,7 +27,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
-    private final String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition","loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
+    private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
@@ -79,7 +80,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     for (int i = newOutput.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
                         if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
                             stack.push(newOutput.get(i));
-                            if(Arrays.asList(startTokens).contains(((AbstractSymbol)newOutput.get(i)).getName())){
+                            if(Arrays.asList(startTokens).contains(newOutput.get(i).getName())){
                                 startTokensStack.push(newOutput.get(i));
                             }
                         }
@@ -88,12 +89,12 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
                     //If any of the children of the actual node of the tree is different from the symbol that we are
                     // analyzing we have to go up in the tree
-                    if(!((NonTerminalSymbol) tree.getNode()).getName().equals(symbol.getName())){
+                    if(!tree.getNode().getName().equals(symbol.getName()) || !tree.getChildren().isEmpty() ){
                         List<Tree<AbstractSymbol>> children = tree.getChildren();
                         boolean found = false;
                         do{
                             for(Tree<AbstractSymbol> child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
-                                if((child.getNode()).getName().equals(symbol.getName())){
+                                if( child.getChildren().isEmpty() && child.getNode().getName().equals(symbol.getName())){
                                     tree = child;
                                     found = true;
                                     break;
@@ -114,12 +115,18 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                             if(!Objects.isNull(tree.getParent())){
                                 tree = tree.getParent();
                             }
-
                         }
                     }
                 }
                 //System.out.println("Stack: " + stack);
             }
+            //Go to the root of the tree
+            while(!Objects.isNull(tree.getParent())){
+                tree = tree.getParent();
+            }
+            //TODO: send full tree to T@C
+            printTree(tree);
+
 
 			// Case to check when the program has finished and verify (semantically) that there is a "main" function.
 
@@ -169,23 +176,32 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.pop();
-                if(terminal.getName().equals("CO")){
+                if(symbolToSend.getName().equals("ELSE")){
                     startTokensStack.push(symbolToSend);
+                    try {
+                        semanticAnalyzer.receiveSyntacticTree(new Tree<>(new TerminalSymbol("ELSE")));
+                    } catch (SemanticException e) {
+                        throw new RuntimeException(e);
+                    }
+                }else{
+                    if(terminal.getName().equals("CO")){
+                        startTokensStack.push(symbolToSend);
+                    }
+                    while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
+                    ){
+                        parent = parent.getParent();
+                        nodeName = (parent.getNode()).getName();
+                    }
+                    if(terminal.getName().equals("CT")){
+                        parent = new Tree<>(terminal);
+                    }
+                    //printTree(parent);//TODO send this tree to the semantical analyzer
+                    try {
+                        semanticAnalyzer.receiveSyntacticTree(parent);
+                    } catch (SemanticException e) {
+                        // TODO: Veure que fer :) - Recuperació d'errors?
+                    }
                 }
-                while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
-                ){
-                    parent = parent.getParent();
-                    nodeName = (parent.getNode()).getName();
-                }
-                if(terminal.getName().equals("CT")){
-                    parent = new Tree<>(terminal);
-                }
-                //printTree(parent);//TODO send this tree to the semantical analyzer
-				try {
-					semanticAnalyzer.receiveSyntacticTree(parent);
-				} catch (SemanticException e) {
-					// TODO: Veure que fer :) - Recuperació d'errors?
-				}
 			}
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
