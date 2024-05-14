@@ -2,6 +2,7 @@ package frontEnd.sintaxis;
 
 import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
+import errorHandlers.errorTypes.SyntacticErrorType;
 import frontEnd.exceptions.SemanticException;
 import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.exceptions.lexic.InvalidFileException;
@@ -70,6 +71,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 } else {
                     List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
                     if (Objects.isNull(output)) {
+                        errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
                         System.out.println("Error gramatical"); //TODO throw exception
                         break;
                     }
@@ -194,6 +196,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
+            errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
         }
     }
 

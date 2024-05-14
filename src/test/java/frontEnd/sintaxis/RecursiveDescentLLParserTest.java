@@ -1,48 +1,88 @@
 package frontEnd.sintaxis;
 
 import errorHandlers.LexicalErrorHandler;
+import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
-import frontEnd.exceptions.InvalidFileException;
-import frontEnd.exceptions.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
-import frontEnd.lexic.dictionary.Token;
-import frontEnd.lexic.dictionary.tokenEnums.*;
+import frontEnd.semantics.SemanticAnalyzer;
+import frontEnd.semantics.SemanticAnalyzerInterface;
+import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.stream.Stream;
 
 class RecursiveDescentLLParserTest {
 
     private final static String TEST_FILE_FOLDER = "src/test/resources/";
+    private final static String ASSIGNMENTS_FILE_FOLDER = TEST_FILE_FOLDER + "assignments/";
 
     private RecursiveDescentLLParser parser;
     private LexicalAnalyzerInterface lexicalAnalyzer;
     private SyntacticErrorHandler errorHandler;
+    private SemanticAnalyzerInterface semanticAnalyzer;
+    private SemanticErrorHandler semanticErrorHandler;
+    private SymbolTableInterface symbolTable;
 
     private void setupCompiler(String filePath) {
         errorHandler = new SyntacticErrorHandler();
         lexicalAnalyzer = new LexicalAnalyzer(filePath, new LexicalErrorHandler());
-        parser = new RecursiveDescentLLParser(lexicalAnalyzer, errorHandler);
+        semanticErrorHandler = new SemanticErrorHandler();
+        symbolTable = new SymbolTableTree();
+        semanticAnalyzer = new SemanticAnalyzer(semanticErrorHandler, symbolTable);
+        parser = new RecursiveDescentLLParser(lexicalAnalyzer, errorHandler, semanticAnalyzer);
     }
 
-    @Test
-    @DisplayName("Check file non-existence handling.")
-    @Description("Test that checks if a file that does not exist is handled properly.")
-    public void test_assignments() {
-        setupCompiler(TEST_FILE_FOLDER + "ExempleAssignacions.farm");
-
+    private void compileCode() {
         // Start compilation
         parser.parseProgram();
 
-        // Asserts that the operation throws the specified exception
-        Assertions.assertThrows(InvalidFileException.class, lexicalAnalyzer::startLexicalAnalysis, "LexicalAnalyzer should throw InvalidFileException for non-existent files.");
+        // Asserts that there are no errors in the syntactical analysis
+        Assertions.assertFalse(errorHandler.hasErrors());
+    }
+
+    // ** GENERAL CODE ** //
+    @Test
+    @DisplayName("Check general assignments.")
+    @Description("Test that checks if the general assignments are accepted syntactically.")
+    public void test_assignments() {
+        setupCompiler(ASSIGNMENTS_FILE_FOLDER + "ExempleAssignacions.farm");
+        compileCode();
+    }
+
+    // ** LOGICAL CODE ** //
+    @Test
+    @DisplayName("Check logical assignments.")
+    @Description("Test that checks if the logical assignments are accepted syntactically.")
+    public void test_logicalAssignments() {
+        setupCompiler(ASSIGNMENTS_FILE_FOLDER + "ExempleAssignacionsLògiques.farm");
+        compileCode();
+    }
+
+    // ** RELATIONAL CODE ** //
+    @Test
+    @DisplayName("Check relational assignments.")
+    @Description("Test that checks if the relational assignments are accepted syntactically.")
+    public void test_relationalAssignments() {
+        setupCompiler(ASSIGNMENTS_FILE_FOLDER + "ExempleAssignacionsRelacionals.farm");
+        compileCode();
+    }
+
+    // ** ARITHMETIC CODE ** //
+    @Test
+    @DisplayName("Check arithmetic assignments.")
+    @Description("Test that checks if the arithmetic assignments are accepted syntactically.")
+    public void test_arithmeticAssignments() {
+        setupCompiler(ASSIGNMENTS_FILE_FOLDER + "ExempleAssignacionsAritmètiques.farm");
+        compileCode();
+    }
+
+    // ** FIBONACCI CODE ** //
+    @Test
+    @DisplayName("Check Fibonacci code.")
+    @Description("Test that checks if the fibonacci is accepted syntactically.")
+    public void test_fibonacci() {
+        setupCompiler(TEST_FILE_FOLDER + "ExempleFibonacci.farm");
+        compileCode();
     }
 }

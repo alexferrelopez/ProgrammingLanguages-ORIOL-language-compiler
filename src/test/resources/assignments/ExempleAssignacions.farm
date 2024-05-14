@@ -1,5 +1,4 @@
 miau: ranch() {
-    j is alive or dead;
     a is 1;
     b is a;
     c is a sum b;
@@ -9,6 +8,7 @@ miau: ranch() {
     g is f mod 2;
     h is alive;
     i is dead;
+    j is alive or dead;
     k is alive and dead;
     l is not alive;
     m is 1 smaller 2;
