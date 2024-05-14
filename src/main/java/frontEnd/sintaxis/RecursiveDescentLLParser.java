@@ -64,7 +64,13 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 } else {
                     List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
                     if (Objects.isNull(output)) {
-                        System.out.println("Error gramatical"); //TODO throw exception
+                        System.out.println("Error gramatical"); //TODO error recovery
+                        //Comparar lookahead amb follow de arbre. Si no esta pujar per el arbre
+                        NonTerminalSymbol nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
+                        List<TerminalSymbol> follows = Follow.getFollows(grammarMap, nt);
+
+                        System.out.println(follows);
+
                         break;
                     }
                     //Get the unique symbols of the production (without same reference)
@@ -129,7 +135,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
         //Display the firsts and follows of the grammar for debugging purposes
         //First.displayAllFirsts(grammarMap);
-        //Follow.displayAllFollows(grammarMap);
+        Follow.displayAllFollows(grammarMap);
     }
 
     /**
