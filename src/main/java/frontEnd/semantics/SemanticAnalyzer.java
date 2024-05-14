@@ -602,16 +602,24 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
             symbolTable.addSymbol(parameter);
         }
 
-        checkMainFunction(tokens.get(2));
+        checkMainFunction(tokens);
 
     }
 
-    private void checkMainFunction(Token token) {
-        if (token.getType() == ReservedSymbol.MAIN) {
-            if (mainFound) {
-                errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_ALREADY_DEFINED, token.getLine(), token.getColumn(), token.getLexeme());
+    private void checkMainFunction(List<Token> tokens) {
+        Token mainToken = tokens.get(2);
+        if (mainToken.getType() == ReservedSymbol.MAIN) { //Check if the function is main
+            if (mainFound) { //Check if the main function is already defined
+                errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_ALREADY_DEFINED, mainToken.getLine(), mainToken.getColumn(), mainToken.getLexeme());
             } else {
                 mainFound = true;
+                if(!tokens.get(0).getLexeme().equals("miau")){ //Check if the return type is miau (int)
+                    errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_RETURN_TYPE, tokens.get(0).getLine(), tokens.get(0).getColumn(), tokens.get(0).getLexeme());
+                }
+                if(!tokens.get(4).getLexeme().equals(")")){ //Check if the main function has parameters
+                    errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_PARAMETERS, tokens.get(4).getLine(), tokens.get(4).getColumn(), tokens.get(4).getLexeme());
+                }
+
             }
         }
     }
