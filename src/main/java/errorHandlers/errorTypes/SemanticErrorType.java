@@ -23,7 +23,9 @@ public enum SemanticErrorType implements ErrorType {
     INVALID_ARITHMETIC_EXPRESSION("Invalid arithmetic expression"),
     DIVISION_BY_ZERO("Division by zero"),
 	MAIN_FUNCTION_ALREADY_DEFINED("Main function already defined"),
-	MAIN_FUNCTION_MISSING("Main function missing");
+	MAIN_FUNCTION_MISSING("Main function missing"),
+    MAIN_FUNCTION_PARAMETERS("Main function cannot have parameters"),
+    MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type");
 
     //TODO: Add different types of errors,
     final String message;
