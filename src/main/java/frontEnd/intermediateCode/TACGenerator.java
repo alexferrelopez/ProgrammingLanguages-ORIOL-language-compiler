@@ -93,6 +93,9 @@ public class TACGenerator {
                 case "loop_while":
                     handleWhile(tree);
                     return; // Skip processing of children
+                case "loop_for":
+                    handleFor(tree);
+                    return; // Skip processing of children
                 case "assignation":
                     handleAssignment(tree);
                     break;
@@ -107,6 +110,8 @@ public class TACGenerator {
             generateCode(child);
         }
     }
+
+
 
     private void handleFunctionCall(Tree<AbstractSymbol> tree, String functionName) {
         // We have '(', <func_params>, ')'
@@ -182,6 +187,77 @@ public class TACGenerator {
         tacModule.addLabel(labelEnd);
     }
 
+    private void handleFor(Tree<AbstractSymbol> tree) {
+        // Initialization (get the loop variable, and it's value, normally "i")
+        Tree<AbstractSymbol> initialization = getNodeBySymbolName(tree, "loop_variable");
+
+        Tree<AbstractSymbol> terminalFirstVar = getNodeBySymbolName(initialization, "VARIABLE");
+        String firstVar = ((TerminalSymbol) terminalFirstVar.getNode()).getToken().getLexeme();
+        generateCode(initialization);
+
+        // Condition
+        Tree<AbstractSymbol> untilNumberNode = tree.getChildren().get(4);
+
+        // Get the number to loop until
+        Tree<AbstractSymbol> terminal = getNodeBySymbolName(untilNumberNode, "VALUE_INT");
+
+        String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
+
+        Expression expr = new Expression(firstVar, ">", lastVar);
+
+        // Create a label
+        String labelStart = tacModule.createLabel();
+        tacModule.addLabel(labelStart);
+
+
+        String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
+
+        // Labels
+        String labelEnd = tacModule.createLabel();
+
+        tacModule.addConditionalJump(tempVar, labelEnd);
+
+        // 'do' block
+        Tree<AbstractSymbol> func_body = getNodeBySymbolName(tree, "func_body");
+        generateCode(func_body);
+
+
+        Tree<AbstractSymbol> var_assignationTree = getNodeBySymbolName(tree.getChildren().get(6), "var_assignation");
+        // Get all the leaf nodes of the var_assignation node
+        List<Tree<AbstractSymbol>> leafNodes = var_assignationTree.getLeafNodes(var_assignationTree);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        // Get the last leaf node, which is the increment value
+        Tree<AbstractSymbol> incrementTree = leafNodes.get(leafNodes.size() - 1);
+        String increment = ((TerminalSymbol) incrementTree.getNode()).getToken().getLexeme();
+
+        // Get the assigment operation
+        String assigmentOperation = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
+
+        // Increment the loop variable
+        tacModule.addUnaryInstruction(firstVar, assigmentOperation, increment);
+
+        tacModule.addUnconditionalJump(labelStart);
+
+        // End label for the for loop
+        tacModule.addLabel(labelEnd);
+    }
+
+    private Tree<AbstractSymbol> getNodeBySymbolName(Tree<AbstractSymbol> tree, String assignation) {
+        if (tree.getNode().getName().equals(assignation)) {
+            return tree;
+        }
+
+        for (Tree<AbstractSymbol> child : tree.getChildren()) {
+            Tree<AbstractSymbol> node = getNodeBySymbolName(child, assignation);
+            if (node != null) {
+                return node;
+            }
+        }
+
+        return null;
+    }
 
     private void handleWhile(Tree<AbstractSymbol> tree) {
         // Condition
@@ -208,7 +284,7 @@ public class TACGenerator {
         tacModule.addUnconditionalJump(labelStart);
 
         // End label for the while loop
-        tacModule.addUnconditionalJump(labelStart);
+        tacModule.addLabel(labelEnd);
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
