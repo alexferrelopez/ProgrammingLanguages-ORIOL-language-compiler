@@ -158,6 +158,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         for (Token token : expressionTokens) {
             Symbol<?> tokenSymbol = getSymbolByLexeme(token.getLexeme());
             if (tokenSymbol == null || !tokenSymbol.isVariable()) {
+                //TODO change error type
                 errorHandler.reportError(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), expressionTokens.get(0).getLexeme());
                 return false;
             }
