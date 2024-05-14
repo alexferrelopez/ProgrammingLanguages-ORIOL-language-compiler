@@ -606,6 +606,13 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
     }
 
+    /**
+     * Check the semantics of the main function
+     * 1.- check that there is only one main
+     * 2.- Check that the first token is a miau
+     * 3.- Check that the 4th token is a )
+     * @param tokens list of tokens of the main function
+     */
     private void checkMainFunction(List<Token> tokens) {
         Token mainToken = tokens.get(2);
         if (mainToken.getType() == ReservedSymbol.MAIN) { //Check if the function is main
@@ -619,7 +626,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 if(!tokens.get(4).getLexeme().equals(")")){ //Check if the main function has parameters
                     errorHandler.reportError(SemanticErrorType.MAIN_FUNCTION_PARAMETERS, tokens.get(4).getLine(), tokens.get(4).getColumn(), tokens.get(4).getLexeme());
                 }
-
             }
         }
     }
