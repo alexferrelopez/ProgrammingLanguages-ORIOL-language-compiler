@@ -16,6 +16,7 @@ class RecursiveDescentLLParserTest {
 
     private final static String TEST_FILE_FOLDER = "src/test/resources/";
     private final static String ASSIGNMENTS_FILE_FOLDER = TEST_FILE_FOLDER + "assignments/";
+    private final static String DECLARATIONS_FILE_FOLDER = TEST_FILE_FOLDER + "declarations/";
 
     private RecursiveDescentLLParser parser;
     private LexicalAnalyzerInterface lexicalAnalyzer;
@@ -41,7 +42,44 @@ class RecursiveDescentLLParserTest {
         Assertions.assertFalse(errorHandler.hasErrors());
     }
 
-    // ** GENERAL CODE ** //
+    // ** DECLARATIONS ** //
+    @Test
+    @DisplayName("Check general declarations.")
+    @Description("Test that checks if the general declarations are accepted syntactically.")
+    public void test_declarations() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "ExempleDeclaracions.farm");
+        compileCode();
+    }
+
+    // Logical code
+    @Test
+    @DisplayName("Check logical declarations.")
+    @Description("Test that checks if the logical declarations are accepted syntactically.")
+    public void test_logicalDeclarations() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "ExempleDeclaracionsLògiques.farm");
+        compileCode();
+    }
+
+    // Relational code
+    @Test
+    @DisplayName("Check relational declarations.")
+    @Description("Test that checks if the relational declarations are accepted syntactically.")
+    public void test_relationalDeclarations() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "ExempleDeclaracionsRelacionals.farm");
+        compileCode();
+    }
+
+    // Arithmetic code
+    @Test
+    @DisplayName("Check arithmetic declarations.")
+    @Description("Test that checks if the arithmetic declarations are accepted syntactically.")
+    public void test_arithmeticDeclarations() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "ExempleDeclaracionsAritmètiques.farm");
+        compileCode();
+    }
+
+
+    // ** ASSIGNMENTS ** //
     @Test
     @DisplayName("Check general assignments.")
     @Description("Test that checks if the general assignments are accepted syntactically.")
@@ -50,7 +88,7 @@ class RecursiveDescentLLParserTest {
         compileCode();
     }
 
-    // ** LOGICAL CODE ** //
+    // Logical code
     @Test
     @DisplayName("Check logical assignments.")
     @Description("Test that checks if the logical assignments are accepted syntactically.")
@@ -59,7 +97,7 @@ class RecursiveDescentLLParserTest {
         compileCode();
     }
 
-    // ** RELATIONAL CODE ** //
+    // Relational code
     @Test
     @DisplayName("Check relational assignments.")
     @Description("Test that checks if the relational assignments are accepted syntactically.")
@@ -68,7 +106,7 @@ class RecursiveDescentLLParserTest {
         compileCode();
     }
 
-    // ** ARITHMETIC CODE ** //
+    // Arithmetic code
     @Test
     @DisplayName("Check arithmetic assignments.")
     @Description("Test that checks if the arithmetic assignments are accepted syntactically.")
