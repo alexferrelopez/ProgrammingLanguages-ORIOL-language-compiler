@@ -570,9 +570,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 errorHandler.reportError(SemanticErrorType.FUNCTION_RETURN_TYPE_NOT_CORRECT, token.getLine(), null, "Return type is not correct expected " + functionReturnType + " but received " + returnType);
             }
         }
-        if (returnFound) {
-            errorHandler.reportError(SemanticErrorType.RETURN_SECOND, token.getLine(), null, token.getLexeme());
-        }
     }
 
 
