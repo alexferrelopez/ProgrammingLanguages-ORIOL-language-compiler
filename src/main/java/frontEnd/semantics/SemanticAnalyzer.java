@@ -2,7 +2,6 @@ package frontEnd.semantics;
 
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
-import frontEnd.exceptions.SemanticException;
 import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.TokenType;
@@ -71,7 +70,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      * @param tree Parsing tree (syntactic) to analyze.
      */
     @Override
-    public void receiveSyntacticTree(Tree<AbstractSymbol> tree) throws SemanticException {
+    public void receiveSyntacticTree(Tree<AbstractSymbol> tree) {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
@@ -93,7 +92,11 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     }
                 } else {
                     // Assignment
-                    checkAssignationSemantics(tokens, null);
+                    try {
+                        checkAssignationSemantics(tokens, null);
+                    } catch (InvalidAssignmentException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 break;
             // ...
@@ -117,7 +120,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 symbolTable.addScope(ScopeType.CONDITIONAL_LOOP);
                 checkWhileIfSemantics(tokens);
                 break;
-            case "else":
+            case "ELSE":
                 symbolTable.addScope(ScopeType.CONDITIONAL_LOOP);
                 break;
             case "EOF":
@@ -807,7 +810,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                         if (token.getType().toString().equals("VARIABLE")) {
                             String name = token.getLexeme();
                             long lineDeclaration = token.getLine();
-                            DataType dt = (DataType) tokens.get(i-1).getType();
+                            DataType dt = (DataType) tokens.get(i - 1).getType();
 
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
                         }

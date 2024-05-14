@@ -20,13 +20,12 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private final LexicalAnalyzerInterface lexicalAnalyzer;
     private final SyntacticErrorHandler errorHandler;
 
-    private final SemanticAnalyzerInterface semanticAnalyzer;
-
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
+    private SemanticAnalyzerInterface semanticAnalyzer;
 
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
@@ -73,9 +72,9 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         System.out.println("Error gramatical"); //TODO throw exception
                         break;
                     }
-
                     //Get the unique symbols of the production (without same reference)
                     List<AbstractSymbol> newOutput = getUniqueReferenceSymbols(output);
+
                     for (int i = newOutput.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
                         if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
                             stack.push(newOutput.get(i));
@@ -127,14 +126,6 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             printTree(tree);
 
 
-            // Case to check when the program has finished and verify (semantically) that there is a "main" function.
-
-            try {
-                semanticAnalyzer.receiveSyntacticTree(new Tree<>(new TerminalSymbol("EOF")));
-            } catch (SemanticException e) {
-                // Theoretically there should never be an invalid assignment exception.
-            }
-
         } catch (InvalidFileException | InvalidTokenException invalidFile) {
             invalidFile.printStackTrace();
         }
@@ -173,14 +164,15 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
             if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
-                //System.out.println("\n\n-----------------TREE-----------------");
+                System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.pop();
                 if (symbolToSend.getName().equals("ELSE")) {
                     startTokensStack.push(symbolToSend);
                     try {
-                        semanticAnalyzer.receiveSyntacticTree(new Tree<>(new TerminalSymbol("ELSE")));
+                        semanticAnalyzer.receiveSyntacticTree(new Tree<>(symbolToSend));
+                        printTree(parent);//TODO send this tree to the semantical analyzer
                     } catch (SemanticException e) {
                         throw new RuntimeException(e);
                     }
@@ -196,11 +188,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     if (terminal.getName().equals("CT")) {
                         parent = new Tree<>(terminal);
                     }
-                    printTree(parent);//TODO send this tree to the semantical analyzer
                     try {
                         semanticAnalyzer.receiveSyntacticTree(parent);
+                        printTree(parent);//TODO send this tree to the semantical analyzer
                     } catch (SemanticException e) {
-                        // TODO: Veure que fer :) - Recuperació d'errors?
+                        throw new RuntimeException(e);
                     }
                 }
             }
