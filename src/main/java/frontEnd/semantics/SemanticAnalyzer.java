@@ -579,13 +579,9 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         List<VariableSymbol<?>> functionParameters = getFunctionParameters(tokens);
 
         //Check if the parameters have unique names
-        if (checkUniqueVariableNames(functionParameters)) {
-            //return; TODO
-        }
+        checkUniqueVariableNames(functionParameters);
         //Check if the function is already defined
-        if (checkIfFunctionExists(tokens.get(2))) {
-            //return; TODO
-        }
+        checkIfFunctionExists(tokens.get(2));
 
         //Obtain information about the function
         String functionName = tokens.get(2).getLexeme();
@@ -630,16 +626,14 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
-    private boolean checkUniqueVariableNames(List<VariableSymbol<?>> variables) {
+    private void checkUniqueVariableNames(List<VariableSymbol<?>> variables) {
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
                 if (variables.get(i).getName().equals(variables.get(j).getName())) {
                     errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, (int) variables.get(i).getLineDeclaration(), null, variables.get(i).getName());
-                    return true;
                 }
             }
         }
-        return false;
     }
 
     // Additional methods for semantic checks can be added here
@@ -751,12 +745,10 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         return parameters;
     }
 
-    private boolean checkIfFunctionExists(Token token) {
+    private void checkIfFunctionExists(Token token) {
         Map<String, Symbol<?>> x = symbolTable.getCurrentScope().getSymbols();
         if (x.containsKey(token.getLexeme())) {
             errorHandler.reportError(SemanticErrorType.FUNCTION_ALREADY_DEFINED, token.getLine(), token.getColumn(), token.getLexeme());
-            return true;
         }
-        return false;
     }
 }
