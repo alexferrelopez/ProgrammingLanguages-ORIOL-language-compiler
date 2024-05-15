@@ -299,6 +299,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
+
     // Method to determine the data type of token.
     private DataType getOperandDataType(Token token) {
         if (token.getType() == ValueSymbol.VARIABLE) {
