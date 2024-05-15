@@ -104,6 +104,10 @@ public class SymbolTableTree implements SymbolTableInterface {
 		return functionNode.findSymbolInsideFunction(symbolName);
 	}
 
+	public ScopeNode getFunctionScope(String functionName) {
+		return this.root.findFunctionByName(functionName);
+	}
+
 	/**
 	 * Find if a symbol exists in the whole symbols table.
 	 *

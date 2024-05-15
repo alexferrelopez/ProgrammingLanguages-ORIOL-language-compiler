@@ -103,4 +103,8 @@ public abstract class Symbol<Type> {
     public long getOffset() {
         return offset;
     }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
 }

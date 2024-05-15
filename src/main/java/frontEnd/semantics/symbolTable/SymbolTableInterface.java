@@ -85,4 +85,6 @@ public interface SymbolTableInterface {
      * @return  number of Bytes required to allocate the whole function.
      */
     int calculateFunctionSize(String functionName);
+
+    ScopeNode getFunctionScope(String functionName);
 }

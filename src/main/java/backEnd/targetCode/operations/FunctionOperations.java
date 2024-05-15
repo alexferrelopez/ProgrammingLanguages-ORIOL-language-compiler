@@ -2,7 +2,11 @@ package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionOperations extends MIPSOperations {
 	public FunctionOperations(SymbolTableInterface symbolTableInterface) {
@@ -31,6 +35,24 @@ public class FunctionOperations extends MIPSOperations {
 		return text + LINE_SEPARATOR;
 	}
 
+	private long assignOffset(ScopeNode scope, long currentOffset) {
+		// Search all the variables in the current scope.
+		List<Symbol<?>> variables = new ArrayList<>(scope.getSymbols().values());
+		for (Symbol<?> variable : variables) {
+			if (variable.isVariable()) {
+				variable.setOffset(currentOffset);
+				currentOffset -= variable.getSizeInBytes();
+			}
+		}
+
+		// Do the same for all the nested scopes.
+		for (ScopeNode child : scope.getChildren()) {
+			currentOffset = assignOffset(child, currentOffset);
+		}
+
+		return currentOffset;
+	}
+
 	public String beginFunction(String functionSize) {
 		/*if (functionLabel.equals(MAIN_FUNCTION)) {
 			return functionLabel + ":" + LINE_SEPARATOR +                    										// function start
@@ -40,12 +62,19 @@ public class FunctionOperations extends MIPSOperations {
 		else {
 			return functionLabel + ":" + LINE_SEPARATOR;
 		}*/
+
+		// Set the offset for each variable in the function (in all the nested scopes).
+		long currentOffset = 0;
+		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName);
+		assignOffset(function, currentOffset);
+
 		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
-				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR;
+				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR +
+				LINE_INDENTATION + writeComment("Starting variables code:") + LINE_SEPARATOR;
 	}
 
 	public String returnFunction(String returnValue) {
-		String text = LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR + LINE_INDENTATION;
+		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// Check if the return value is a symbol in the scope.
 		Symbol<?> returnSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName);

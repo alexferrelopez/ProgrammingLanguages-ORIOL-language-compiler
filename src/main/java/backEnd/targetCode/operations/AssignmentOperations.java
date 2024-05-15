@@ -36,7 +36,8 @@ public class AssignmentOperations extends MIPSOperations {
 		// Check if it's a variable (check its type in the symbols table).
 		if (operandValueSymbol == ValueSymbol.VARIABLE) {
 			Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunctionName);
-			operand = new Operand(true, variable.getDataType(), operandValue);
+			String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
+			operand = new Operand(true, variable.getDataType(), variableRegister);
 		}
 		// Check if it's a register
 		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX)) {
@@ -64,7 +65,12 @@ public class AssignmentOperations extends MIPSOperations {
 
 		// Check if it's a simple assignment (e.g. a = 2).
 		if (operand2 == null) {
-			//return directAssignment(operand1, destination);
+			// Check type of variable.
+			return switch (operandContainer.getOperandsType()) {
+				case INTEGER -> integerAssignment(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2());
+				//case FLOAT -> floatAssignment(destinationVariable);
+				default -> null;
+			};
 		}
 
 		// Ask for registers and assign the new values.
@@ -92,25 +98,30 @@ public class AssignmentOperations extends MIPSOperations {
 		}
 
 		return "";
-	}
+	}*/
 
 	private String integerAssignment(Operand destination, Operand operand1, Operand operand2) {
 		// Check if it's a simple assignment.
 		if (operand2 == null) {
-			return 	LINE_INDENTATION +
-					("li " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+			if (operand1.isRegister()) {
+				return 	LINE_INDENTATION +
+						("sw " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+			}
+			else {
+				return 	LINE_INDENTATION +
+						("li " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+			}
 		}
 
 		// It's an assignment with a register (e.g. $t0 = a + 3).
+		/*
 		return 	LINE_INDENTATION +
-				("li " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+				("li " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;*/
+		return "working" + LINE_SEPARATOR;
 	}
 
 	private String floatAssignment(String offset, String operand1, String operand2) {
 		return 	LINE_INDENTATION +
 				("li.s " + offset + ", " + operand1) + LINE_SEPARATOR;
 	}
-
-	 */
-
 }

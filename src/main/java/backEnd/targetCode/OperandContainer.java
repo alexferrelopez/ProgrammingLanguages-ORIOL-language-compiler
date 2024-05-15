@@ -6,7 +6,7 @@ public class OperandContainer {
 	private Operand destination;
 	private Operand operand1;
 	private Operand operand2;
-	private DataType operandsType;
+	private DataType operandsType;	// If there is no type, it's an operation between registers (addresses).
 
 	public void setDestination(Operand destination) {
 		this.destination = destination;
@@ -30,8 +30,24 @@ public class OperandContainer {
 	}
 
 	public void setOperandsType(DataType operandsType) {
-		if (this.operandsType != operandsType || this.operandsType == null) {
+		if ((this.operandsType != operandsType || this.operandsType == null) && operandsType != null) {
 			this.operandsType = operandsType;
 		}
+	}
+
+	public DataType getOperandsType() {
+		return operandsType;
+	}
+
+	public Operand getDestination() {
+		return destination;
+	}
+
+	public Operand getOperand1() {
+		return operand1;
+	}
+
+	public Operand getOperand2() {
+		return operand2;
 	}
 }
