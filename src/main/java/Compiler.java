@@ -1,3 +1,4 @@
+import backEnd.targetCode.RegisterAllocator;
 import backEnd.targetCode.TACToMIPSConverter;
 import backEnd.targetCode.TargetCodeGeneratorInterface;
 import backEnd.exceptions.TargetCodeException;
@@ -54,7 +55,8 @@ public class Compiler implements CompilerInterface {
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
-        this.mipsConverter = new TACToMIPSConverter(symbolTable);
+        RegisterAllocator registerAllocator = new RegisterAllocator();
+        this.mipsConverter = new TACToMIPSConverter(symbolTable, registerAllocator);
     }
 
     /**
