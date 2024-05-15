@@ -47,7 +47,7 @@ public class TACGenerator {
             tacModule.addUnaryInstruction(null, "EndFunc", null);
         }
 
-        tacModule.addFunctionLabel("ranch");
+        tacModule.addFunctionLabel("main");
         tacModule.addUnaryInstruction(null, "BeginFunc", "0");
         // Generate TAC code for main program
         generateCode(program);
