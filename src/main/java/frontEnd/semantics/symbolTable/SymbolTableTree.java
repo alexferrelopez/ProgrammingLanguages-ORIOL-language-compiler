@@ -93,6 +93,18 @@ public class SymbolTableTree implements SymbolTableInterface {
 	}
 
 	/**
+	 * Find a symbol inside all the scopes of a function (for MIPS purpose).
+	 *
+	 * @param symbolName the symbol with the given name, or null if the symbol is not in the scope.
+	 * @return th
+	 */
+	@Override
+	public Symbol<?> findSymbolInsideFunction(String symbolName, String functionName) {
+		ScopeNode functionNode = this.root.findFunctionByName(functionName);
+		return functionNode.findSymbolInsideFunction(symbolName);
+	}
+
+	/**
 	 * Find if a symbol exists in the whole symbols table.
 	 *
 	 * @param symbolName the name of the symbol.

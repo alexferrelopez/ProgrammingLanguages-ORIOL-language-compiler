@@ -47,6 +47,14 @@ public interface SymbolTableInterface {
     boolean containsSymbol(String symbolName);
 
     /**
+     * Find a symbol inside all the scopes of a function (for MIPS purpose).
+     *
+     * @param symbolName the symbol with the given name, or null if the symbol is not in the scope.
+     * @return th
+     */
+    Symbol<?> findSymbolInsideFunction(String symbolName, String functionName);
+
+    /**
      * Find if a symbol exists in the whole symbols table.
      *
      * @param symbolName the name of the symbol.

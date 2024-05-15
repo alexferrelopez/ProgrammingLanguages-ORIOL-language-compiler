@@ -4,6 +4,7 @@ import backEnd.exceptions.TargetCodeException;
 import backEnd.exceptions.targetCode.FailedFileCreationException;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,7 +28,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final SymbolTableInterface symbolTable;
 
 	private final static String MAIN_FUNCTION = "ranch";
-	private boolean isMainFunction = false;
+	private String currentFunctionName;
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable) {
 		this.symbolTable = symbolTable;
@@ -70,6 +71,9 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			// ** Functions ** //
 			case "function":
 				targetCode.write(funcDeclaration(instruction.getResult()));
+				break;
+			case "Return":
+				targetCode.write(returnFunction(instruction.getOperand1()));
 			case "=":
 				// Assignment
 				// mipsCode.append(assign(instruction.getResult(), instruction.getOperand1()));
@@ -129,6 +133,8 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	}
 
 	private String funcDeclaration(String functionLabel) {
+		this.currentFunctionName = functionLabel;
+
 		String text = writeComment("Start of function " + functionLabel) + LINE_SEPARATOR +
 				(functionLabel + ":") + LINE_SEPARATOR;
 		/*
@@ -137,9 +143,6 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			sw $fp, 0($sp)      # Save frame pointer
 			move $fp, $sp       # Set frame pointer
 		 */
-		if (functionLabel.equals(MAIN_FUNCTION)) {
-			isMainFunction = true;
-		}
 
 		// Save stack
 		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
@@ -148,7 +151,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR;
 
-		return text;
+		return text + LINE_SEPARATOR;
 	}
 
 	private String beginFunction(String functionSize) {
@@ -160,8 +163,23 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 		else {
 			return functionLabel + ":" + LINE_SEPARATOR;
 		}*/
-		return LINE_INDENTATION + "sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize + " " +
-				writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR;
+		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
+				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR;
+	}
+
+	private String returnFunction(String returnValue) {
+		String text = LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR + LINE_INDENTATION;
+
+		// Check if the return value is a symbol in the scope.
+		Symbol<?> returnSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName);
+		if (returnSymbol != null && returnSymbol.isVariable()) {
+			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnSymbol.getOffset() + "(" + FRAME_POINTER + ")");
+		}
+		else {
+			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnValue);
+		}
+
+		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
 
 	private String endFunction() {
@@ -180,15 +198,15 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// End the program if it's the main or add the return value if it's another function.
-		if (isMainFunction) {
+		if (currentFunctionName.equals(MAIN_FUNCTION)) {
 			text += writeComment("End of the main") + LINE_SEPARATOR + LINE_INDENTATION +
 					("li " + FUNCTION_RESULT_REGISTER + ", 10") + LINE_SEPARATOR + LINE_INDENTATION +
-					(END_PROGRAM_INSTRUCTION) + LINE_SEPARATOR;
+					(END_PROGRAM_INSTRUCTION);
 		}
 		else {
-			text += ("jr " + RETURN_REGISTER) + LINE_SEPARATOR;
+			text += ("jr " + RETURN_REGISTER);
 		}
 
-		return text;
+		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
 }

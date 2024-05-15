@@ -136,6 +136,23 @@ public class ScopeNode {
 		return this.parent.getReturnType();
 	}
 
+	public Symbol<?> findSymbolInsideFunction(String symbolName) {
+		Symbol<?> symbol = searchSymbolInScope(symbolName);
+		if (symbol != null) {
+			return symbol;
+		}
+
+		// Check if it's a function.
+		for (ScopeNode scope : this.children) {
+			symbol = scope.findSymbolInsideFunction(symbolName);
+			if (symbol != null) {
+				return symbol;
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * Find a function symbol by the function name. ONLY VALID FOR FUNCTIONS!
 	 * @param functionName	the name of the function.
