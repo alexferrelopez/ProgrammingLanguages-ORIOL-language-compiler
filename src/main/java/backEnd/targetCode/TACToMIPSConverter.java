@@ -77,6 +77,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "=":
 				// Assignment
 				// mipsCode.append(assign(instruction.getResult(), instruction.getOperand1()));
+				targetCode.write(assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 				break;
 			case "BeginFunc":
 				// Begin Function
@@ -208,5 +209,36 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 		}
 
 		return text + LINE_SEPARATOR + LINE_SEPARATOR;
+	}
+
+	private String assignValue(String operand1, String operand2, String destination) {
+		if (operand2 == null) {
+			return directAssignment(operand1, destination);
+		}
+
+		return "";
+	}
+
+	private String directAssignment(String operand, String destination) {
+		// Check if the destination is a variable (it should).
+		Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, this.currentFunctionName);
+		if (variable != null && variable.isVariable()) {
+			long offset = variable.getOffset();
+			String variableOffset = offset + "(" + FRAME_POINTER + ")";
+
+			// Check type of variable.
+			return switch (variable.getDataType()) {
+				case INTEGER -> integerAssignment(operand, variableOffset);
+				case FLOAT -> null;
+				default -> null;
+			};
+		}
+
+		return "";
+	}
+
+	private String integerAssignment(String operand, String offset) {
+		return 	LINE_INDENTATION +
+				("li " + offset + ", " + operand) + LINE_SEPARATOR;
 	}
 }
