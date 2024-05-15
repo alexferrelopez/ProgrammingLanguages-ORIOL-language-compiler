@@ -12,7 +12,9 @@ import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.semantics.SemanticAnalyzerInterface;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
-import frontEnd.sintaxis.grammar.derivationRules.*;
+import frontEnd.sintaxis.grammar.derivationRules.NonTerminalSymbol;
+import frontEnd.sintaxis.grammar.derivationRules.ParsingTable;
+import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
 
 import java.util.*;
 
@@ -26,7 +28,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
-    private final String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition","ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
+    private final String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
 
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
@@ -79,7 +81,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     for (int i = newOutput.size() - 1; i >= 0; i--) { //Push the production to the stack unless it is epsilon
                         if (!newOutput.get(i).getName().equals(TerminalSymbol.EPSILON)) {
                             stack.push(newOutput.get(i));
-                            if(Arrays.asList(startTokens).contains(newOutput.get(i).getName())){
+                            if (Arrays.asList(startTokens).contains(newOutput.get(i).getName())) {
                                 startTokensStack.push(newOutput.get(i));
                             }
                         }
@@ -88,40 +90,39 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
                     //If any of the children of the actual node of the tree is different from the symbol that we are
                     // analyzing we have to go up in the tree
-                    if(!tree.getNode().getName().equals(symbol.getName()) || !tree.getChildren().isEmpty() ){
+                    if (!tree.getNode().getName().equals(symbol.getName()) || !tree.getChildren().isEmpty()) {
                         List<Tree<AbstractSymbol>> children = tree.getChildren();
                         boolean found = false;
-                        do{
-                            for(Tree<AbstractSymbol> child: children){//Find if any of the children of the actual node is the symbol that we are analyzing
-                                if( child.getChildren().isEmpty() && child.getNode().getName().equals(symbol.getName())){
+                        do {
+                            for (Tree<AbstractSymbol> child : children) {//Find if any of the children of the actual node is the symbol that we are analyzing
+                                if (child.getChildren().isEmpty() && child.getNode().getName().equals(symbol.getName())) {
                                     tree = child;
                                     found = true;
                                     break;
                                 }
                             }
-                            if(!found){//If none of the children is the symbol that we are analyzing we go up in the tree
-                                if(!Objects.isNull(tree.getParent())){
+                            if (!found) {//If none of the children is the symbol that we are analyzing we go up in the tree
+                                if (!Objects.isNull(tree.getParent())) {
                                     tree = tree.getParent();
                                     children = tree.getChildren();
                                 }
                             }
-                        }while (!found);//We sholud always find the symbol that we are analyzing. Gramatical error if we don't
+                        } while (!found);//We sholud always find the symbol that we are analyzing. Gramatical error if we don't
                     }
                     //Once we found the symbol that we are analyzing we add the children to the tree
-                    for(AbstractSymbol as: newOutput){
+                    for (AbstractSymbol as : newOutput) {
                         tree.addChild(as);
-                        if(as.getName().equals(TerminalSymbol.EPSILON)){//If the children is epsilon we have to go up in the tree
-                            if(!Objects.isNull(tree.getParent())){
+                        if (as.getName().equals(TerminalSymbol.EPSILON)) {//If the children is epsilon we have to go up in the tree
+                            if (!Objects.isNull(tree.getParent())) {
                                 tree = tree.getParent();
                             }
-
                         }
                     }
                 }
                 //System.out.println("Stack: " + stack);
             }
             //Go to the root of the tree
-            while(!Objects.isNull(tree.getParent())){
+            while (!Objects.isNull(tree.getParent())) {
                 tree = tree.getParent();
             }
             //TODO: send full tree to T@C
@@ -147,13 +148,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     /**
      * Obtain a list of unique reference symbols from the output of the parsing table
+     *
      * @param output The output of the parsing table
      * @return new list of unique reference symbols
      */
     private List<AbstractSymbol> getUniqueReferenceSymbols(List<AbstractSymbol> output) {
         List<AbstractSymbol> newOutput = new LinkedList<>();
-        for(AbstractSymbol as: output){
-            if(as.isTerminal()) {
+        for (AbstractSymbol as : output) {
+            if (as.isTerminal()) {
                 newOutput.add(new TerminalSymbol(as.getName()));
             } else {
                 newOutput.add(new NonTerminalSymbol(as.getName()));
@@ -168,48 +170,48 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
      * @param terminal the terminal symbol to compare
      */
     private void match(TerminalSymbol terminal) {
-        if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
+        if (terminal.getName().equals(String.valueOf(lookahead.getType()))) {
             System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
-            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
-                //System.out.println("\n\n-----------------TREE-----------------");
+            if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
+                System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.pop();
-				if(symbolToSend.getName().equals("ELSE")){
-					startTokensStack.push(symbolToSend);
-					try {
-						semanticAnalyzer.receiveSyntacticTree(new Tree<>(symbolToSend));
-					} catch (SemanticException e) {
-						throw new RuntimeException(e);
-					}
-				} else {
-					if(terminal.getName().equals("CO")){
-						startTokensStack.push(symbolToSend);
-					}
-					while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
-					){
-						parent = parent.getParent();
-						nodeName = (parent.getNode()).getName();
-					}
-					if(terminal.getName().equals("CT")){
-						parent = new Tree<>(terminal);
-					}
-
-					//printTree(parent);//TODO send this tree to the semantical analyzer
-					try {
-						semanticAnalyzer.receiveSyntacticTree(parent);
-					} catch (SemanticException e) {
+                if (symbolToSend.getName().equals("ELSE")) {
+                    startTokensStack.push(symbolToSend);
+                    try {
+                        semanticAnalyzer.receiveSyntacticTree(new Tree<>(symbolToSend));
+                        printTree(parent);//TODO send this tree to the semantical analyzer
+                    } catch (SemanticException e) {
 						// TODO: Veure que fer :) - Recuperació d'errors?
-					}
-				}
-			}
+                    }
+                } else {
+                    if (terminal.getName().equals("CO")) {
+                        startTokensStack.push(symbolToSend);
+                    }
+                    while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
+                    ) {
+                        parent = parent.getParent();
+                        nodeName = (parent.getNode()).getName();
+                    }
+                    if (terminal.getName().equals("CT")) {
+                        parent = new Tree<>(terminal);
+                    }
+                    try {
+                        semanticAnalyzer.receiveSyntacticTree(parent);
+                        printTree(parent);//TODO send this tree to the semantical analyzer
+                    } catch (SemanticException e) {
+						// TODO: Veure que fer :) - Recuperació d'errors?
+                    }
+                }
+            }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
             } catch (InvalidTokenException e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
         }

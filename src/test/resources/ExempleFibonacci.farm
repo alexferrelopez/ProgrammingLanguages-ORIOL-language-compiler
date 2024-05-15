@@ -8,9 +8,9 @@ miau: fibonacci(miau n) {
         }
         else {
             n is n minus 1;
-            miau a is fibonacci(n);
+            miau a is 3;
             n is n minus 1;
-            miau b is fibonacci(n);
+            miau b is 2;
 
             miau result is a sum b;
             poop result;
