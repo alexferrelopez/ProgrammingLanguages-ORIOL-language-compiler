@@ -1,12 +1,12 @@
 import backEnd.targetCode.TACToMIPSConverter;
-import backEnd.targetCode.TACToMIPSConverterInterface;
+import backEnd.targetCode.TargetCodeGeneratorInterface;
+import backEnd.exceptions.TargetCodeException;
 import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
 import errorHandlers.errorTypes.ErrorType;
 import errorHandlers.warningTypes.WarningType;
-import frontEnd.exceptions.InvalidFileException;
 import frontEnd.intermediateCode.TACGenerator;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.intermediateCode.TACModule;
@@ -29,7 +29,7 @@ public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
     private TACGenerator tacGenerator;
-    private final TACToMIPSConverterInterface mipsConverter;
+    private final TargetCodeGeneratorInterface mipsConverter;
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
     private final SymbolTableInterface symbolTable;
     private final SemanticAnalyzerInterface semanticAnalyzer;
@@ -54,7 +54,7 @@ public class Compiler implements CompilerInterface {
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
-        this.mipsConverter = new TACToMIPSConverter();
+        this.mipsConverter = new TACToMIPSConverter(symbolTable);
     }
 
     /**
@@ -81,7 +81,7 @@ public class Compiler implements CompilerInterface {
         // ---- BACK END ---- //
 		try {
 			mipsConverter.generateMIPS(TACinstructions);
-		} catch (InvalidFileException e) {
+		} catch (TargetCodeException e) {
             System.out.println(e.getMessage());
 		}
 	}

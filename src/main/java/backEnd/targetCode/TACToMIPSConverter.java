@@ -1,7 +1,9 @@
 package backEnd.targetCode;
 
-import frontEnd.exceptions.InvalidFileException;
+import backEnd.exceptions.TargetCodeException;
+import backEnd.exceptions.targetCode.FailedFileCreationException;
 import frontEnd.intermediateCode.TACInstruction;
+import frontEnd.semantics.symbolTable.SymbolTableInterface;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,15 +11,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-public class TACToMIPSConverter implements TACToMIPSConverterInterface {
+public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private static final String lineSeparator = System.lineSeparator();
 	private static final String framePointer = "$fp";
 	private static final String stackPointer = "$sp";
 	private static final String returnRegister = "$ra";
 	private static final String targetFile = "target/farm.asm";
 	private BufferedWriter targetCode;
+	private final SymbolTableInterface symbolTable;
 
-	private void createAssemblyFile() throws InvalidFileException {
+	public TACToMIPSConverter(SymbolTableInterface symbolTable) {
+		this.symbolTable = symbolTable;
+	}
+
+	private void createAssemblyFile() throws FailedFileCreationException {
 		// Generate a "farm.asm" file as target code inside /target folder.
 		// Write the MIPS code to the file.
 		File code = new File(targetFile);
@@ -28,19 +35,19 @@ public class TACToMIPSConverter implements TACToMIPSConverterInterface {
 				targetCode = new BufferedWriter(writer);
 			}
 		} catch (IOException e) {
-			throw new InvalidFileException("Error creating file: " + targetFile);
+			throw new FailedFileCreationException("Error creating file: " + targetFile);
 		}
 	}
 
 	@Override
-	public void generateMIPS(List<TACInstruction> instructions) throws InvalidFileException {
+	public void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException {
 		createAssemblyFile();
 
 		for (TACInstruction instruction : instructions) {
 			try {
 				convertTACInstruction(instruction);
 			} catch (IOException e) {
-				throw new InvalidFileException(e.getMessage());
+				throw new FailedFileCreationException(e.getMessage());
 			}
 		}
 	}
@@ -59,10 +66,45 @@ public class TACToMIPSConverter implements TACToMIPSConverterInterface {
 				// End Function
 				targetCode.write(endFunction());
 				break;
+			// *** Binary Operations ***
+			case "GT":
+				// Greater than
+				break;
+			case "LT":
+				// Less than
+				break;
+			case "EQ":
+				// Equal
+				break;
+			case "NEQ":
+				// Not equal
+				break;
+			case "OR":
+				// Or
+				break;
+			case "AND":
+				// And
+				break;
+
+			// *** Conditional ***
+			case "IFz":
+				// If zero
+				break;
+
+			// *** Arithmetic Operations ***
 			case "SUM":
 				// Sum
 				break;
-
+			case "SUB":
+				break;
+			case "MOD":
+				break;
+			case "MUL":
+				break;
+			case "POW":
+				break;
+			case "DIV":
+				break;
 		}
 	}
 
