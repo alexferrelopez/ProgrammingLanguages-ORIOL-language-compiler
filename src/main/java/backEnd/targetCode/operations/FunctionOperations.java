@@ -1,6 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
+import backEnd.targetCode.RegisterAllocator;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
@@ -9,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionOperations extends MIPSOperations {
-	public FunctionOperations(SymbolTableInterface symbolTableInterface) {
-		super(symbolTableInterface);
+	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
+		super(symbolTableInterface, registerAllocator);
 	}
 
 	public String funcDeclaration(String functionLabel) {
@@ -70,7 +71,7 @@ public class FunctionOperations extends MIPSOperations {
 
 		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR +
-				LINE_INDENTATION + writeComment("Starting variables code:") + LINE_SEPARATOR;
+				LINE_INDENTATION + writeComment("-- Variables code --") + LINE_SEPARATOR;
 	}
 
 	public String returnFunction(String returnValue) {

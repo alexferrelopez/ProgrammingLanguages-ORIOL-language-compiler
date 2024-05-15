@@ -18,8 +18,9 @@ public class MIPSOperations {
 	protected static String currentFunctionName;
 	protected static RegisterAllocator registerAllocator;
 
-	public MIPSOperations(SymbolTableInterface symbolTableInterface) {
+	public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
 		this.symbolTable = symbolTableInterface;
+		MIPSOperations.registerAllocator = registerAllocator;
 	}
 
 	protected String writeComment(String comment) {

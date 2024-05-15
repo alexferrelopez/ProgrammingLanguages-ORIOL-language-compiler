@@ -18,6 +18,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import static backEnd.targetCode.MIPSOperations.LINE_INDENTATION;
+import static backEnd.targetCode.MIPSOperations.LINE_SEPARATOR;
+
 public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private static final String TARGET_FILE = "target/farm.asm";
 	private BufferedWriter targetCode;
@@ -25,8 +28,8 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final AssignmentOperations assignmentOperations;
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocator) {
-		functionOperations = new FunctionOperations(symbolTable);
-		assignmentOperations = new AssignmentOperations(symbolTable);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocator);
+		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocator);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
@@ -48,7 +51,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 
 		for (TACInstruction instruction : instructions) {
 			try {
-				convertTACInstruction(instruction);
+				targetCode.write(convertTACInstruction(instruction));
 			} catch (IOException e) {
 				throw new FailedFileCreationException(e.getMessage());
 			}
@@ -61,66 +64,50 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 		}
 	}
 
-	private void convertTACInstruction(TACInstruction instruction) throws IOException {
-		switch (instruction.getOperator()) {
+	private String convertTACInstruction(TACInstruction instruction) throws IOException {
+		return switch (instruction.getOperator()) {
 			// ** Functions ** //
-			case "function":
-				targetCode.write(functionOperations.funcDeclaration(instruction.getResult()));
-				break;
-			case "Return":
-				targetCode.write(functionOperations.returnFunction(instruction.getOperand1()));
-			case "=":
-				// Assignment
-				// mipsCode.append(assign(instruction.getResult(), instruction.getOperand1()));
-				targetCode.write(assignmentOperations.assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-				break;
-			case "BeginFunc":
-				// Begin Function
-				targetCode.write(functionOperations.beginFunction(instruction.getOperand1()));
-				break;
-			case "EndFunc":
-				// End Function
-				targetCode.write(functionOperations.endFunction());
-				break;
+			case "function" -> functionOperations.funcDeclaration(instruction.getResult());
+			case "Return" -> functionOperations.returnFunction(instruction.getOperand1());
+			case "BeginFunc" -> functionOperations.beginFunction(instruction.getOperand1());
+			case "EndFunc" -> functionOperations.endFunction();
+
+			// ** Assignments
+			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
+
 			// *** Binary Operations ***
-			case "GT":
+			case "GT" -> null;
 				// Greater than
-				break;
-			case "LT":
+			case "LT" -> null;
 				// Less than
-				break;
-			case "EQ":
+			case "EQ" -> null;
 				// Equal
-				break;
-			case "NEQ":
+			case "NEQ" -> null;
 				// Not equal
-				break;
-			case "OR":
+			case "OR" -> null;
 				// Or
-				break;
-			case "AND":
+			case "AND" -> null;
 				// And
-				break;
 
 			// *** Conditional ***
-			case "IFz":
+			case "IFz" -> null;
 				// If zero
-				break;
 
 			// *** Arithmetic Operations ***
-			case "SUM":
-				// Sum
-				break;
-			case "SUB":
-				break;
-			case "MOD":
-				break;
-			case "MUL":
-				break;
-			case "POW":
-				break;
-			case "DIV":
-				break;
-		}
+
+			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
+			case "SUB" -> null;
+			case "MOD" -> null;
+			case "MUL" -> null;
+			case "POW" -> null;
+			case "DIV" -> null;
+			default -> throw new IllegalStateException("Unexpected value: " + instruction.getOperator());
+		};
+	}
+
+	private String showOperation(TACInstruction instruction, String codeMIPS) {
+		return 	LINE_SEPARATOR + LINE_INDENTATION +
+				assignmentOperations.writeComment(instruction.toString()) + LINE_SEPARATOR +
+				codeMIPS;
 	}
 }
