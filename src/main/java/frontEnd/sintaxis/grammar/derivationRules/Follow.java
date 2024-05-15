@@ -160,4 +160,19 @@ public class Follow {
             }
         }
     }
+
+    /**
+     * Method for checking if a token is in the list of follows
+     * @param follows list of follows
+     * @param stringToken token to be checked
+     * @return true if the token is in the list of follows, false if not
+     */
+    public static boolean containsToken(List<TerminalSymbol> follows, String stringToken) {
+        for(TerminalSymbol ts: follows){
+            if(ts.getName().equals(stringToken)){
+                return true;
+            }
+        }
+        return false;
+    }
 }
