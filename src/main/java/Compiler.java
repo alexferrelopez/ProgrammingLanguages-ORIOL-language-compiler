@@ -12,6 +12,10 @@ import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
+import frontEnd.semantics.SemanticAnalyzer;
+import frontEnd.semantics.SemanticAnalyzerInterface;
+import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.SymbolTableTree;
 import frontEnd.sintaxis.RecursiveDescentLLParser;
 import frontEnd.sintaxis.SyntacticAnalyzerInterface;
 import frontEnd.sintaxis.Tree;
@@ -27,6 +31,8 @@ public class Compiler implements CompilerInterface {
     private TACGenerator tacGenerator;
     private final TACToMIPSConverterInterface mipsConverter;
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
+    private final SymbolTableInterface symbolTable;
+    private final SemanticAnalyzerInterface semanticAnalyzer;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
@@ -43,7 +49,9 @@ public class Compiler implements CompilerInterface {
 
         // *** Code Analysis ***
         this.scanner = new LexicalAnalyzer(codeFilePath, lexicalErrorHandler);
-        this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
+        this.symbolTable = new SymbolTableTree();
+        this.semanticAnalyzer = new SemanticAnalyzer(semanticErrorHandler, symbolTable);
+        this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
         this.mipsConverter = new TACToMIPSConverter();
@@ -63,7 +71,7 @@ public class Compiler implements CompilerInterface {
         parser.printTree(tree);
 
         TACModule tacModule = new TACModule();
-        tacGenerator = new TACGenerator(tacModule);
+        tacGenerator = new TACGenerator(tacModule, symbolTable);
 
         // Generate the intermediate code
         List<TACInstruction> TACinstructions = tacGenerator.generateTAC(tree);

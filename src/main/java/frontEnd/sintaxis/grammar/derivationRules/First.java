@@ -1,6 +1,6 @@
 package frontEnd.sintaxis.grammar.derivationRules;
 
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
