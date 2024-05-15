@@ -12,13 +12,15 @@ import java.io.IOException;
 import java.util.List;
 
 public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
-	private static final String lineSeparator = System.lineSeparator();
-	private static final String framePointer = "$fp";
-	private static final String stackPointer = "$sp";
-	private static final String returnRegister = "$ra";
-	private static final String targetFile = "target/farm.asm";
+	private static final String LINE_SEPARATOR = System.lineSeparator();
+	private static final String LINE_INDENTATION = "\t";
+	private static final String FRAME_POINTER = "$fp";
+	private static final String STACK_POINTER = "$sp";
+	private static final String RETURN_REGISTER = "$ra";
+	private static final String TARGET_FILE = "target/farm.asm";
 	private BufferedWriter targetCode;
 	private final SymbolTableInterface symbolTable;
+	private final static String MAIN_FUNCTION = "main";
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable) {
 		this.symbolTable = symbolTable;
@@ -27,15 +29,13 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private void createAssemblyFile() throws FailedFileCreationException {
 		// Generate a "farm.asm" file as target code inside /target folder.
 		// Write the MIPS code to the file.
-		File code = new File(targetFile);
+		File code = new File(TARGET_FILE);
 		try {
-			if (code.createNewFile()) {
-				// Use FileWriter and BufferedWriter to write to the file
-				FileWriter writer = new FileWriter(code);
-				targetCode = new BufferedWriter(writer);
-			}
+			// Use FileWriter and BufferedWriter to write to the file
+			FileWriter writer = new FileWriter(code, false);
+			targetCode = new BufferedWriter(writer);
 		} catch (IOException e) {
-			throw new FailedFileCreationException("Error creating file: " + targetFile);
+			throw new FailedFileCreationException("Error creating file: " + TARGET_FILE);
 		}
 	}
 
@@ -49,6 +49,12 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			} catch (IOException e) {
 				throw new FailedFileCreationException(e.getMessage());
 			}
+		}
+
+		try {
+			targetCode.close();
+		} catch (IOException e) {
+			throw new FailedFileCreationException("Error writing to file: " + TARGET_FILE, e);
 		}
 	}
 
@@ -109,13 +115,18 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	}
 
 	private String beginFunction(String functionLabel, String functionSize) {
-		return functionLabel + ":" + lineSeparator +                    					// function start
-				"move" + framePointer + ", " + stackPointer + lineSeparator +				// move $fp, $sp
-				"sub" + stackPointer + ", " + stackPointer + ", " + functionSize + "\n";	// sub $sp, $sp, size
+		if (functionLabel.equals(MAIN_FUNCTION)) {
+			return functionLabel + ":" + LINE_SEPARATOR +                    										// function start
+					LINE_INDENTATION + "move" + FRAME_POINTER + ", " + STACK_POINTER + LINE_SEPARATOR +				// move $fp, $sp
+					LINE_INDENTATION +  "sub " + STACK_POINTER + ", " + STACK_POINTER + ", " + functionSize + "\n";	// sub $sp, $sp, size
+		}
+		else {
+			return functionLabel + ":" + LINE_SEPARATOR;
+		}
 	}
 
 	private String endFunction() {
-		return "move " + stackPointer + ", " + framePointer + lineSeparator +	// move $fp, $sp
-				"jr " + returnRegister + lineSeparator;							// jr $ra
+		return LINE_INDENTATION + "move " + STACK_POINTER + ", " + FRAME_POINTER + LINE_SEPARATOR +	// move $fp, $sp
+				LINE_INDENTATION + "jr " + RETURN_REGISTER + LINE_SEPARATOR;							// jr $ra
 	}
 }
