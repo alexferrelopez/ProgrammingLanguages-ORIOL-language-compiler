@@ -1,10 +1,14 @@
+import backEnd.targetCode.TACToMIPSConverter;
+import backEnd.targetCode.TACToMIPSConverterInterface;
 import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.SyntacticErrorHandler;
 import errorHandlers.errorTypes.ErrorType;
 import errorHandlers.warningTypes.WarningType;
+import frontEnd.exceptions.InvalidFileException;
 import frontEnd.intermediateCode.TACGenerator;
+import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
@@ -21,6 +25,7 @@ public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
     private TACGenerator tacGenerator;
+    private final TACToMIPSConverterInterface mipsConverter;
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
@@ -41,6 +46,7 @@ public class Compiler implements CompilerInterface {
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler);
 
         // ---- BACK END ---- //
+        this.mipsConverter = new TACToMIPSConverter();
     }
 
     /**
@@ -60,12 +66,17 @@ public class Compiler implements CompilerInterface {
         tacGenerator = new TACGenerator(tacModule);
 
         // Generate the intermediate code
-        tacGenerator.generateTAC(tree);
+        List<TACInstruction> TACinstructions = tacGenerator.generateTAC(tree);
 
         tacGenerator.printTAC();
 
         // ---- BACK END ---- //
-    }
+		try {
+			mipsConverter.generateMIPS(TACinstructions);
+		} catch (InvalidFileException e) {
+            System.out.println(e.getMessage());
+		}
+	}
 
     /**
      * This method returns if the code has errors or not (checks the lexical, syntactic and semantic errors).

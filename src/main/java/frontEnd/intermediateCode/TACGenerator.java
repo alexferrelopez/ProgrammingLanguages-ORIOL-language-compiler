@@ -17,7 +17,7 @@ public class TACGenerator {
         this.tacModule = tacModule;
     }
 
-    public void generateTAC(Tree<AbstractSymbol> tree) {
+    public List<TACInstruction> generateTAC(Tree<AbstractSymbol> tree) {
         // Get the program node
         Tree<AbstractSymbol> program = getProgramNode(tree);
         this.funcTreeList = getFunctionNodes(tree);
@@ -49,6 +49,8 @@ public class TACGenerator {
         // Generate TAC code for main program
         generateCode(program);
         tacModule.addUnaryInstruction(null, "EndFunc", null);
+
+        return tacModule.getInstructions();
     }
 
     private List<Tree<AbstractSymbol>> getFunctionNodes(Tree<AbstractSymbol> tree) {
