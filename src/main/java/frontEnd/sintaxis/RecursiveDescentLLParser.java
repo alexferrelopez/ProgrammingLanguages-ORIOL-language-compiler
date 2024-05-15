@@ -160,40 +160,45 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
      * @param terminal the terminal symbol to compare
      */
     private void match(TerminalSymbol terminal) {
-        if (terminal.getName().equals(String.valueOf(lookahead.getType()))) {
+        if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
             System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
-            if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
+            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
                 System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
-                AbstractSymbol symbolToSend = startTokensStack.pop();
-                if (symbolToSend.getName().equals("ELSE")) {
-                    startTokensStack.push(symbolToSend);
-                    try {
-                        semanticAnalyzer.receiveSyntacticTree(new Tree<>(symbolToSend));
-                        printTree(parent);//TODO send this tree to the semantical analyzer
-                    } catch (SemanticException e) {
-                        throw new RuntimeException(e);
+                AbstractSymbol symbolToSend = startTokensStack.peek();
+                if(symbolToSend.getName().equals("ELSE")){
+                    //startTokensStack.push(symbolToSend);
+                    if(terminal.getName().equals("CT")){
+                        parent = new Tree<>(terminal);
+                        //SemanticAnalyzer.sendTree();
+                    }else{
+                        parent = new Tree<>(symbolToSend);
+                        //SemanticAnalyzer.sendTree(new Tree<>(new TerminalSymbol("ELSE")));
                     }
-                } else {
-                    if (terminal.getName().equals("CO")) {
-                        startTokensStack.push(symbolToSend);
+                }else{
+                    if(terminal.getName().equals("CO")){
+                        //startTokensStack.push(symbolToSend);
                     }
                     while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
-                    ) {
+                    ){
                         parent = parent.getParent();
                         nodeName = (parent.getNode()).getName();
                     }
-                    if (terminal.getName().equals("CT")) {
+                    if(terminal.getName().equals("CT")){
                         parent = new Tree<>(terminal);
+                        startTokensStack.pop();
                     }
-                    try {
-                        semanticAnalyzer.receiveSyntacticTree(parent);
-                        printTree(parent);//TODO send this tree to the semantical analyzer
-                    } catch (SemanticException e) {
-                        throw new RuntimeException(e);
+                    if(terminal.getName().equals("PUNT_COMMA")){
+                        startTokensStack.pop();
                     }
+                    //printTree(parent);//TODO send this tree to the semantical analyzer
+                }
+                try {
+                    semanticAnalyzer.receiveSyntacticTree(parent);
+                } catch (SemanticException e) {
+                    throw new RuntimeException(e);
                 }
             }
             try {
@@ -201,9 +206,10 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             } catch (InvalidTokenException e) {
                 e.printStackTrace();
             }
-        } else {
+        }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
+            //Crec que el error recovery no va aqui
         }
     }
 
