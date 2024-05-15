@@ -115,7 +115,6 @@ public class TACGenerator {
     }
 
 
-
     private void handleFunctionCall(Tree<AbstractSymbol> tree, String functionName) {
         // We have '(', <func_params>, ')'
         List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
@@ -127,7 +126,7 @@ public class TACGenerator {
         List<String> parameters = new ArrayList<>();
         for (Tree<AbstractSymbol> leafNode : leafNodes) {
             TerminalSymbol terminalSymbol = (TerminalSymbol) leafNode.getNode();
-            if (!terminalSymbol.getToken().getLexeme().equals(",") && !terminalSymbol.getToken().getLexeme().equals("(") && !terminalSymbol.getToken().getLexeme().equals(")") ){
+            if (!terminalSymbol.getToken().getLexeme().equals(",") && !terminalSymbol.getToken().getLexeme().equals("(") && !terminalSymbol.getToken().getLexeme().equals(")")) {
                 parameters.add(terminalSymbol.getToken().getLexeme());
             }
         }
@@ -138,7 +137,7 @@ public class TACGenerator {
 
         int numberOfParameters = parameters.size();
         // Create a new temporary variable to store the result of the function call
-        tacModule.addUnaryInstruction(functionName, "LCall","");
+        tacModule.addUnaryInstruction(functionName, "LCall", "");
         tacModule.addUnaryInstruction("", "PopParams", Integer.toString(numberOfParameters));
     }
 
@@ -305,10 +304,16 @@ public class TACGenerator {
         // TODO -> check if the VARIABLE is a function call with the table of symbols
         if (getNodeBySymbolName(tree, "func_call") != tree) {
             Tree<AbstractSymbol> funcCall = getNodeBySymbolName(tree, "func_call");
-            String functionName = ( (TerminalSymbol) getNodeBySymbolName(funcCall, "VARIABLE").getNode()).getToken().getLexeme();
-            // Handle function call
-            Tree<AbstractSymbol> func_call_ = getNodeBySymbolName(tree, "func_call'");
-            handleFunctionCall(func_call_, functionName);
+
+            if (funcCall != null) {
+                String functionName = ((TerminalSymbol) getNodeBySymbolName(funcCall, "VARIABLE").getNode()).getToken().getLexeme();
+
+                // Handle function call
+                Tree<AbstractSymbol> func_call_ = getNodeBySymbolName(tree, "func_call'");
+                if (func_call_ != null) {
+                    handleFunctionCall(func_call_, functionName);
+                }
+            }
         }
         Expression expr = generateExpressionCode(tree);
 
