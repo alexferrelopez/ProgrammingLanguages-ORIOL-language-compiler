@@ -20,7 +20,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private static final String TARGET_FILE = "target/farm.asm";
 	private BufferedWriter targetCode;
 	private final SymbolTableInterface symbolTable;
-	private final static String MAIN_FUNCTION = "main";
+	private final static String MAIN_FUNCTION = "ranch";
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable) {
 		this.symbolTable = symbolTable;
@@ -60,13 +60,16 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 
 	private void convertTACInstruction(TACInstruction instruction) throws IOException {
 		switch (instruction.getOperator()) {
+			// ** Functions ** //
+			case "function":
+				targetCode.write(funcDeclaration(instruction.getResult()));
 			case "=":
 				// Assignment
 				// mipsCode.append(assign(instruction.getResult(), instruction.getOperand1()));
 				break;
 			case "BeginFunc":
 				// Begin Function
-				targetCode.write(beginFunction(instruction.getResult(), instruction.getOperand1()));
+				targetCode.write(beginFunction(instruction.getOperand1()));
 				break;
 			case "EndFunc":
 				// End Function
@@ -114,19 +117,53 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 		}
 	}
 
-	private String beginFunction(String functionLabel, String functionSize) {
+	private String funcDeclaration(String functionLabel) {
+		String text = (functionLabel + ":") + LINE_SEPARATOR;
+		/*
+			addi $sp, $sp, -8   # Allocate stack frame
+			sw $ra, 4($sp)      # Save return address
+			sw $fp, 0($sp)      # Save frame pointer
+			move $fp, $sp       # Set frame pointer
+		 */
 		if (functionLabel.equals(MAIN_FUNCTION)) {
+
+		}
+
+		// Save stack
+		text += LINE_INDENTATION +
+				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", -8") + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + RETURN_REGISTER + ", 4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR;
+
+		return text;
+	}
+
+	private String beginFunction(String functionSize) {
+		/*if (functionLabel.equals(MAIN_FUNCTION)) {
 			return functionLabel + ":" + LINE_SEPARATOR +                    										// function start
 					LINE_INDENTATION + "move" + FRAME_POINTER + ", " + STACK_POINTER + LINE_SEPARATOR +				// move $fp, $sp
 					LINE_INDENTATION +  "sub " + STACK_POINTER + ", " + STACK_POINTER + ", " + functionSize + "\n";	// sub $sp, $sp, size
 		}
 		else {
 			return functionLabel + ":" + LINE_SEPARATOR;
-		}
+		}*/
+		return LINE_INDENTATION + "sub " + STACK_POINTER + ", " + STACK_POINTER + ", " + functionSize + LINE_SEPARATOR;	// sub $sp, $sp, size;
 	}
 
 	private String endFunction() {
-		return LINE_INDENTATION + "move " + STACK_POINTER + ", " + FRAME_POINTER + LINE_SEPARATOR +	// move $fp, $sp
-				LINE_INDENTATION + "jr " + RETURN_REGISTER + LINE_SEPARATOR;							// jr $ra
+		/*
+			move $sp, $fp       # Restore stack pointer
+			lw $ra, 4($sp)      # Restore return address
+			lw $fp, 0($sp)      # Restore frame pointer
+			addi $sp, $sp, 8    # Deallocate stack frame
+			jr $ra              # Return from function
+		 */
+		return	LINE_INDENTATION +
+				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
+				("lw " + RETURN_REGISTER + ", 4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("lw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION +
+				("jr " + RETURN_REGISTER) + LINE_SEPARATOR;
 	}
 }
