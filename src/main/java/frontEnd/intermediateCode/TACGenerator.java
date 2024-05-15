@@ -36,7 +36,7 @@ public class TACGenerator {
 
             // Start the function with result: BeginFunc, operand1: bytes_needed
             // The bytes_needed are calculated by the number of variables declared in the function
-            int bytesNeeded = symbolTable.calculateFunctionSize(functionName);
+            int bytesNeeded = 0;
             // Use symbolTable to get the number of bytes needed. The node of the function has a hash table with the variables declared in the function
             // TODO -> calculate bytesNeeded
             tacModule.addUnaryInstruction(null, "BeginFunc", Integer.toString(bytesNeeded));
@@ -302,13 +302,13 @@ public class TACGenerator {
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
         // Check if it's a function call or a simple assignment
-        if (getNodeBySymbolName(tree, "func_call") != null) {
+        // TODO -> check if the VARIABLE is a function call with the table of symbols
+        if (getNodeBySymbolName(tree, "func_call") != tree) {
             Tree<AbstractSymbol> funcCall = getNodeBySymbolName(tree, "func_call");
             String functionName = ( (TerminalSymbol) getNodeBySymbolName(funcCall, "VARIABLE").getNode()).getToken().getLexeme();
             // Handle function call
             Tree<AbstractSymbol> func_call_ = getNodeBySymbolName(tree, "func_call'");
             handleFunctionCall(func_call_, functionName);
-            return;
         }
         Expression expr = generateExpressionCode(tree);
 
