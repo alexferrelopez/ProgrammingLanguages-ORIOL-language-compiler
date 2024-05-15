@@ -89,7 +89,7 @@ public class ScopeNode {
 		}
 
 		// If the symbol is not found, search on the parent's scope.
-		return this.parent.findSymbol(symbolName);
+		return this.parent.findSymbolGlobally(symbolName);
 	}
 
 	public ScopeNode getParent() {
