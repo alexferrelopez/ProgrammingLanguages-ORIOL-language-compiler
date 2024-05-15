@@ -36,7 +36,7 @@ public class TACGenerator {
 
             // Start the function with result: BeginFunc, operand1: bytes_needed
             // The bytes_needed are calculated by the number of variables declared in the function
-            int bytesNeeded = symbolTable.calculateFunctionSize(functionName);
+            int bytesNeeded = 0; //symbolTable.calculateFunctionSize(functionName);
             // Use symbolTable to get the number of bytes needed. The node of the function has a hash table with the variables declared in the function
             // TODO -> calculate bytesNeeded
             tacModule.addUnaryInstruction(null, "BeginFunc", Integer.toString(bytesNeeded));

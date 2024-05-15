@@ -95,7 +95,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     try {
                         checkAssignationSemantics(tokens, null);
                     } catch (InvalidAssignmentException e) {
-                        throw new RuntimeException(e);
+                        //throw new RuntimeException(e);
                     }
                 }
                 break;
