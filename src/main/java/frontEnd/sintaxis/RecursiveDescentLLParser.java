@@ -178,7 +178,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 AbstractSymbol symbolToSend = startTokensStack.pop();
 				if(symbolToSend.getName().equals("ELSE")){
 					startTokensStack.push(symbolToSend);
-					SemanticAnalyzer.sendTree(new Tree<>(symbolToSend));
+					try {
+						semanticAnalyzer.receiveSyntacticTree(new Tree<>(symbolToSend));
+					} catch (SemanticException e) {
+						throw new RuntimeException(e);
+					}
 				} else {
 					if(terminal.getName().equals("CO")){
 						startTokensStack.push(symbolToSend);
