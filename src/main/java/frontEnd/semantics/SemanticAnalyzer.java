@@ -269,7 +269,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     isValid = false;
                 }
             }
-
+/*
             // Check the operation (sum, sub...) is done between same type of variables / values.
             if (isValid == validArithmeticOperatorsTokens.contains(token.getType())) {
                 // Check if the previous and next tokens are compatible.
@@ -290,7 +290,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), leftOperandType + " " + variableSymbol);
                     isValid = false;
                 }
-            }
+            }*/
         }
 
         // Check if the operation was semantically correct (or not) to warn.
