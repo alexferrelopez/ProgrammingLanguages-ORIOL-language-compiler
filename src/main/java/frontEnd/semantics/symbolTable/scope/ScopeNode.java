@@ -1,6 +1,7 @@
 package frontEnd.semantics.symbolTable.scope;
 
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
+import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import java.util.ArrayList;
@@ -133,5 +134,46 @@ public class ScopeNode {
 			return returnType;
 		}
 		return this.parent.getReturnType();
+	}
+
+	/**
+	 * Find a function symbol by the function name. ONLY VALID FOR FUNCTIONS!
+	 * @param functionName	the name of the function.
+	 * @return	the function symbol with the given name, or null if the function is not declared.
+	 */
+	public ScopeNode findFunctionByName(String functionName) {
+		Symbol<?> symbol = this.findSymbol(functionName);
+
+		// Check if it's a function.
+		if (!symbol.isVariable()) {
+			FunctionSymbol<?> functionSymbol = (FunctionSymbol<?>) symbol;
+			return this.children.get(functionSymbol.getRootChildIndex());
+		}
+
+		return null;
+	}
+
+	public int calculateNestedScopesSize() {
+
+		// Calculate the maximum size (to guarantee the worst case) of all the variables from the node's children.
+		List<Integer> childrenSizes = new ArrayList<>();
+		for (ScopeNode child : this.children) {
+			childrenSizes.add(child.calculateScopeSize());
+		}
+
+		return childrenSizes.stream().max(Integer::compareTo).orElse(0);
+	}
+
+	public int calculateScopeSize() {
+		int size = 0;
+
+		// Calculate the size of all the variables in the scope.
+		for (Symbol<?> symbol : this.symbols.values()) {
+			if (symbol.isVariable()) {
+				size += symbol.getDataType().getSize();
+			}
+		}
+
+		return size;
 	}
 }

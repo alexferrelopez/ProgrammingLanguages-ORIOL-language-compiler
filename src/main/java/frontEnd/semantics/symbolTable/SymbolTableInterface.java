@@ -70,4 +70,11 @@ public interface SymbolTableInterface {
     void leaveCurrentScope();
 
     ScopeNode getCurrentScope();
+
+    /**
+     * Calculate all the Bytes required for a function (given its parameters and all the local variables declared).
+     * @param functionName  name of the function to get its size
+     * @return  number of Bytes required to allocate the whole function.
+     */
+    int calculateFunctionSize(String functionName);
 }

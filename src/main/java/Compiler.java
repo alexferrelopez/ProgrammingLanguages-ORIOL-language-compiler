@@ -65,7 +65,7 @@ public class Compiler implements CompilerInterface {
         parser.printTree(tree);
 
         TACModule tacModule = new TACModule();
-        tacGenerator = new TACGenerator(tacModule);
+        tacGenerator = new TACGenerator(tacModule, symbolTable);
 
         // Generate the intermediate code
         tacGenerator.generateTAC(tree);
