@@ -1,3 +1,6 @@
+import backEnd.targetCode.TACToMIPSConverter;
+import backEnd.targetCode.TargetCodeGeneratorInterface;
+import backEnd.exceptions.TargetCodeException;
 import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
@@ -5,6 +8,7 @@ import errorHandlers.SyntacticErrorHandler;
 import errorHandlers.errorTypes.ErrorType;
 import errorHandlers.warningTypes.WarningType;
 import frontEnd.intermediateCode.TACGenerator;
+import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.intermediateCode.TACModule;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.LexicalAnalyzerInterface;
@@ -25,6 +29,7 @@ public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
     private TACGenerator tacGenerator;
+    private final TargetCodeGeneratorInterface mipsConverter;
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
     private final SymbolTableInterface symbolTable;
     private final SemanticAnalyzerInterface semanticAnalyzer;
@@ -49,6 +54,7 @@ public class Compiler implements CompilerInterface {
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
+        this.mipsConverter = new TACToMIPSConverter(symbolTable);
     }
 
     /**
@@ -68,12 +74,17 @@ public class Compiler implements CompilerInterface {
         tacGenerator = new TACGenerator(tacModule, symbolTable);
 
         // Generate the intermediate code
-        tacGenerator.generateTAC(tree);
+        List<TACInstruction> TACinstructions = tacGenerator.generateTAC(tree);
 
         tacGenerator.printTAC();
 
         // ---- BACK END ---- //
-    }
+		try {
+			mipsConverter.generateMIPS(TACinstructions);
+		} catch (TargetCodeException e) {
+            System.out.println(e.getMessage());
+		}
+	}
 
     /**
      * This method returns if the code has errors or not (checks the lexical, syntactic and semantic errors).

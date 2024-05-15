@@ -81,4 +81,8 @@ public class TACModule {
     public void addFunctionLabel(String functionName) {
         this.instructions.add(new TACInstruction(functionName, "function"));
     }
+
+    public List<TACInstruction> getInstructions() {
+        return instructions;
+    }
 }
