@@ -4,13 +4,8 @@ import backEnd.exceptions.TargetCodeException;
 import backEnd.exceptions.targetCode.FailedFileCreationException;
 import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.operations.FunctionOperations;
-import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.intermediateCode.TACInstruction;
-import frontEnd.lexic.dictionary.Tokenizer;
-import frontEnd.lexic.dictionary.tokenEnums.DataType;
-import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
-import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -96,7 +91,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			// *** Arithmetic Operations ***
 
 			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "SUB" -> null;
+			case "SUB" -> showOperation(instruction, assignmentOperations.subtractAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			case "MOD" -> null;
 			case "MUL" -> null;
 			case "POW" -> null;

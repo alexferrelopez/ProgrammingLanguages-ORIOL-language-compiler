@@ -1,19 +1,16 @@
 package backEnd.targetCode;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 public class RegisterAllocator {
 	private static final int NUM_TEMP_REGISTERS = 10;
 	public static final String REGISTER_PREFIX = "$t";
-	private final Queue<String> availableRegisters;
+	private final Stack<String> availableRegisters;
 	private final Map<String, String> variableToRegister;
 
 	public RegisterAllocator() {
-		availableRegisters = new LinkedList<>();
-		for (int i = 0; i < NUM_TEMP_REGISTERS; i++) {
+		availableRegisters = new Stack<>();
+		for (int i = NUM_TEMP_REGISTERS - 1; i >= 0 ; i--) {
 			availableRegisters.add(REGISTER_PREFIX + i);
 		}
 		variableToRegister = new HashMap<>();
@@ -27,7 +24,7 @@ public class RegisterAllocator {
 
 		// Find an unused register
 		if (!availableRegisters.isEmpty()) {
-			String reg = availableRegisters.poll();
+			String reg = availableRegisters.pop();
 			variableToRegister.put(variable, reg);
 			return reg;
 		}

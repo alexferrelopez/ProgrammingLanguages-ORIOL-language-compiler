@@ -137,26 +137,47 @@ public class AssignmentOperations extends MIPSOperations {
 
 		// Check type of variable.
 		return switch (operandContainer.getOperandsType()) {
-			case INTEGER -> integerSum(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2());
+			case INTEGER -> integerSumSub(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "add");
 			//case FLOAT -> floatAssignment(destinationVariable);
 			default -> null;
 		};
 	}
 
-	private String storeOperandIntoRegister(Operand operand, String destination) {
+	public String subtractAssignment(String operand1, String operand2, String destination) {
+		OperandContainer operandContainer = new OperandContainer();
+		loadOperands(operandContainer, destination, operand1, operand2);
+
+		// Check type of variable.
+		return switch (operandContainer.getOperandsType()) {
+			case INTEGER -> integerSumSub(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "sub");
+			//case FLOAT -> floatAssignment(destinationVariable);
+			default -> null;
+		};
+	}
+
+	private String loadOperandIntoRegister(Operand operand, String destination, DataType dataType) {
 		String text;
 
+		// Load a value from a register into a register.
 		if (operand.isRegister()) {
 			text = "lw " + destination + ", " + operand.getValue();
 		}
 		else {
-			text = "li " + destination + ", " + operand.getValue();
+			// Load a floating point value (decimal).
+			if (dataType == DataType.FLOAT) {
+				text = "li.s " + destination + ", " + operand.getValue();
+			}
+
+			// Load any other type (integer).
+			else {
+				text = "li " + destination + ", " + operand.getValue();
+			}
 		}
 
 		return text + LINE_SEPARATOR + LINE_INDENTATION;
 	}
 
-	private String integerSum(Operand destination, Operand operand1, Operand operand2) {
+	private String integerSumSub(Operand destination, Operand operand1, Operand operand2, String operator) {
 		String text = LINE_INDENTATION;
 
 		// Allocate temporary registers.
@@ -164,15 +185,15 @@ public class AssignmentOperations extends MIPSOperations {
 		String regOp2 = registerAllocator.allocateRegister(operand2.getValue());
 		String regDest = registerAllocator.allocateRegister(destination.getValue());
 
-		text += storeOperandIntoRegister(operand1, regOp1);
-		text += storeOperandIntoRegister(operand2, regOp2);
+		text += loadOperandIntoRegister(operand1, regOp1, DataType.INTEGER);
+		text += loadOperandIntoRegister(operand2, regOp2, DataType.INTEGER);
 
 		// Destination will always be a temporal register.
-		text += ("add " + regDest + ", " + regOp1 + ", " + regOp2) + LINE_SEPARATOR;
+		text += (operator + " " + regDest + ", " + regOp1 + ", " + regOp2) + LINE_SEPARATOR;
 
 		// Free temporary registers (destination will be freed in the assignment).
-		registerAllocator.freeRegister(operand1.getValue());
 		registerAllocator.freeRegister(operand2.getValue());
+		registerAllocator.freeRegister(operand1.getValue());
 
 		return text;
 	}
