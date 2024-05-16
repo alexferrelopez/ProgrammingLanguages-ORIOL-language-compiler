@@ -15,6 +15,7 @@ import frontEnd.sintaxis.grammar.Grammar;
 import frontEnd.sintaxis.grammar.derivationRules.NonTerminalSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.ParsingTable;
 import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
+import frontEnd.sintaxis.grammar.derivationRules.Follow;
 
 import java.util.*;
 
@@ -118,19 +119,12 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
                         /*******************************************/
 
-                        Tree hola = new Tree<>(tree);
-                        while(hola.getParent() != null){
-                            hola = hola.getParent();
-                        }
-                        System.out.println();
-                        printTree(hola);
 
-
-                        System.out.println("Lookahead: " + lookahead);
+                        // System.out.println("Lookahead: " + lookahead);
                     }
-                    if(lookahead.getLexeme().equals("poop")){
+                    if (lookahead.getLexeme().equals("poop")) {
                         Tree hola = new Tree<>(tree);
-                        while(hola.getParent() != null){
+                        while (hola.getParent() != null) {
                             hola = hola.getParent();
                         }
                         System.out.println();
@@ -163,8 +157,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                                     break;
                                 }
                             }
-                            if(!found){//If none of the children is the symbol that we are analyzing we go up in the tree
-                                if(Objects.isNull(tree.getParent())) break;
+                            if (!found) {//If none of the children is the symbol that we are analyzing we go up in the tree
+                                if (Objects.isNull(tree.getParent())) break;
                                 tree = tree.getParent();
                                 children = tree.getChildren();
 
@@ -176,7 +170,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                                     break;
                                 }*/
                             }
-                        }while (!found);//We should always find the symbol that we are analyzing. Gramatical error if we don't
+                        } while (!found);//We should always find the symbol that we are analyzing. Gramatical error if we don't
                     }
                     //Once we found the symbol that we are analyzing we add the children to the tree
                     for (AbstractSymbol as : newOutput) {
@@ -234,38 +228,34 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
      * @param terminal the terminal symbol to compare
      */
     private void match(TerminalSymbol terminal) {
-        if(terminal.getName().equals(String.valueOf(lookahead.getType()))){
+        if (terminal.getName().equals(String.valueOf(lookahead.getType()))) {
             System.out.println("MATCH: " + terminal.getName());
             terminal.setToken(lookahead);
-            if(terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO")|| terminal.getName().equals("CT")){//If we ended a sentence or a block of code
+            if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
                 System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.peek();
-                if(symbolToSend.getName().equals("ELSE")){
+                if (symbolToSend.getName().equals("ELSE")) {
                     //startTokensStack.push(symbolToSend);
-                    if(terminal.getName().equals("CT")){
+                    if (terminal.getName().equals("CT")) {
                         parent = new Tree<>(terminal);
                         //SemanticAnalyzer.sendTree();
-                    }else{
+                    } else {
                         parent = new Tree<>(symbolToSend);
                         //SemanticAnalyzer.sendTree(new Tree<>(new TerminalSymbol("ELSE")));
                     }
-                }else{
-                    if(terminal.getName().equals("CO")){
-                        //startTokensStack.push(symbolToSend);
-                    }
-                }else{
+                } else {
                     while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
-                    ){
+                    ) {
                         parent = parent.getParent();
                         nodeName = (parent.getNode()).getName();
                     }
-                    if(terminal.getName().equals("CT")){
+                    if (terminal.getName().equals("CT")) {
                         parent = new Tree<>(terminal);
                         startTokensStack.pop();
                     }
-                    if(terminal.getName().equals("PUNT_COMMA")){
+                    if (terminal.getName().equals("PUNT_COMMA")) {
                         startTokensStack.pop();
                     }
                     //printTree(parent);//TODO send this tree to the semantical analyzer
@@ -277,7 +267,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 }
             }
             boolean lookaheadrror = true;
-            do{
+            do {
                 try {
                     lookahead = lexicalAnalyzer.getNextToken();
                     lookaheadrror = false;
@@ -285,8 +275,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     e.printStackTrace();
                     lookaheadrror = true;
                 }
-            }while (lookaheadrror);
-        }else{
+            } while (lookaheadrror);
+        } else {
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
             //Crec que el error recovery no va aqui
@@ -306,7 +296,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         return tree;
     }
 
-    private List<AbstractSymbol> errorRecovery(Stack<AbstractSymbol> stack, AbstractSymbol symbol, Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, ParsingTable parsingTable, List<AbstractSymbol> output){
+    private List<AbstractSymbol> errorRecovery(Stack<AbstractSymbol> stack, AbstractSymbol symbol, Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, ParsingTable parsingTable, List<AbstractSymbol> output) {
         Tree treeCopy = new Tree(tree);
         @SuppressWarnings("unchecked")
         Stack<AbstractSymbol> stackCopy = (Stack<AbstractSymbol>) stack.clone();
@@ -316,13 +306,13 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         //Metode 1
         System.out.println("Error gramatical"); //TODO error recovery
         //Comparar lookahead amb follow de arbre. Si no esta pujar per el arbre
-        NonTerminalSymbol nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
+        NonTerminalSymbol nt = Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
         List<TerminalSymbol> follows = Follow.getFollows(grammarMap, nt);
 
         try {
-            while (! Follow.containsToken(follows, lookahead.getType().toString())) {
+            while (!Follow.containsToken(follows, lookahead.getType().toString())) {
                 tree = tree.getParent();
-                nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
+                nt = Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
                 follows = Follow.getFollows(grammarMap, nt);
             }
             while (!symbol.isTerminal()) {
@@ -331,22 +321,22 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             symbol = stack.pop();
             startTokensStack.pop();
 
-        }catch (NullPointerException | EmptyStackException e){
+        } catch (NullPointerException | EmptyStackException e) {
             e.printStackTrace();
         }
-        if(!symbol.isTerminal()){
+        if (!symbol.isTerminal()) {
             output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
         }
 
         //Mètode 2
-        if(output == null){
+        if (output == null) {
             tree = new Tree<>(treeCopy);
             startTokensStack = (Stack<AbstractSymbol>) startTokensStackCopy.clone();
             stack = (Stack<AbstractSymbol>) stackCopy.clone();
             symbol = stack.pop();
-            do{
+            do {
                 boolean lookaheadrror;
-                do{
+                do {
                     try {
                         lookahead = lexicalAnalyzer.getNextToken();
                         lookaheadrror = false;
@@ -354,24 +344,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         e.printStackTrace();
                         lookaheadrror = true;
                     }
-                }while (lookaheadrror);
+                } while (lookaheadrror);
                 output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
 
-                if(Objects.isNull(output)){
+                if (Objects.isNull(output)) {
                     output = errorRecovery(stack, symbol, grammarMap, parsingTable, output);
                 }
-            }while (output == null);
+            } while (output == null);
         }
         return output;
     }
-
-    private void metode1(){
-
-    }
-
-    private void metode2(){
-
-    }
-
-
 }
