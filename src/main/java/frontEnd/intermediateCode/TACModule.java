@@ -27,7 +27,7 @@ public class TACModule {
     }
 
     public String createLabel() {
-        return "L" + (labelCounter++);
+        return "$L" + (labelCounter++);
     }
 
     public void addLabel(String label) {
@@ -45,7 +45,7 @@ public class TACModule {
     }
 
     private String getNextTempVar() {
-        return "t" + (tempVarCounter++);
+        return "$t" + (tempVarCounter++);
     }
 
     @Override
