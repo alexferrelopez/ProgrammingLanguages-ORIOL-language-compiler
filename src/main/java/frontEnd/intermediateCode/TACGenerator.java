@@ -47,7 +47,7 @@ public class TACGenerator {
             tacModule.addUnaryInstruction(null, "EndFunc", null);
         }
 
-        tacModule.addFunctionLabel("ranch");
+        tacModule.addFunctionLabel("main");
         tacModule.addUnaryInstruction(null, "BeginFunc", "0");
         // Generate TAC code for main program
         generateCode(program);
@@ -117,20 +117,28 @@ public class TACGenerator {
     }
 
 
-
     private void handleFunctionCall(Tree<AbstractSymbol> tree, String functionName) {
         // We have '(', <func_params>, ')'
         List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
 
-        // Remove "ε" nodes in leafNodes
-        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+        // Remove "ε" and "COMMA" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon() || ((TerminalSymbol) node.getNode()).getName().equals("COMMA"));
 
         // Get the parameters
         List<String> parameters = new ArrayList<>();
-        for (Tree<AbstractSymbol> leafNode : leafNodes) {
-            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNode.getNode();
-            if (!terminalSymbol.getToken().getLexeme().equals(",") && !terminalSymbol.getToken().getLexeme().equals("(") && !terminalSymbol.getToken().getLexeme().equals(")")) {
-                parameters.add(terminalSymbol.getToken().getLexeme());
+        for (int i = 0; i < leafNodes.size() - 1; i++) {
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(i).getNode();
+            // The parameters are between 'PO' and 'PC'
+            if (terminalSymbol.getName().equals("PO") ) {
+                for (int j = i + 1; j < leafNodes.size(); j++) {
+                    TerminalSymbol parameterSymbol = (TerminalSymbol) leafNodes.get(j).getNode();
+                    if (parameterSymbol.getName().equals("PT")) {
+                        break;
+                    }
+                    parameters.add(parameterSymbol.getToken().getLexeme());
+                }
+            } else if (terminalSymbol.getName().equals("PT")) {
+                break;
             }
         }
 
@@ -142,6 +150,7 @@ public class TACGenerator {
         // Create a new temporary variable to store the result of the function call
         tacModule.addUnaryInstruction(functionName, "LCall", "");
         tacModule.addUnaryInstruction("", "PopParams", Integer.toString(numberOfParameters));
+
     }
 
     private void handleReturn(Tree<AbstractSymbol> tree) {
@@ -303,24 +312,65 @@ public class TACGenerator {
     }
 
     private void handleAssignment(Tree<AbstractSymbol> tree) {
-        // Check if it's a function call or a simple assignment
-        // TODO -> check if the VARIABLE is a function call with the table of symbols
-        if (getNodeBySymbolName(tree, "func_call") != tree) {
-            Tree<AbstractSymbol> funcCall = getNodeBySymbolName(tree, "func_call");
+        // Get leaf nodes of the tree
+        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-            if (funcCall != null) {
-                String functionName = ((TerminalSymbol) getNodeBySymbolName(funcCall, "VARIABLE").getNode()).getToken().getLexeme();
+        if (leafNodes.size() == 3) {
+            // We have a simple assignment
+            Expression expr = generateExpressionCode(tree);
 
-                // Handle function call
-                Tree<AbstractSymbol> func_call_ = getNodeBySymbolName(tree, "func_call'");
-                if (func_call_ != null) {
-                    handleFunctionCall(func_call_, functionName);
-                }
+            // Check if the right operand is a logic operand
+            if (expr.getRightOperand().equals("alive") || expr.getRightOperand().equals("dead")) {
+                // Convert the logic operand to a number
+                String rightOperand = convertLogicOperand(expr.getRightOperand());
+                tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", rightOperand);
+                return;
+            }
+            tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
+        } else if (containOperation(leafNodes) != null) {
+            // We have an operation
+            handleOperation(tree, containOperation(leafNodes));
+        } else {
+            // We have a function call
+            String functionName = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
+            handleFunctionCall(tree, functionName);
+            // Add the result of the function call to a temporary variable
+            // Modify the value of the left operand with a temporary variable
+            tacModule.addUnaryInstruction(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme(), "=", functionName);
+        }
+    }
+
+    private String containOperation(List<Tree<AbstractSymbol>> leafNodes) {
+        for (Tree<AbstractSymbol> leafNode : leafNodes) {
+            if (leafNode.getNode().getName().equals("SUM") || leafNode.getNode().getName().equals("SUB") || leafNode.getNode().getName().equals("MUL") || leafNode.getNode().getName().equals("DIV") || leafNode.getNode().getName().equals("MOD") || leafNode.getNode().getName().equals("POW") || leafNode.getNode().getName().equals("AND") || leafNode.getNode().getName().equals("OR") || leafNode.getNode().getName().equals("NOT") || leafNode.getNode().getName().equals("EQ") || leafNode.getNode().getName().equals("NEQ") || leafNode.getNode().getName().equals("GT") || leafNode.getNode().getName().equals("LT") || leafNode.getNode().getName().equals("GTE") || leafNode.getNode().getName().equals("LTE")){
+                return leafNode.getNode().getName();
             }
         }
-        Expression expr = generateExpressionCode(tree);
 
-        tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
+        return null;
+    }
+
+    private void handleOperation(Tree<AbstractSymbol> tree, String operation) {
+        // Get the leaf nodes of the tree
+        List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        // Get the left operand
+        TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
+        String leftOperand = leftOperandSymbol.getToken().getLexeme();
+
+        // Get the right operand
+        TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(4).getNode();
+        String rightOperand = rightOperandSymbol.getToken().getLexeme();
+
+        // Create a temporary variable to store the result of the operation
+        String tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
+
+        // Modify the value of the left operand with a temporary variable
+        tacModule.addUnaryInstruction(leftOperand, "=", tempVar);
     }
 
     public void printTAC() {

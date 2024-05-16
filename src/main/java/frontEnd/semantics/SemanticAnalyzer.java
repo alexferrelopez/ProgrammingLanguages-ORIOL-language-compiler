@@ -85,17 +85,17 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 // Check if it's an assignment or a declaration
                 if (tree.getChildren().get(0).getNode().getName().equals("data_type")) {
                     // Declaration
+                    checkDeclaration(tokens);
+                } else {
+                    // Assignment
                     if (statementIsFuncCall(tree)) {
                         checkFunctionCall(tree, 0);
                     } else {
-                        checkDeclaration(tokens);
-                    }
-                } else {
-                    // Assignment
-                    try {
-                        checkAssignationSemantics(tokens, null);
-                    } catch (InvalidAssignmentException e) {
-                        //throw new RuntimeException(e);
+                        try {
+                            checkAssignationSemantics(tokens, null);
+                        } catch (InvalidAssignmentException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
                 break;
@@ -180,7 +180,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         // Check if the current symbol exists (in case the assigned symbol on a declaration is not passed).
         Symbol<?> symbol = assignedSymbol;
         if (symbol == null) {
-            symbol = symbolTable.findSymbol(variableName.getLexeme());
+            symbol = symbolTable.findSymbolGlobally(variableName.getLexeme());
             if (symbol == null) {
                 errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, variableName.getLine(), variableName.getColumn(), variableName.getLexeme());
                 throw new InvalidAssignmentException(SemanticErrorType.VARIABLE_NOT_DECLARED.getMessage());
@@ -269,7 +269,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     isValid = false;
                 }
             }
-
+/*
             // Check the operation (sum, sub...) is done between same type of variables / values.
             if (isValid == validArithmeticOperatorsTokens.contains(token.getType())) {
                 // Check if the previous and next tokens are compatible.
@@ -290,7 +290,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), leftOperandType + " " + variableSymbol);
                     isValid = false;
                 }
-            }
+            }*/
         }
 
         // Check if the operation was semantically correct (or not) to warn.
@@ -298,7 +298,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
             // TODO: Send a warning to the user that the arithmetic expression is invalid (throw exception).
         }
     }
-
 
     // Method to determine the data type of token.
     private DataType getOperandDataType(Token token) {
