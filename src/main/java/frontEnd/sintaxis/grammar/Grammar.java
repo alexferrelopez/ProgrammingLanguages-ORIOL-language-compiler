@@ -155,4 +155,13 @@ public class Grammar {
         return null;
     }
 
+public static NonTerminalSymbol getNoTerminal(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, NonTerminalSymbol nonTerminal){
+    for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> set : grammarMap.entrySet()) {
+        if(set.getKey().getName().equals(nonTerminal.getName())){
+            return set.getKey();
+        }
+    }
+    return null;
+}
+
 }
