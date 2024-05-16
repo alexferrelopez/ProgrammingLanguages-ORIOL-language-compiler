@@ -4,7 +4,9 @@ import backEnd.targetCode.MIPSOperations;
 import backEnd.targetCode.RegisterAllocator;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
+import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
+import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,10 @@ public class FunctionOperations extends MIPSOperations {
 		// Search all the variables in the current scope.
 		List<Symbol<?>> variables = new ArrayList<>(scope.getSymbols().values());
 		for (Symbol<?> variable : variables) {
-			if (variable.isVariable()) {
+			VariableSymbol<?> variableSymbol = (VariableSymbol<?>) variable;
+
+			// Assign an offset only if it's not a parameters (they already have an offset assigned previously).
+			if (variableSymbol.isVariable() && !variableSymbol.isFunctionParameter()) {
 				variable.setOffset(currentOffset);
 				currentOffset -= variable.getSizeInBytes();
 			}
@@ -49,6 +54,21 @@ public class FunctionOperations extends MIPSOperations {
 		// Do the same for all the nested scopes.
 		for (ScopeNode child : scope.getChildren()) {
 			currentOffset = assignOffset(child, currentOffset);
+		}
+
+		return currentOffset;
+	}
+
+	private long assignParametersOffset(long currentOffset, String functionName) {
+		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
+		if (functionSymbol != null && !functionSymbol.isVariable()) {
+			FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+
+			// Loop through all the parameters (already ordered).
+			for (VariableSymbol<?> parameter : function.getParameters()) {
+				parameter.setOffset(currentOffset);
+				currentOffset -= parameter.getSizeInBytes();
+			}
 		}
 
 		return currentOffset;
@@ -66,6 +86,7 @@ public class FunctionOperations extends MIPSOperations {
 
 		// Set the offset for each variable in the function (in all the nested scopes).
 		long currentOffset = 0;
+		currentOffset = assignParametersOffset(currentOffset, currentFunctionName);
 		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName);
 		assignOffset(function, currentOffset);
 
