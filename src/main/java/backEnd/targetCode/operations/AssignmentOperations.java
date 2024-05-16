@@ -16,48 +16,6 @@ public class AssignmentOperations extends MIPSOperations {
 		super(symbolTableInterface, registerAllocator);
 	}
 
-	private ValueSymbol getOperandType(String operandValue) {
-		try {
-			return Tokenizer.convertStringIntoValueSymbol(operandValue);
-		} catch (InvalidTokenException e) {
-			return ValueSymbol.VALUE_INT;	// This should never happen.
-		}
-	}
-
-
-	private Operand loadSingleOperand(String operandValue) {
-		if (operandValue == null) {
-			return null;
-		}
-
-		Operand operand;
-		ValueSymbol operandValueSymbol = getOperandType(operandValue);
-
-		// Check if it's a variable (check its type in the symbols table).
-		if (operandValueSymbol == ValueSymbol.VARIABLE) {
-			Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunctionName);
-			String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
-			operand = new Operand(true, variable.getDataType(), variableRegister);
-		}
-		// Check if it's a register
-		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX)) {
-			operand = new Operand(true, null, operandValue);
-		}
-		// Any other type of data (integer, float, boolean...)
-		else {
-			DataType operandType = operandValueSymbol.getDataType();
-			operand = new Operand(false, operandType, operandValue);
-		}
-
-		return operand;
-	}
-
-	private void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String Operand2Str) {
-		operandContainer.setDestination(loadSingleOperand(destinationStr));
-		operandContainer.setOperand1(loadSingleOperand(operand1Str));
-		operandContainer.setOperand2(loadSingleOperand(Operand2Str));
-	}
-
 
 	public String assignValue(String operand1, String operand2, String destination) {
 		OperandContainer operandContainer = new OperandContainer();

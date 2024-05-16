@@ -1,6 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
+import backEnd.targetCode.Operand;
 import backEnd.targetCode.RegisterAllocator;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
@@ -12,8 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionOperations extends MIPSOperations {
-	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
+	private final AssignmentOperations assignmentOperations;
+
+	private final static int MAX_FUNCTION_PARAMETERS = 4;	// Only $a0 to $3 parameters are available.
+	private final static String PARAMETERS_REGISTER_PREFIX = "$a";	// Only $a0 to $3 parameters are available.
+	private int currentParameterNumber = 0;
+
+	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator, AssignmentOperations assignmentOperations) {
 		super(symbolTableInterface, registerAllocator);
+		this.assignmentOperations = assignmentOperations;
 	}
 
 	public String funcDeclaration(String functionLabel) {
@@ -136,5 +144,21 @@ public class FunctionOperations extends MIPSOperations {
 		}
 
 		return text + LINE_SEPARATOR + LINE_SEPARATOR;
+	}
+
+	public String assignFunctionParameter(String parameterValue) {
+		// Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName);
+		// VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(currentParameterNumber);
+		String functionRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
+		currentParameterNumber++;
+
+		// The assignment internally checks if it's a variable or a normal value.
+		return assignmentOperations.assignValue(parameterValue, null, functionRegister);
+	}
+
+	public String callFunction(String functionName) {
+		currentFunctionName = functionName;
+		return 	LINE_INDENTATION +
+				"jal " + functionName + LINE_SEPARATOR;
 	}
 }

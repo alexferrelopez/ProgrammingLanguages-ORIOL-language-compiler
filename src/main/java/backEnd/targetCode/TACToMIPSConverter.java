@@ -23,8 +23,8 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final AssignmentOperations assignmentOperations;
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocator) {
-		functionOperations = new FunctionOperations(symbolTable, registerAllocator);
 		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocator);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocator, assignmentOperations);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
@@ -46,7 +46,11 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 
 		for (TACInstruction instruction : instructions) {
 			try {
-				targetCode.write(convertTACInstruction(instruction));
+				//targetCode.write(convertTACInstruction(instruction) ? "")
+				String instructionCode = convertTACInstruction(instruction);
+				if (instructionCode != null) {
+					targetCode.write(instructionCode);
+				}
 			} catch (IOException e) {
 				throw new FailedFileCreationException(e.getMessage());
 			}
@@ -65,7 +69,9 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "function" -> functionOperations.funcDeclaration(instruction.getResult());
 			case "Return" -> functionOperations.returnFunction(instruction.getOperand1());
 			case "BeginFunc" -> functionOperations.beginFunction(instruction.getOperand1());
+			case "PushParam" -> functionOperations.assignFunctionParameter(instruction.getOperand1());
 			case "EndFunc" -> functionOperations.endFunction();
+			case "LCall" -> functionOperations.callFunction(instruction.getOperand1());
 
 			// ** Assignments
 			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
@@ -96,7 +102,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "MUL" -> null;
 			case "POW" -> null;
 			case "DIV" -> null;
-			default -> throw new IllegalStateException("Unexpected value: " + instruction.getOperator());
+			default -> null;
 		};
 	}
 
