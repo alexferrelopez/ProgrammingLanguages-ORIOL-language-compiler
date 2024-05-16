@@ -13,6 +13,7 @@ oink : sumRange ( oink numA , oink numB , oink increment ) {
 }
 
 miau : ranch ( ) {
+    sumRange();
     oink a is 3.23 ;
     oink b is 4.5 ;
     oink c is 0.2 ;
