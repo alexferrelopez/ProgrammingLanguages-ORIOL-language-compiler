@@ -46,7 +46,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         NonTerminalSymbol axioma = grammar.getAxioma();
         tree = new Tree<>(axioma);//Create the tree with the axioma as the root
         if (Objects.isNull(axioma)) {
-            //TODO throw an exception
+            //TODO throw an exception (mai passarà)
         } else {
             stack.push(new TerminalSymbol("EOF")); //Push the $ and the axioma to the stack
             stack.push(axioma);
@@ -67,12 +67,18 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
                     if (Objects.isNull(output)) {
 
+                        Tree treeCopy = new Tree(tree);
+                        @SuppressWarnings("unchecked")
+                        Stack<AbstractSymbol> stackCopy = (Stack<AbstractSymbol>) stack.clone();
+                        stackCopy.push(symbol);
+                        @SuppressWarnings("unchecked")
+                        Stack<AbstractSymbol> startTokensStackCopy = (Stack<AbstractSymbol>) startTokensStack.clone();
+
                         //do{
                             System.out.println("Error gramatical"); //TODO error recovery
                             //Comparar lookahead amb follow de arbre. Si no esta pujar per el arbre
                             NonTerminalSymbol nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
                             List<TerminalSymbol> follows = Follow.getFollows(grammarMap, nt);
-
 
                             while (! Follow.containsToken(follows, lookahead.getType().toString())) {
                                 tree = tree.getParent();
@@ -93,11 +99,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
 
                         if(output == null){
-                            System.out.println();
-                            /*do{
+                            tree = new Tree<>(treeCopy);
+                            startTokensStack = (Stack<AbstractSymbol>) startTokensStackCopy.clone();
+                            stack = (Stack<AbstractSymbol>) stackCopy.clone();
+                            symbol = stack.pop();
+                            do{
                                 lookahead = lexicalAnalyzer.getNextToken();
                                 output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
-                            }while (output == null);*/
+                            }while (output == null);
                         }
 
 
@@ -147,7 +156,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                         }
                     }
                 }
-                //System.out.println("Stack: " + stack);
+                System.out.println("Stack: " + stack);
             }
             //Go to the root of the tree
             while(!Objects.isNull(tree.getParent())){
