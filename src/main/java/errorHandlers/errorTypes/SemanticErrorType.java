@@ -4,7 +4,28 @@ package errorHandlers.errorTypes;
  * Enum for semantic errors
  */
 public enum SemanticErrorType implements ErrorType {
-    ;
+    VARIABLE_NOT_DECLARED("Variable not declared"),
+	VARIABLE_ALREADY_DEFINED("Variable already defined"),
+    DUPLICATE_SYMBOL_DECLARATION("Duplicate symbol declaration"),
+    INCOMPATIBLE_TYPES("Incompatible types"),
+    FUNCTION_NOT_DECLARED("Function not declared"),
+	FUNCTION_ALREADY_DEFINED("Function already defined"),
+    FUNCTION_NOT_CALLED_CORRECTLY("Function not called correctly"),
+    FUNCTION_PARAMETERS_DONT_MATCH("Function parameters don't match"),
+    FUNCTION_PARAMETERS_INVALID("Function parameter cannot be a function call"),
+    FUNCTION_RETURN_TYPE_NOT_CORRECT("Function return type not correct"),
+    FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
+	RETURN_SECOND("Only one return statement is allowed"),
+	RETURN_STATEMENT_MISSING("Function must have a return statement"),
+    ALREADY_USED_IDENTIFIER("The name of the identifier is already used"),
+    INVALID_VALUE("Invalid value"),
+    INVALID_BOOLEAN_EXPRESSION("Invalid boolean expression"),
+    INVALID_ARITHMETIC_EXPRESSION("Invalid arithmetic expression"),
+    DIVISION_BY_ZERO("Division by zero"),
+	MAIN_FUNCTION_ALREADY_DEFINED("Main function already defined"),
+	MAIN_FUNCTION_MISSING("Main function missing"),
+    MAIN_FUNCTION_PARAMETERS("Main function cannot have parameters"),
+    MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type");
 
     //TODO: Add different types of errors,
     final String message;

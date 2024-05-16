@@ -1,6 +1,6 @@
 package frontEnd.lexic.dictionary;
 
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.tokenEnums.*;
 
 import java.util.Arrays;
