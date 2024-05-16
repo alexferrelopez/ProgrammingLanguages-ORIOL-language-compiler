@@ -1,8 +1,8 @@
 package frontEnd;
 
 import errorHandlers.LexicalErrorHandler;
-import frontEnd.exceptions.InvalidFileException;
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.lexic.InvalidFileException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzer;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.tokenEnums.*;

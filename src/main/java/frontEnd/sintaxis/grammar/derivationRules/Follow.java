@@ -1,6 +1,6 @@
 package frontEnd.sintaxis.grammar.derivationRules;
 
-import frontEnd.exceptions.InvalidTokenException;
+import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
@@ -159,5 +159,20 @@ public class Follow {
                 System.out.print(terminal.getLexeme() + " ");
             }
         }
+    }
+
+    /**
+     * Method for checking if a token is in the list of follows
+     * @param follows list of follows
+     * @param stringToken token to be checked
+     * @return true if the token is in the list of follows, false if not
+     */
+    public static boolean containsToken(List<TerminalSymbol> follows, String stringToken) {
+        for(TerminalSymbol ts: follows){
+            if(ts.getName().equals(stringToken)){
+                return true;
+            }
+        }
+        return false;
     }
 }
