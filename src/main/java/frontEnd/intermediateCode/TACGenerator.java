@@ -369,8 +369,10 @@ public class TACGenerator {
         // Create a temporary variable to store the result of the operation
         String tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
 
+        String variableName = ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme();
+
         // Modify the value of the left operand with a temporary variable
-        tacModule.addUnaryInstruction(leftOperand, "=", tempVar);
+        tacModule.addUnaryInstruction(variableName, "=", tempVar);
     }
 
     public void printTAC() {
