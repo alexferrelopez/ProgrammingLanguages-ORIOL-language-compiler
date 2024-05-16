@@ -12,6 +12,7 @@ public enum SemanticErrorType implements ErrorType {
 	FUNCTION_ALREADY_DEFINED("Function already defined"),
     FUNCTION_NOT_CALLED_CORRECTLY("Function not called correctly"),
     FUNCTION_PARAMETERS_DONT_MATCH("Function parameters don't match"),
+    FUNCTION_PARAMETERS_NUMBER_INCORRECT("The number of parameters is doesn't match the function definition"),
     FUNCTION_PARAMETERS_INVALID("Function parameter cannot be a function call"),
     FUNCTION_RETURN_TYPE_NOT_CORRECT("Function return type not correct"),
     FUNCTION_RETURN_NOT_CORRECT("Function return not correct"),
@@ -25,7 +26,8 @@ public enum SemanticErrorType implements ErrorType {
 	MAIN_FUNCTION_ALREADY_DEFINED("Main function already defined"),
 	MAIN_FUNCTION_MISSING("Main function missing"),
     MAIN_FUNCTION_PARAMETERS("Main function cannot have parameters"),
-    MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type");
+    MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type"),
+    UNEXPECTED_TOKEN_ASSIGNATION("An unexpected token is being assigned a value");
 
     //TODO: Add different types of errors,
     final String message;

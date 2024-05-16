@@ -25,4 +25,9 @@ public class FunctionSymbol<T> extends Symbol<T> {
 	public boolean isVariable() {
 		return false;
 	}
+
+	@Override
+	public boolean isFunction() {
+		return true;
+	}
 }
