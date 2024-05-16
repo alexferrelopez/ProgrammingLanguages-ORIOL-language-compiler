@@ -1,5 +1,6 @@
 package frontEnd.semantics;
 
+import debug.PrettyPrintTree;
 import errorHandlers.SemanticErrorHandler;
 import frontEnd.sintaxis.Tree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
@@ -29,6 +30,16 @@ public class SemanticAnalyzer {
     }
 
     public static void sendTree(Tree<AbstractSymbol> tree) {
+        printTree(tree);
         //TODO implement this method
+    }
+
+    private static void printTree(Tree<AbstractSymbol> tree) {
+        PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
+                Tree::getChildren,
+                Tree::getNode
+        );
+
+        printTree.display(tree);
     }
 }

@@ -6,6 +6,8 @@ import frontEnd.exceptions.InvalidFileException;
 import frontEnd.exceptions.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
+import frontEnd.lexic.dictionary.TokenType;
+import frontEnd.lexic.dictionary.tokenEnums.ReservedSymbol;
 import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
@@ -42,7 +44,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
         Stack<AbstractSymbol> stack = new Stack<>();
         NonTerminalSymbol axioma = grammar.getAxioma();
-        tree = new Tree<AbstractSymbol>(axioma);//Create the tree with the axioma as the root
+        tree = new Tree<>(axioma);//Create the tree with the axioma as the root
         if (Objects.isNull(axioma)) {
             //TODO throw an exception
         } else {
@@ -64,14 +66,42 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 } else {
                     List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
                     if (Objects.isNull(output)) {
-                        System.out.println("Error gramatical"); //TODO error recovery
-                        //Comparar lookahead amb follow de arbre. Si no esta pujar per el arbre
-                        NonTerminalSymbol nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
-                        List<TerminalSymbol> follows = Follow.getFollows(grammarMap, nt);
 
-                        System.out.println(follows);
+                        //do{
+                            System.out.println("Error gramatical"); //TODO error recovery
+                            //Comparar lookahead amb follow de arbre. Si no esta pujar per el arbre
+                            NonTerminalSymbol nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
+                            List<TerminalSymbol> follows = Follow.getFollows(grammarMap, nt);
 
-                        break;
+
+                            while (! Follow.containsToken(follows, lookahead.getType().toString())) {
+                                tree = tree.getParent();
+                                nt =  Grammar.getNoTerminal(grammarMap, (NonTerminalSymbol) tree.getNode());
+                                follows = Follow.getFollows(grammarMap, nt);
+                            }
+                            while (!symbol.isTerminal()) {
+                                symbol = stack.pop();
+                            }
+                            symbol = stack.pop();
+                            startTokensStack.pop();
+
+
+                            output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
+                        //}while (output == null);
+
+
+
+
+                        if(output == null){
+                            System.out.println();
+                            /*do{
+                                lookahead = lexicalAnalyzer.getNextToken();
+                                output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
+                            }while (output == null);*/
+                        }
+
+
+                        System.out.println("Lookahead: " + lookahead);
                     }
                     //Get the unique symbols of the production (without same reference)
                     List<AbstractSymbol> newOutput = getUniqueReferenceSymbols(output);
@@ -135,7 +165,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
         //Display the firsts and follows of the grammar for debugging purposes
         //First.displayAllFirsts(grammarMap);
-        Follow.displayAllFollows(grammarMap);
+        //Follow.displayAllFollows(grammarMap);
     }
 
     /**
@@ -168,14 +198,17 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 System.out.println("\n\n-----------------TREE-----------------");
                 Tree<AbstractSymbol> parent = tree.getParent();
                 String nodeName = (parent.getNode()).getName();
-                AbstractSymbol symbolToSend = startTokensStack.pop();
+                AbstractSymbol symbolToSend = startTokensStack.peek();
                 if(symbolToSend.getName().equals("ELSE")){
-                    startTokensStack.push(symbolToSend);
-                    SemanticAnalyzer.sendTree(new Tree<>(new TerminalSymbol("ELSE")));
-                }else{
-                    if(terminal.getName().equals("CO")){
-                        startTokensStack.push(symbolToSend);
+                    if(terminal.getName().equals("CT")){
+                        parent = new Tree<>(terminal);
+                    }else{
+                        Token elseToken = new Token( ReservedSymbol.ELSE);
+                        TerminalSymbol elseSymbol = new TerminalSymbol("ELSE");
+                        elseSymbol.setToken(elseToken);
+                        parent = new Tree<>(elseSymbol);
                     }
+                }else{
                     while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                     ){
                         parent = parent.getParent();
@@ -183,10 +216,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     }
                     if(terminal.getName().equals("CT")){
                         parent = new Tree<>(terminal);
+                        startTokensStack.pop();
+                    }
+                    if(terminal.getName().equals("PUNT_COMMA")){
+                        startTokensStack.pop();
                     }
                     //printTree(parent);//TODO send this tree to the semantical analyzer
-                    SemanticAnalyzer.sendTree(parent);
                 }
+                    SemanticAnalyzer.sendTree(parent);
             }
             try {
                 lookahead = lexicalAnalyzer.getNextToken();
@@ -196,6 +233,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         }else{
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
+            //Crec que el error recovery no va aqui
         }
     }
 
@@ -211,4 +249,6 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     public Tree<AbstractSymbol> getTree() {
         return tree;
     }
+
+
 }
