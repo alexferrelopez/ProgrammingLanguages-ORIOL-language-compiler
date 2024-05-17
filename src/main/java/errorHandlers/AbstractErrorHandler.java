@@ -14,6 +14,9 @@ import java.util.List;
  * @param <K> Any class that interfaces with WarningType
  */
 public abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
     private final List<Report<ErrorType>> errorReports;
     private final List<Report<WarningType>> warningReports;
     private int errorCount;
@@ -142,7 +145,7 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      */
     public void printErrors() {
         for (Report<ErrorType> report : errorReports) {
-            System.out.println(report);
+            System.out.println(ANSI_RED + report + ANSI_RESET);
         }
     }
 
@@ -151,7 +154,7 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      */
     public void printWarnings() {
         for (Report<WarningType> report : warningReports) {
-            System.out.println(report);
+            System.out.println(ANSI_YELLOW + report + ANSI_RESET);
         }
     }
 }

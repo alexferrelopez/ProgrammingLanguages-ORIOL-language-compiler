@@ -1,6 +1,9 @@
 oink : sumRange2 ( miau numA , oink numB , oink increment ) {
     oink result is 0.0 ;
-    poop result ;
+    oink result2 is 0.0 ;
+    oink result3 is 0.0 ;
+    oink result4 is 0.0 ;
+    poop increment ;
 }
 
 oink : sumRange ( oink numA , oink numB , oink increment ) {
@@ -9,7 +12,7 @@ oink : sumRange ( oink numA , oink numB , oink increment ) {
     oink pepito is 0 ;
     miau pepita is 4 ;
 
-    poop result ;
+    poop increment ;
 }
 
 miau : ranch ( ) {

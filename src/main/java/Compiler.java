@@ -19,6 +19,7 @@ import java.util.List;
 public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
+    private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
     private final SymbolTableInterface symbolTable;
     private final SemanticAnalyzerInterface semanticAnalyzer;
     private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
@@ -60,7 +61,7 @@ public class Compiler implements CompilerInterface {
      */
     @Override
     public boolean hasErrors() {
-        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
             if (abstractErrorHandler.hasErrors()) {
                 return true;
             }

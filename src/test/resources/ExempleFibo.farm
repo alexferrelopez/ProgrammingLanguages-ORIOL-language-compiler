@@ -8,9 +8,9 @@ miau: fibonacci(miau n) {
         }
         else {
             n is n minus 1;
-            miau a is 3;
+            miau a is fibonacci ( n ) ;
             n is n minus 1;
-            miau b is 2;
+            miau b is fibonacci(n);
 
             miau result is a sum b;
             poop result;
@@ -18,11 +18,8 @@ miau: fibonacci(miau n) {
     }
 }
 
-miau: ranch() {
+miau : ranch ( ) {
     miau n is 10;
-    n is n minus 1;
-    feed (miau i is 0 to n, i is i sum 1) {
-        fibonacci(i);
-    }
-    poop 0 ;
+    miau result is fibonacci(n);
+    poop 1;
 }

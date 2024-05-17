@@ -1,6 +1,7 @@
 package frontEnd.semantics;
 
 import frontEnd.sintaxis.Tree;
+import frontEnd.sintaxis.grammar.AbstractSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +9,11 @@ import java.util.Stack;
 
 public class TreeTraversal {
 	// Utility function to check if a node has a specific child type
-	public static <T> boolean hasSpecificChildType(Tree<T> node, String childType) {
-		if (node.getNode().equals(childType)) {
+	public static boolean hasSpecificChildType(Tree<AbstractSymbol> node, String childType) {
+		if (node.getNode().getName().equals(childType)) {
 			return true;
 		}
-		for (Tree<T> child : node.getChildren()) {
+		for (Tree<AbstractSymbol> child : node.getChildren()) {
 			if (hasSpecificChildType(child, childType)) {
 				return true;
 			}
