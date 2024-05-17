@@ -6,6 +6,7 @@ import java.util.List;
 
 public class FunctionSymbol<T> extends Symbol<T> {
 	private final List<VariableSymbol<?>> parameters;  // List of parameters that act as variables inside the function.
+	private int rootChildIndex;	// Index of the root child in the tree (to identify the function's scope).
 
 	public FunctionSymbol(String name, DataType returnType, List<VariableSymbol<?>> parameters, long lineDeclaration, Class<T> typeClass) {
 		super(name, returnType, lineDeclaration, typeClass);
@@ -24,5 +25,13 @@ public class FunctionSymbol<T> extends Symbol<T> {
 	@Override
 	public boolean isVariable() {
 		return false;
+	}
+
+	public void setRootChildIndex(int rootChildIndex) {
+		this.rootChildIndex = rootChildIndex;
+	}
+
+	public int getRootChildIndex() {
+		return rootChildIndex;
 	}
 }

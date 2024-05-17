@@ -276,7 +276,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 handleResultContainer(resultContainer);
                 if (resultContainer.isError()) failed = true;
             }
-
+/*
             // Check the operation (sum, sub...) is done between same type of variables / values.
             if (validArithmeticOperatorsTokens.contains(token.getType())) {
                 // Check if the previous and next tokens are compatible.
@@ -297,7 +297,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), leftOperandType + " " + variableSymbol);
                     failed = true;
                 }
-            }
+            }*/
         }
 
         return new ResultContainer(failed, true, null, null, null, "");

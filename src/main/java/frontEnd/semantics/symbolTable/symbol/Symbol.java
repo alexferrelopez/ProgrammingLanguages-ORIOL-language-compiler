@@ -21,7 +21,7 @@ public abstract class Symbol<Type> {
     private final long lineDeclaration;
     private final List<Long> lineUsage;
     private Type value;                 // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
-    private long offset;                // Used in code generation to calculate the offset of the symbol in the stack.
+    private long offset;                // Used in code generation to calculate the offset of the symbol in the stack (its value is usually negative).
     // Offset for a variable is the distance from the base pointer to the variable.
     // Offset for a function is the label in the assembler code.
     private final Class<Type> typeClass; // Class token to maintain type safety
@@ -98,5 +98,13 @@ public abstract class Symbol<Type> {
 
     public boolean isValidType(ValueSymbol valueSymbol) {
         return this.dataType.isValidType(valueSymbol);
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 }

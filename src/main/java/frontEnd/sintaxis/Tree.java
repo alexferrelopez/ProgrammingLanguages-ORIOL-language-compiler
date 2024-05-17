@@ -1,5 +1,6 @@
 package frontEnd.sintaxis;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,5 +45,33 @@ public class Tree<T> {
 
     public Tree<T> getParent() {
         return parent;
+    }
+
+    /**
+     * Recoge todos los nodos hoja de un árbol dado.
+     * @param node El nodo desde el cual comenzar la búsqueda.
+     * @return Una lista de todos los nodos hoja bajo el nodo dado.
+     */
+    public List<Tree<T>> getLeafNodes(Tree<T> node) {
+        List<Tree<T>> leaves = new ArrayList<>();
+        collectLeafNodes(node, leaves);
+        return leaves;
+    }
+
+    /**
+     * Método auxiliar recursivo para recoger nodos hoja.
+     * @param node El nodo actual en la recursión.
+     * @param leaves La lista acumulativa de nodos hoja.
+     */
+    private void collectLeafNodes(Tree<T> node, List<Tree<T>> leaves) {
+        if (node.getChildren().isEmpty()) {
+            // Si no tiene hijos, es un nodo hoja
+            leaves.add(node);
+        } else {
+            // De lo contrario, recorre recursivamente cada hijo
+            for (Tree<T> child : node.getChildren()) {
+                collectLeafNodes(child, leaves);
+            }
+        }
     }
 }
