@@ -2,6 +2,7 @@ package errorHandlers;
 
 import errorHandlers.errorTypes.ErrorType;
 import errorHandlers.warningTypes.WarningType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,17 @@ import java.util.List;
  * @param <K> Any class that interfaces with WarningType
  */
 public abstract class AbstractErrorHandler<T extends ErrorType, K extends WarningType> {
-    private final List<Report<MessageType>> reports;
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private final List<Report<ErrorType>> errorReports;
+    private final List<Report<WarningType>> warningReports;
     private int errorCount;
     private int warningCount;
 
     public AbstractErrorHandler() {
-        this.reports = new ArrayList<>();
+        this.errorReports = new ArrayList<>();
+        this.warningReports = new ArrayList<>();
         this.errorCount = 0;
         this.warningCount = 0;
     }
@@ -29,24 +35,24 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      *
      * @param errorType      The error type to report, the type must be of the same type as the subclass,
      *                       meaning it must be of type T, which is a class that implements ErrorType
-     * @param optionalLine   The line number of the error
-     * @param optionalColumn The column number of the error
+     * @param optionalLine   The line number of the error, can be null, should be handled by the subclass
+     * @param optionalColumn The column number of the error, can be null, should be handled by the subclass
      * @param word           The word that caused the error
      * @return A string representation of the error
      */
-    abstract public String reportError(T errorType, Integer optionalLine, Integer optionalColumn, String word);
+    abstract public String reportError(T errorType, @Nullable Integer optionalLine, @Nullable Integer optionalColumn, String word);
 
     /**
      * Abstract method to report a warning, must be implemented by subclasses
      *
      * @param warningType The warning type to report, the type must be of the same type as the subclass,
      *                    meaning it must be of type K, which is a class that implements WarningType
-     * @param lineNum     The line number of the warning
-     * @param colNum      The column number of the warning
+     * @param optionalLine   The line number of the warning, can be null, should be handled by the subclass
+     * @param optionalColumn The column number of the warning, can be null, should be handled by the subclass
      * @param word        The word that caused the warning
      * @return A string representation of the warning
      */
-    abstract public String reportWarning(K warningType, int lineNum, int colNum, String word);
+    abstract public String reportWarning(K warningType, @Nullable Integer optionalLine, @Nullable Integer optionalColumn, String word);
 
     /**
      * Method to add an error to the error count, protected so that only subclasses can access it
@@ -62,9 +68,24 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
         this.warningCount++;
     }
 
-    protected void addReport(Report<MessageType> report) {
-        this.reports.add(report);
+    /**
+     * Method to add an error report to the error reports list
+     *
+     * @param report The error report to add
+     */
+    protected void addErrorReport(Report<ErrorType> report) {
+        this.errorReports.add(report);
     }
+
+    /**
+     * Method to add a warning report to the warning reports list
+     *
+     * @param report The warning report to add
+     */
+    protected void addWarningReport(Report<WarningType> report) {
+        this.warningReports.add(report);
+    }
+
 
     /**
      * Method to check if there are any errors
@@ -73,6 +94,15 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      */
     public boolean hasErrors() {
         return this.errorCount > 0;
+    }
+
+    /**
+     * Method to check if there are any warnings
+     *
+     * @return True if there are warnings, false otherwise
+     */
+    public boolean hasWarnings() {
+        return this.warningCount > 0;
     }
 
     /**
@@ -98,8 +128,8 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      *
      * @return A clone of the reports list
      */
-    public List<Report<MessageType>> getReports() {
-        return new ArrayList<>(this.reports);
+    public List<Report<ErrorType>> getErrorReports() {
+        return new ArrayList<>(this.errorReports);
     }
 
     /**
@@ -114,8 +144,17 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
      * Method to print all the reports in the reports list
      */
     public void printErrors() {
-        for (Report<MessageType> report : reports) {
-            System.out.println(report);
+        for (Report<ErrorType> report : errorReports) {
+            System.out.println(ANSI_RED + report + ANSI_RESET);
+        }
+    }
+
+    /**
+     * Method to print all the warnings in the warnings list
+     */
+    public void printWarnings() {
+        for (Report<WarningType> report : warningReports) {
+            System.out.println(ANSI_YELLOW + report + ANSI_RESET);
         }
     }
 }
