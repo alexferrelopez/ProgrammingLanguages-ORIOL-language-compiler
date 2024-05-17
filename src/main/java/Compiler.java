@@ -22,7 +22,6 @@ public class Compiler implements CompilerInterface {
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
     private final SymbolTableInterface symbolTable;
     private final SemanticAnalyzerInterface semanticAnalyzer;
-    private final List<AbstractErrorHandler<?, ?>> errorHandlerList;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
