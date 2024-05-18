@@ -1,6 +1,6 @@
 miau:ranch() {
     miau a is 10 ;
-    oink c is c;
+    oink c is 2.2;
     status s is alive;
     check ( alive or dead) {
         miau e is 4;
