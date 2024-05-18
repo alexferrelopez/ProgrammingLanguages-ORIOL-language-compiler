@@ -60,7 +60,7 @@ public class Compiler implements CompilerInterface {
      */
     @Override
     public boolean hasErrors() {
-        for (AbstractErrorHandler<? extends ErrorType, ? extends WarningType> abstractErrorHandler : errorHandlerList) {
+        for (AbstractErrorHandler<?, ?> abstractErrorHandler : errorHandlerList) {
             if (abstractErrorHandler.hasErrors()) {
                 return true;
             }

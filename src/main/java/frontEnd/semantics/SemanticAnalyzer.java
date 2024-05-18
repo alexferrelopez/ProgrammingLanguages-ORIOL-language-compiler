@@ -1,5 +1,6 @@
 package frontEnd.semantics;
 
+import debug.PrettyPrintTree;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.lexic.dictionary.Token;

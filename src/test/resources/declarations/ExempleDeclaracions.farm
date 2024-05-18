@@ -1,0 +1,23 @@
+miau: ranch() {
+    miau a is 1;
+    miau b is a;
+
+    miau c is a sum b;
+    miau d is c minus 1;
+    miau e is d times 2;
+    miau f is e div 2;
+    miau g is f mod 2;
+
+    status h is alive;
+    status i is dead;
+    status j is alive or dead;
+    status k is alive and dead;
+    status l is not alive;
+
+    status m is 1 smaller 2;
+    status n is 1 bigger 2;
+    status o is true equals false;
+    status p is true diff false;
+
+    poop 0;
+}
