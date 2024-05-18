@@ -27,16 +27,11 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     private final SemanticAnalyzerInterface semanticAnalyzer;
 
-    private final Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
+    private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private final String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
-    private final SemanticAnalyzerInterface semanticAnalyzer;
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
-    private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
-    private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
-
-
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
         this.lexicalAnalyzer = lexicalAnalyzer;
