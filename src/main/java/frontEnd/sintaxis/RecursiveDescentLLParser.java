@@ -166,7 +166,6 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     /**
      * This method checks if the lookahead is the same as the terminal symbol
-     *
      * @param terminal the terminal symbol to compare
      */
     private boolean match(TerminalSymbol terminal) {
@@ -219,7 +218,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         return true;
     }
 
-    private void printTree(Tree<AbstractSymbol> tree) {
+    public void printTree(Tree<AbstractSymbol> tree) {
         PrettyPrintTree<Tree<AbstractSymbol>> printTree = new PrettyPrintTree<>(
                 Tree::getChildren,
                 Tree::getNode

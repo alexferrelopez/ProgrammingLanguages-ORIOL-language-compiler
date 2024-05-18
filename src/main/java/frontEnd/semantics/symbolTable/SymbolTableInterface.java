@@ -47,6 +47,14 @@ public interface SymbolTableInterface {
     boolean containsSymbol(String symbolName);
 
     /**
+     * Find a symbol inside all the scopes of a function (for MIPS purpose).
+     *
+     * @param symbolName the symbol with the given name, or null if the symbol is not in the scope.
+     * @return th
+     */
+    Symbol<?> findSymbolInsideFunction(String symbolName, String functionName);
+
+    /**
      * Find if a symbol exists in the whole symbols table.
      *
      * @param symbolName the name of the symbol.
@@ -70,4 +78,13 @@ public interface SymbolTableInterface {
     void leaveCurrentScope();
 
     ScopeNode getCurrentScope();
+
+    /**
+     * Calculate all the Bytes required for a function (given its parameters and all the local variables declared).
+     * @param functionName  name of the function to get its size
+     * @return  number of Bytes required to allocate the whole function.
+     */
+    int calculateFunctionSize(String functionName);
+
+    ScopeNode getFunctionScope(String functionName);
 }

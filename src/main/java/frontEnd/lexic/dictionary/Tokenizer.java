@@ -89,4 +89,24 @@ public class Tokenizer {
 
         throw new InvalidTokenException("Invalid token found: " + tokenWord);
     }
+
+    public static ValueSymbol convertStringIntoValueSymbol(String value) throws InvalidTokenException {
+        // Check through all the different enums (each object in the array represents an enum that implements TokenType).
+        List<ValueSymbol> enumValues = Stream.of(ValueSymbol.values()).toList();
+
+        // Loop through each enum class to see if the word is found in any enum.
+        ValueSymbol tokenType;
+
+        // Our enums list only contains enums implementing TokenType
+        for (TokenType enumConstant : enumValues) {
+            tokenType = (ValueSymbol) Tokenizer.convertStringIntoTokenType(enumConstant, value);
+
+            // Check if the current token is valid (different to null)
+            if (tokenType != null) {
+                return tokenType;
+            }
+        }
+
+        throw new InvalidTokenException("Invalid token found: " + value);
+    }
 }
