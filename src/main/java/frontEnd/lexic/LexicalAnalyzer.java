@@ -199,6 +199,5 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
             errorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, line, column, word);
             throw new InvalidTokenException(e.getMessage());
         }
-
     }
 }

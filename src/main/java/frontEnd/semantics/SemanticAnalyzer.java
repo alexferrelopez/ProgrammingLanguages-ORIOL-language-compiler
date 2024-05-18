@@ -1,6 +1,5 @@
 package frontEnd.semantics;
 
-import debug.PrettyPrintTree;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.lexic.dictionary.Token;
@@ -214,8 +213,13 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     handleResultContainer(booleanExpressionEval);
                     if (booleanExpressionEval.isError()) failed = true;
                 }
-                case INTEGER, FLOAT -> {
-                    ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable);
+                case INTEGER -> {
+                    ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable, DataType.INTEGER, ValueSymbol.VALUE_INT);
+                    handleResultContainer(resultContainer);
+                    if (resultContainer.isError()) failed = true;
+                }
+                case FLOAT -> {
+                    ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable, DataType.FLOAT, ValueSymbol.VALUE_FLOAT);
                     handleResultContainer(resultContainer);
                     if (resultContainer.isError()) failed = true;
                 }
@@ -274,10 +278,10 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      *
      * @param expressionTokens the tokens of the arithmetic expression.
      */
-    private ResultContainer checkValidArithmeticExpression(List<Token> expressionTokens, Symbol<VariableSymbol<?>> variableSymbol) {
+    private ResultContainer checkValidArithmeticExpression(List<Token> expressionTokens, Symbol<VariableSymbol<?>> variableSymbol, DataType validDatatype, ValueSymbol validValueSymbol) {
         // Check all the tokens are valid for an arithmetic expression (e.g. +, -, *, /, etc.)
-        List<TokenType> validArithmeticOperatorsTokens = List.of(MathOperator.SUM, MathOperator.SUB, MathOperator.MUL, MathOperator.DIV, MathOperator.POW, MathOperator.MOD);
-        List<TokenType> validArithmeticValueTokens = List.of(ValueSymbol.VALUE_INT, ValueSymbol.VALUE_FLOAT, ValueSymbol.VARIABLE);
+        List<TokenType> validArithmeticOperatorsTokens = List.of(MathOperator.SUM, MathOperator.SUB, MathOperator.MUL, MathOperator.DIV);
+        List<TokenType> validArithmeticValueTokens = List.of(ValueSymbol.VARIABLE, validValueSymbol);
 
         List<TokenType> validArithmeticTokens = new ArrayList<>();
         validArithmeticTokens.addAll(validArithmeticValueTokens);
@@ -287,11 +291,11 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         for (Token token : expressionTokens) {
             // Check if the token is inside the valid arithmetic tokens.
             if (!validArithmeticTokens.contains(token.getType())) {
-                errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme());
+                errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme() + " expected type: " + validDatatype);
                 failed = true;
             } else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a number (integer or float).
-                ResultContainer resultContainer = checkVariableSameType(token, List.of(DataType.INTEGER, DataType.FLOAT));
+                ResultContainer resultContainer = checkVariableSameType(token, List.of(validDatatype));
                 handleResultContainer(resultContainer);
                 if (resultContainer.isError()) failed = true;
             }
@@ -853,8 +857,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
                         }
-
-                        System.out.println(tt.toString());
                     }
             }
         }
@@ -900,8 +902,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                             }
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
                         }
-
-                        System.out.println(tt.toString());
                     }
             }
         }

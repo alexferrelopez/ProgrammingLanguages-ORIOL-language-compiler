@@ -4,6 +4,8 @@ public class Main {
     public final static String TOO_MANY_ARGS_ERROR = "There are too many arguments! Select only one code to compile.";
     public final static String NO_ARGS_ERROR = "No input file handled! There is no code selected to compile.";
     public final static String INVALID_EXTENSION_ERROR = "Invalid format of the code to compile.";
+    public final static String COMPILER_SUCCESSFUL = "\u001B[32mCompilation successful!\u001B[0m";
+    public final static String COMPILER_FAILED = "\u001B[31mCompilation failed!\u001B[0m";
 
     private final static int EXPECTED_NUM_ARGS = 1;         // The main argument is not the name of the Java's file (Java is not like C).
     private final static String FILE_EXTENSION = ".farm";
@@ -41,10 +43,10 @@ public class Main {
 
         // Prints for Debugging purpose
         if (compiler.hasErrors()) {
-            System.out.println("Compilation failed!");
+            System.out.println(COMPILER_FAILED);
             compiler.printErrors();
         } else {
-            System.out.println("Compilation successful!");
+            System.out.println(COMPILER_SUCCESSFUL);
         }
     }
 }

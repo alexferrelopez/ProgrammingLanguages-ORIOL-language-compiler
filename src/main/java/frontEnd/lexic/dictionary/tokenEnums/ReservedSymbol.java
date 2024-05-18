@@ -18,11 +18,6 @@ public enum ReservedSymbol implements TokenType {
     MAIN("ranch", List.of("ranch")),
     EPSILON("ε", Collections.emptyList()),
     COMMENT("Farmer: " + ValueSymbol.VALUE_STRING.getPattern(), List.of("Farmer: \"This is an example\"")),    // Farmer: VALOR_STRING
-    AARON("(?i)aaron", List.of("aaron")),                                                // Regex pattern case insensitive by adding (?i)
-    ORIOL("(?i)oriol", List.of("oriol")),
-    ALEXIA("(?i)al(e|è)xia", List.of("alexia", "alèxia")),
-    GEMMA("(?i)gemma", List.of("gemma")),
-    ALEX("(?i)(a|à)lex", List.of("alex", "àlex")),
     IS("is", List.of("is"));
 
     // Instance field (regex pattern) for each enum constant

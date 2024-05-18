@@ -56,11 +56,4 @@ public class SemanticErrorHandler extends AbstractErrorHandler<SemanticErrorType
         return message;
     }
 
-    /*
-    public static void main(String[] args) {
-        SemanticErrorHandler lexicalErrorHandler = new SemanticErrorHandler();
-        System.out.println(lexicalErrorHandler.reportError(SemanticErrorType.NON_MATCHING_TYPE, 1, 3, "hello"));
-        System.out.println(lexicalErrorHandler.reportWarning(SemanticWarningType.UNUSED_VARIABLE, 1, 3, "hello"));
-    }
-    */
 }

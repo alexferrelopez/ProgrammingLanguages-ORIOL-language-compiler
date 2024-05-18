@@ -1,4 +1,6 @@
-miau : ranch ( ) {
-    oink a is 3.23 ;
-    poop 0 ;
+miau:ranch() {
+    oink alex is 3.23;
+    oink b is 4.5;
+    oink c is 1.1;
+    poop 0;
 }

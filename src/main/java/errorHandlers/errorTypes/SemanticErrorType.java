@@ -25,7 +25,6 @@ public enum SemanticErrorType implements ErrorType {
     MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type"),
     UNEXPECTED_TOKEN_ASSIGNATION("An unexpected token is being assigned a value");
 
-    //TODO: Add different types of errors,
     final String message;
 
     SemanticErrorType(String message) {

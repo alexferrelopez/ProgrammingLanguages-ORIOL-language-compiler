@@ -6,7 +6,6 @@ package errorHandlers.warningTypes;
 public enum SyntacticWarningType implements WarningType {
 
     ;
-    //TODO: Add different types of warnings
 
     final String message;
 
