@@ -296,8 +296,10 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
             } else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a number (integer or float).
                 ResultContainer resultContainer = checkVariableSameType(token, List.of(validDatatype));
+                ResultContainer resultContainer1 = checkVariableExists(token);
+                handleResultContainer(resultContainer1);
                 handleResultContainer(resultContainer);
-                if (resultContainer.isError()) failed = true;
+                if (resultContainer.isError() || resultContainer1.isError()) failed = true;
             }
 
             // Check the operation (sum, sub...) is done between same type of variables / values.
@@ -440,6 +442,8 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
             } else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a boolean.
                 resultContainer = checkVariableSameType(token, validDataTypes);
+                ResultContainer resultContainer1 = checkVariableExists(token);
+                resultContainers.add(resultContainer1);
                 resultContainers.add(resultContainer);
             }
         }

@@ -9,6 +9,7 @@ public enum SyntacticErrorType implements ErrorType {
     UNMATCHED_OPENING_BRACKET_ERROR(""),
     UNMATCHED_CLOSING_BRACKET_ERROR(""),
     INVALID_OPERATOR_USAGE_ERROR(""),
+    CORE_DUMPED("Core dumped ;)"),
     NO_AXIOMA_ERROR("No axiom found"),;
 
     final String message;
