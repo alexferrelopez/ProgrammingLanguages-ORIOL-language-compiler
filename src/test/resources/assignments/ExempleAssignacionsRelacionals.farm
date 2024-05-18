@@ -1,0 +1,23 @@
+miau: ranch() {
+    a is 1 equals 1;
+    a2 is 1 equ a;
+    a3 is a equ 1;
+    a4 is a eq a;
+
+    b is 1 different 1;
+    b2 is 1 diff a;
+    b3 is a different 1;
+    b4 is a diff b;
+
+    c is 1 bigger 2;
+    c2 is 1 bg a;
+    c3 is a bigger 2;
+    c4 is a bg b;
+
+    d is 1 smaller 2;
+    d2 is 1 sm a;
+    d3 is a smaller 2;
+    d4 is a sm b;
+
+    poop 0;
+}

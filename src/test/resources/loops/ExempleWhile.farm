@@ -1,0 +1,31 @@
+miau : ranch ( ) {
+    breed (alive) {
+        miau a is 2;
+    }
+
+    breed (not alive) {
+        a is 2;
+    }
+
+    breed (alive or dead) {
+        oink a is 2.0;
+    }
+
+    breed (alive and dead) {
+        status bool is alive;
+    }
+
+    breed (a bigger 5) {
+        miau a is 2;
+    }
+
+    breed (a diff 4) {
+        miau a is 2;
+    }
+
+    breed (4 equals 4) {
+        miau a is 2;
+    }
+
+    poop 0 ;
+}

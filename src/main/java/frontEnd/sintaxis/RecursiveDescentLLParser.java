@@ -2,7 +2,9 @@ package frontEnd.sintaxis;
 
 import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
+import errorHandlers.errorTypes.SyntacticErrorType;
 import frontEnd.exceptions.SemanticException;
+import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.exceptions.lexic.InvalidFileException;
 import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
@@ -23,12 +25,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
     private final LexicalAnalyzerInterface lexicalAnalyzer;
     private final SyntacticErrorHandler errorHandler;
 
+    private final SemanticAnalyzerInterface semanticAnalyzer;
+
     private Token lookahead;
 
     private Tree<AbstractSymbol> tree;
     private Stack<AbstractSymbol> startTokensStack = new Stack<>();//Another stack to store the symbols of the tree that we weill need to retrieve later for the tree
     private String[] startTokens = new String[]{"func_type", "return_stmt", "declaration", "condition", "ELSE", "loop_for", "loop_while"}; //Tokens that we will use to set the start of the tree
-    private SemanticAnalyzerInterface semanticAnalyzer;
+
 
 
     public RecursiveDescentLLParser(LexicalAnalyzerInterface lexicalAnalyzer, SyntacticErrorHandler parserErrorHandler, SemanticAnalyzerInterface semanticAnalyzer) {
@@ -72,7 +76,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                 } else {
                     List<AbstractSymbol> output = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
                     if (Objects.isNull(output)) {
-
+                        errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
                         /*******************************************/
                         output = errorRecovery(stack, symbol, grammarMap, parsingTable, output);
 
@@ -179,6 +183,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                             if (!Objects.isNull(tree.getParent())) {
                                 tree = tree.getParent();
                             }
+
                         }
                     }
                 }
@@ -279,7 +284,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
         } else {
             System.out.println("ERROR NO MATCH between " + terminal.getName() + " and " + lookahead.getType() + " :(");
             // TODO: Error recovery (get token until follow). If there is no match, check it's EOF.
-            //Crec que el error recovery no va aqui
+            errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
         }
     }
 
