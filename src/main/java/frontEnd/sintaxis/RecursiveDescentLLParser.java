@@ -132,8 +132,6 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             while (!Objects.isNull(tree.getParent())) {
                 tree = tree.getParent();
             }
-            //TODO: send full tree to 3@C
-            printTree(tree);
 
 
         } catch (InvalidFileException | InvalidTokenException invalidFile) {
@@ -207,7 +205,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     lookahead = lexicalAnalyzer.getNextToken();
                     lookaheadrror = false;
                 } catch (InvalidTokenException e) {
-                    e.printStackTrace();
+                    errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
                     return false;
                     //lookaheadrror = true;
                 }
@@ -296,7 +294,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             while (!symbolCopy.isTerminal()) {
                 symbolCopy = stackCopy2.pop();
             }
-            errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(),symbolCopy.getName() +" before "+ lookahead.getLexeme());
+            errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn()," before "+ lookahead.getLexeme());
         }
         return outputMap;
     }
