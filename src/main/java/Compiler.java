@@ -71,7 +71,7 @@ public class Compiler implements CompilerInterface {
 
         // Print the tree for debugging
         parser.printTree(tree);
-
+        if(hasErrors()) return;
         TACModule tacModule = new TACModule();
         tacGenerator = new TACGenerator(tacModule, symbolTable);
 
