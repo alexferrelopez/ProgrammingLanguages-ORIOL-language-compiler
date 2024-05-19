@@ -30,18 +30,18 @@ public class FunctionOperations extends MIPSOperations {
 		String text = writeComment("Start of function " + functionLabel) + LINE_SEPARATOR +
 				(functionLabel + ":") + LINE_SEPARATOR;
 		/*
-			addi $sp, $sp, -8   # Allocate stack frame
-			sw $ra, 4($sp)      # Save return address
-			sw $fp, 0($sp)      # Save frame pointer
-			move $fp, $sp       # Set frame pointer
+			sw $fp, 0($sp)      # Save previous (called function) frame pointer
+			move $fp, $sp       # Set frame pointer ($fp = $sp)
+			sw $ra, -4($sp)     # Save return address
+			subi $sp, $sp, 8   	# Allocate stack frame
 		 */
 
 		// Save stack
 		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
-				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", -8") + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + RETURN_REGISTER + ", 4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR;
+				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + RETURN_REGISTER + ", -4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("subi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		return text + LINE_SEPARATOR;
 	}
