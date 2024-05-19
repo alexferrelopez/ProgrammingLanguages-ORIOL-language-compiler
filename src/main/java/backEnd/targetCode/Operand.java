@@ -3,7 +3,7 @@ package backEnd.targetCode;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
 
 public class Operand {
-	private String value;
+	private String value;	// Register address (relative to fp or temporal register) or literal.
 	private DataType type;
 	private boolean isRegister;	// It's a temporary register or a variable.
 
