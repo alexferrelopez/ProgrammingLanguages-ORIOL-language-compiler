@@ -173,8 +173,24 @@ public class TACGenerator {
     private void handleIf(Tree<AbstractSymbol> tree) {
         // Condition
         Tree<AbstractSymbol> condition_expr = tree.getChildren().get(1).getChildren().get(1); // expr_bool
-        Expression expr = generateExpressionCode(condition_expr);
-        String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
+
+        // Teh condition can be: alive, dead, comparison or logic operation (AND, OR, NOT)
+        // Get the leaf nodes of the condition expression
+        List<Tree<AbstractSymbol>> leafNodes = condition_expr.getLeafNodes(condition_expr);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        String tempVar = "";
+
+        // Check if the condition is NOT alive or dead
+        if (leafNodes.get(0).getNode().getName().equals("NOT")) {
+            leafNodes.remove(0);
+            tempVar = handleNotAliveDead(leafNodes);
+        } else {
+            Expression expr = generateExpressionCode(condition_expr);
+            tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
+        }
+
 
         // Labels
         String labelFalse = tacModule.createLabel();
@@ -199,6 +215,18 @@ public class TACGenerator {
 
         // End label for the if statement
         tacModule.addLabel(labelEnd);
+    }
+
+    private String handleNotAliveDead(List<Tree<AbstractSymbol>> leafNodes) {
+        // Get the operand
+        TerminalSymbol operandSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+        String operand = operandSymbol.getToken().getLexeme();
+
+        // Convert the operand to a number
+        String convertedOperand = convertLogicOperand(operand);
+
+        // Store the result in a temporary variable
+        return tacModule.addBinaryInstruction("NOT", convertedOperand, "");
     }
 
     private void handleFor(Tree<AbstractSymbol> tree) {
@@ -358,16 +386,36 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-        // Get the left operand
-        TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
-        String leftOperand = leftOperandSymbol.getToken().getLexeme();
+        String tempVar = "";
 
-        // Get the right operand
-        TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(4).getNode();
-        String rightOperand = rightOperandSymbol.getToken().getLexeme();
+        String leftOperand = "";
+        String rightOperand = "";
 
-        // Create a temporary variable to store the result of the operation
-        String tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
+        // Check if the right operand is "NOT"
+        if (leafNodes.get(2).getNode().getName().equals("NOT")) {
+            // Create a temporary variable to store a leafNode
+            List<Tree<AbstractSymbol>> tempLeafNodes = new ArrayList<>(leafNodes);
+
+            // Remove the variable name
+            tempLeafNodes.remove(0);
+
+            // Remove "is" and "NOT" nodes
+            tempLeafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).getName().equals("IS") || ((TerminalSymbol) node.getNode()).getName().equals("NOT"));
+
+
+            tempVar = handleNotAliveDead(tempLeafNodes);
+        } else {
+            // Get the left operand
+            TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
+            leftOperand = leftOperandSymbol.getToken().getLexeme();
+
+            // Get the right operand
+            TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(4).getNode();
+            rightOperand = rightOperandSymbol.getToken().getLexeme();
+
+            // Create a temporary variable to store the result of the operation
+            tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
+        }
 
         String variableName = ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme();
 
