@@ -40,6 +40,13 @@ public class MIPSOperations {
 		}
 	}
 
+	protected String loadVariableToMemory(String oldestVariable, String oldestRegister) {
+		return "sw " + oldestRegister + ", " + oldestVariable;
+	}
+
+	protected String loadVariableToRegister(String oldestVariable, String oldestRegister) {
+		return "lw " + oldestRegister + ", " + oldestVariable;
+	}
 
 	protected Operand loadSingleOperand(String operandValue) {
 		if (operandValue == null) {
@@ -56,7 +63,7 @@ public class MIPSOperations {
 			operand = new Operand(true, variable.getDataType(), variableRegister);
 		}
 		// Check if it's a register
-		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX)) {
+		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX_TEMP)) {
 			operand = new Operand(true, null, operandValue);
 		}
 		// Any other type of data (integer, float, boolean...)
