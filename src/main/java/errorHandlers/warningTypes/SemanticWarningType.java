@@ -6,7 +6,6 @@ package errorHandlers.warningTypes;
 public enum SemanticWarningType implements WarningType {
     ;
 
-    //TODO: Add different types of warnings
     final String message;
 
     SemanticWarningType(String message) {

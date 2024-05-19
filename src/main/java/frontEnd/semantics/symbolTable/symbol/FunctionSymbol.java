@@ -27,6 +27,11 @@ public class FunctionSymbol<T> extends Symbol<T> {
 		return false;
 	}
 
+	@Override
+	public boolean isFunction() {
+		return true;
+	}
+
 	public void setRootChildIndex(int rootChildIndex) {
 		this.rootChildIndex = rootChildIndex;
 	}

@@ -55,12 +55,4 @@ public class SyntacticErrorHandler extends AbstractErrorHandler<SyntacticErrorTy
 
         return message;
     }
-
-    /*
-    public static void main(String[] args) {
-        SyntacticErrorHandler lexicalErrorHandler = new SyntacticErrorHandler();
-        System.out.println(lexicalErrorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, 1, 3, "hello"));
-        System.out.println(lexicalErrorHandler.reportWarning(SyntacticWarningType.test, 1, 3, "hello"));
-    }
-    */
 }

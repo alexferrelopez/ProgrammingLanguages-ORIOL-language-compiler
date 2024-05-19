@@ -55,11 +55,5 @@ public class LexicalErrorHandler extends AbstractErrorHandler<LexicalErrorType, 
 
         return message;
     }
-    /*
-    public static void main(String[] args) {
-        LexicalErrorHandler lexicalErrorHandler = new LexicalErrorHandler();
-        System.out.println(lexicalErrorHandler.reportError(LexicalErrorType.UNKNOWN_TOKEN_ERROR, 1, null, "hello"));
-        System.out.println(lexicalErrorHandler.reportError(LexicalErrorType.RESERVED_TOKEN_ERROR, 1, 1, "hello"));
-    }
-    */
+
 }

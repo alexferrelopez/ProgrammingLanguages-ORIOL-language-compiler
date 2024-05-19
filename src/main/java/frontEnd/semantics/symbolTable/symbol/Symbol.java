@@ -92,6 +92,8 @@ public abstract class Symbol<Type> {
      */
     public abstract boolean isVariable();
 
+    public abstract boolean isFunction();
+
     public boolean hasSameName(String otherSymbolName) {
         return this.name.equals((otherSymbolName));
     }

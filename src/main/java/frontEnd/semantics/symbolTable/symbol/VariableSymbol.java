@@ -23,4 +23,10 @@ public class VariableSymbol<T> extends Symbol<T> {
 	public boolean isVariable() {
 		return true;
 	}
+
+	@Override
+	public boolean isFunction() {
+		return false;
+	}
+
 }

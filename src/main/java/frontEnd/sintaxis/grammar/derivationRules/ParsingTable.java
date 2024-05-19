@@ -96,7 +96,7 @@ public class ParsingTable {
     }
 
 
-    public List<AbstractSymbol> getProduction(NonTerminalSymbol nonTerminal, Token terminal) {
+    public List<AbstractSymbol> getProductionList(NonTerminalSymbol nonTerminal, Token terminal) {
         int positionTerminal = -1;
         int positionNonTerminal = -1;
         for (int i = 0; i < uniqueTerminals.size(); i++) {
@@ -106,8 +106,6 @@ public class ParsingTable {
             }
         }
         if (positionTerminal == -1) {
-            System.out.println("Error, no s'ha trobat el Terminal :(");
-            //TODO error handler (mirar que no siguin paraules prohibides (aaron, alexia, alex, gemma, oriol...))
             return null;
         }
         for (int i = 0; i < uniqueNoTerminals.size(); i++) {
@@ -119,18 +117,43 @@ public class ParsingTable {
             }
         }
         if (positionNonTerminal == -1) {
-            System.out.println("Error, no s'ha trobat el noTerminal :(");
             return null;
         }
         Map productionMap = parsingTable[positionNonTerminal][positionTerminal];
         if (Objects.isNull(productionMap)) {
-            System.out.println("There is no production associated with " + terminal.getLexeme() + " with " + nonTerminal.getName());//TODO throw exception
             return null;
         }
         List<AbstractSymbol> abstractSymbols = new LinkedList<AbstractSymbol>(productionMap.values());
 
 
         return (List<AbstractSymbol>) abstractSymbols.get(0);
+    }
+
+    public Map getProduction(NonTerminalSymbol nonTerminal, Token terminal) {
+        int positionTerminal = -1;
+        int positionNonTerminal = -1;
+        for (int i = 0; i < uniqueTerminals.size(); i++) {
+            if (uniqueTerminals.get(i).getName().equals(String.valueOf(terminal.getType()))) {
+                positionTerminal = i;
+                break;
+            }
+        }
+        if (positionTerminal == -1) {
+            return null;
+        }
+        for (int i = 0; i < uniqueNoTerminals.size(); i++) {
+            String str = uniqueNoTerminals.get(i).getName();
+            String str2 = nonTerminal.getName();
+            if (str.equals(str2)) {
+                positionNonTerminal = i;
+                break;
+            }
+        }
+        if (positionNonTerminal == -1) {
+            return null;
+        }
+        Map productionMap = parsingTable[positionNonTerminal][positionTerminal];
+        return productionMap;
     }
 
 

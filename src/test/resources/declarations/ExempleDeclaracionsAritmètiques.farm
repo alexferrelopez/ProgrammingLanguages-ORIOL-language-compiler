@@ -1,0 +1,33 @@
+miau: ranch() {
+    oink a is 1 sum 1;
+    oink a2 is 1 sum a;
+    oink a3 is a sum 1;
+    oink a4 is a sum a;
+
+    oink b is 1 minus 1;
+    oink b2 is 1 minus a;
+    oink b3 is a minus 1;
+    oink b4 is a minus b;
+
+    oink c is 1 module 2;
+    oink c2 is 1 mod a;
+    oink c3 is a module 2;
+    oink c4 is a mod b;
+
+    oink d is 1 times 2;
+    oink d2 is 1 times a;
+    oink d3 is a times 2;
+    oink d4 is a times b;
+
+    oink f is 1 div 2;
+    oink f2 is 1 div a;
+    oink f3 is a div 2;
+    oink f4 is a div b;
+
+    oink g is 1 power 2;
+    oink g2 is 1 pow a;
+    oink g3 is a power 2;
+    oink g4 is a pow b;
+
+    poop 0;
+}

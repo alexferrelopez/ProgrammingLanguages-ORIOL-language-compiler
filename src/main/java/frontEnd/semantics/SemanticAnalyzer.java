@@ -1,6 +1,5 @@
 package frontEnd.semantics;
 
-import debug.PrettyPrintTree;
 import errorHandlers.SemanticErrorHandler;
 import errorHandlers.errorTypes.SemanticErrorType;
 import frontEnd.lexic.dictionary.Token;
@@ -79,7 +78,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         List<AbstractSymbol> terminalSymbols = TreeTraversal.getLeafNodesIterative(tree);
         List<Token> tokens = convertSymbolsIntoTokens(terminalSymbols);
 
-        ResultContainer resultContainer;
         // Check the first node (root) to see what kind of grammatical operation is done and apply its semantics.
         switch (tree.getNode().toString()) {
             case "declaration":
@@ -92,12 +90,19 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     if (symbolTable.containsSymbolGlobally(tokens.get(0).getLexeme())) {
                         String lexeme = tokens.get(0).getLexeme();
                         Symbol<?> symbolByLexeme = symbolTable.findSymbolGlobally(lexeme);
-                        boolean symbolIsVariable = symbolByLexeme.isVariable();
-                        if (!symbolIsVariable) {
-                            checkFunctionCall(tree, 0);
+
+                        if (symbolByLexeme.isFunction()) {
+                            boolean functionExists = checkIfFunctionExists(tokens.get(0));
+                            if (functionExists) {
+                                checkLonelyFunctionCall(tokens);
+                            } else {
+                                errorHandler.reportError(SemanticErrorType.FUNCTION_NOT_DECLARED, tokens.get(0).getLine(), tokens.get(0).getColumn(), tokens.get(0).getLexeme());
+                            }
+                        } else {
+                            checkAssignationSemantics(tokens, symbolByLexeme);
                         }
                     } else {
-                        checkAssignationSemantics(tokens, null);
+                        errorHandler.reportError(SemanticErrorType.UNEXPECTED_TOKEN_ASSIGNATION, tokens.get(0).getLine(), tokens.get(0).getColumn(), tokens.get(0).getLexeme());
                     }
                 }
                 break;
@@ -131,51 +136,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
-    // Main function to determine if "assignation'" node has "var_assignation" or "func_call"
-    public boolean statementIsFuncCall(Tree<AbstractSymbol> rootNode) {
-        for (Tree<AbstractSymbol> child : rootNode.getChildren()) {
-            // Traverse to find "assignation'" node
-            AbstractSymbol node = child.getNode();
-            if (node.getName().equals("assignation")) {
-                // Check for "func_call" in the subtree of "assignation'"
-                return TreeTraversal.hasSpecificChildType(child, "arg");
-            }
-        }
-        return false;
-    }
-
-    /*
-    public <T> boolean assignmentIsFunction(Tree<T> rootNode) {
-        for (Tree<T> child : rootNode.getChildren()) {
-            // Traverse to find "assignation'" node
-            if (child.getNode().equals("assignation")) {
-                // Check for "func_call" in the subtree of "assignation'"
-                return TreeTraversal.hasSpecificChildType(child, "arg");
-            }
-        }
-        return false;
-    }
-    */
-
-    // Check if the statement is a valid expression (only one function allowed).
-    private boolean hasSingleFunction(List<Token> expressionTokens) {
-        if (expressionTokens.size() > 1) return false;
-        for (Token token : expressionTokens) {
-            Symbol<?> tokenSymbol = getSymbolByLexeme(token.getLexeme());
-            if (tokenSymbol == null || !tokenSymbol.isVariable()) {
-                //TODO change error type
-                errorHandler.reportError(SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), expressionTokens.get(0).getLexeme());
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * Function to check if an assignation is valid.
      *
      * @param assignationTokens the tokens of the assignation.
      * @param assignedSymbol    the symbol that is being assigned, the variable itself.
+     * @return a ResultContainer with the result of the assignation.
      */
     private ResultContainer checkAssignationSemantics(List<Token> assignationTokens, @Nullable Symbol<?> assignedSymbol) {
         // Expected format: VARIABLE IS <value> PUNT_COMMA
@@ -188,18 +154,19 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
             symbol = symbolTable.findSymbolGlobally(variableName.getLexeme());
             if (symbol == null) {
                 errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, variableName.getLine(), variableName.getColumn(), variableName.getLexeme());
-                failed = true;
+                return new ResultContainer(true, true, null, null, null, "");
             }
         }
 
         // Get the current symbol of this variable to check all its properties.
-        if (!symbol.isVariable()) {
+        if (symbol.isFunction()) {
             errorHandler.reportError(SemanticErrorType.ALREADY_USED_IDENTIFIER, variableName.getLine(), variableName.getColumn(), variableName.getLexeme());
             failed = true;
         }
 
         @SuppressWarnings("unchecked")  // Suppress the unchecked cast warning (it will always be a variable and ValueSymbol here)
         Symbol<VariableSymbol<?>> variable = (Symbol<VariableSymbol<?>>) symbol;
+        DataType variableDataType = variable.getDataType();
 
         // Check what type of assignation this is (depending on the type of the variable being assigned).
         int indexOfFirstSeparator = getIndexOfFirstSeparator(assignationTokens, SpecialSymbol.PUNT_COMMA);
@@ -207,43 +174,99 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         List<Token> expressionTokens = assignationTokens.subList(2, Math.max(indexOfFirstSeparator, assignationTokens.size() - 1));  // Do not take into account PUNT_COMMA token.
 
         // Check if the statement is a valid expression (only one function allowed).
-        //TODO check the function when the expression tokens only contain a literal, and not a function
         if (checkIfFunctionExists(expressionTokens.get(0))) {
-            if (!hasSingleFunction(expressionTokens)) {
-                errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), expressionTokens.get(0).getLexeme());
+            // check only one function is called
+            int firstParenthesisIndex = getIndexOfFirstSeparator(expressionTokens, SpecialSymbol.PT);
+
+            // The first parenthesis found is just before the last token, which is the ";" symbol.
+            if (firstParenthesisIndex == expressionTokens.size() - 1) {
+                //check if the function is declared and the return type is the same as the variable
+                FunctionSymbol<?> functionSymbol = (FunctionSymbol<?>) symbolTable.findSymbolGlobally(expressionTokens.get(0).getLexeme());
+
+                if (functionSymbol.getDataType() == variableDataType) {
+                    List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+                    List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
+
+                    if (expectedParams.size() == receivedParams.size()) {
+                        for (int i = 0; i < expectedParams.size(); i++) {
+                            if (expectedParams.get(i).getDataType() != receivedParams.get(i).getDataType()) {
+                                errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_DONT_MATCH, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + expectedParams.get(i).getDataType() + " but received: " + receivedParams.get(i).getDataType());
+                                failed = true;
+                            }
+                        }
+                    } else {
+                        errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_NUMBER_INCORRECT, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + expectedParams.size() + " but received: " + receivedParams.size());
+                        failed = true;
+                    }
+                } else {
+                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + variableDataType + " but received: " + functionSymbol.getDataType());
+                    failed = true;
+                }
+            } else {
+                errorHandler.reportError(SemanticErrorType.FUNCTION_NOT_CALLED_CORRECTLY, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), expressionTokens.get(0).getLexeme());
                 failed = true;
             }
-        }
-
-        // Check if assignment is done with a function.
-        if (!variable.isVariable()) {
-            // TODO: Check valid function call as assignment, it is different than normal statementFuncCall.
-        }
-
-        switch (variable.getDataType()) {
-            case BOOLEAN -> {
-                ResultContainer booleanExpressionEval = checkValidBooleanExpression(expressionTokens);
-                handleResultContainer(booleanExpressionEval);
-                if (booleanExpressionEval.isError()) failed = true;
+        } else {
+            switch (variableDataType) {
+                case BOOLEAN -> {
+                    ResultContainer booleanExpressionEval = checkValidBooleanExpression(expressionTokens);
+                    handleResultContainer(booleanExpressionEval);
+                    if (booleanExpressionEval.isError()) failed = true;
+                }
+                case INTEGER -> {
+                    ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable, DataType.INTEGER, ValueSymbol.VALUE_INT);
+                    handleResultContainer(resultContainer);
+                    if (resultContainer.isError()) failed = true;
+                }
+                case FLOAT -> {
+                    ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable, DataType.FLOAT, ValueSymbol.VALUE_FLOAT);
+                    handleResultContainer(resultContainer);
+                    if (resultContainer.isError()) failed = true;
+                }
             }
-            case INTEGER, FLOAT -> {
-                ResultContainer resultContainer = checkValidArithmeticExpression(expressionTokens, variable);
-                handleResultContainer(resultContainer);
-                if (resultContainer.isError()) failed = true;
-            }
         }
-
-        // Check if the value is compatible with the variable type and assign (and check) the value to the variable.
-        /*
-		try {
-			variable.checkValue(value);
-		} catch (InvalidValueException e) {
-			errorHandler.reportError(SemanticErrorType.INVALID_VALUE, variableName.getLine(), variableName.getColumn(), e.getMessage());
-		} catch (InvalidValueTypeException e) {
-            errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, variableName.getLine(), variableName.getColumn(), SemanticErrorType.INCOMPATIBLE_TYPES.getMessage());
-		}
-		*/
         return new ResultContainer(failed, true, null, null, null, "");
+    }
+
+    /**
+     * Function to check if a function is declared. Exclusive to functions that are not assigned to a variable.
+     * Checks if the function is declared and if the parameters are correct.
+     *
+     * @param expressionTokens the tokens of the function call.
+     */
+    private void checkLonelyFunctionCall(List<Token> expressionTokens) {
+        int indexOfFirstSeparator = getIndexOfFirstSeparator(expressionTokens, SpecialSymbol.PUNT_COMMA);
+        expressionTokens = expressionTokens.subList(0, Math.max(indexOfFirstSeparator, expressionTokens.size() - 1));  // Do not take into account PUNT_COMMA token.
+
+        boolean failed = false;
+        // check only one function is called
+        int firstParenthesisIndex = getIndexOfFirstSeparator(expressionTokens, SpecialSymbol.PT);
+
+        // The first parenthesis found is just before the last token, which is the ";" symbol.
+        if (firstParenthesisIndex == expressionTokens.size() - 1) {
+            //check if the function is declared and the return type is the same as the variable
+            FunctionSymbol<?> functionSymbol = (FunctionSymbol<?>) symbolTable.findSymbolGlobally(expressionTokens.get(0).getLexeme());
+
+
+            List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+            List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
+
+            if (expectedParams.size() == receivedParams.size()) {
+                for (int i = 0; i < expectedParams.size(); i++) {
+                    if (expectedParams.get(i).getDataType() != receivedParams.get(i).getDataType()) {
+                        errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_DONT_MATCH, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + expectedParams.get(i).getDataType() + " but received: " + receivedParams.get(i).getDataType());
+                        failed = true;
+                    }
+                }
+            } else {
+                errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_NUMBER_INCORRECT, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + expectedParams.size() + " but received: " + receivedParams.size());
+                failed = true;
+            }
+        } else {
+            errorHandler.reportError(SemanticErrorType.FUNCTION_NOT_CALLED_CORRECTLY, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), expressionTokens.get(0).getLexeme());
+            failed = true;
+        }
+        new ResultContainer(failed, true, null, null, null, "");
     }
 
     /**
@@ -255,10 +278,10 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      *
      * @param expressionTokens the tokens of the arithmetic expression.
      */
-    private ResultContainer checkValidArithmeticExpression(List<Token> expressionTokens, Symbol<VariableSymbol<?>> variableSymbol) {
+    private ResultContainer checkValidArithmeticExpression(List<Token> expressionTokens, Symbol<VariableSymbol<?>> variableSymbol, DataType validDatatype, ValueSymbol validValueSymbol) {
         // Check all the tokens are valid for an arithmetic expression (e.g. +, -, *, /, etc.)
-        List<TokenType> validArithmeticOperatorsTokens = List.of(MathOperator.SUM, MathOperator.SUB, MathOperator.MUL, MathOperator.DIV, MathOperator.POW, MathOperator.MOD);
-        List<TokenType> validArithmeticValueTokens = List.of(ValueSymbol.VALUE_INT, ValueSymbol.VALUE_FLOAT, ValueSymbol.VARIABLE);
+        List<TokenType> validArithmeticOperatorsTokens = List.of(MathOperator.SUM, MathOperator.SUB, MathOperator.MUL, MathOperator.DIV);
+        List<TokenType> validArithmeticValueTokens = List.of(ValueSymbol.VARIABLE, validValueSymbol);
 
         List<TokenType> validArithmeticTokens = new ArrayList<>();
         validArithmeticTokens.addAll(validArithmeticValueTokens);
@@ -268,15 +291,17 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         for (Token token : expressionTokens) {
             // Check if the token is inside the valid arithmetic tokens.
             if (!validArithmeticTokens.contains(token.getType())) {
-                errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme());
+                errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme() + " expected type: " + validDatatype);
                 failed = true;
             } else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a number (integer or float).
-                ResultContainer resultContainer = checkVariableSameType(token, List.of(DataType.INTEGER, DataType.FLOAT));
+                ResultContainer resultContainer = checkVariableSameType(token, List.of(validDatatype));
+                ResultContainer resultContainer1 = checkVariableExists(token);
+                handleResultContainer(resultContainer1);
                 handleResultContainer(resultContainer);
-                if (resultContainer.isError()) failed = true;
+                if (resultContainer.isError() || resultContainer1.isError()) failed = true;
             }
-/*
+
             // Check the operation (sum, sub...) is done between same type of variables / values.
             if (validArithmeticOperatorsTokens.contains(token.getType())) {
                 // Check if the previous and next tokens are compatible.
@@ -284,35 +309,54 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 Token previousToken = expressionTokens.get(tokenIndex - 1);
                 Token nextToken = expressionTokens.get(tokenIndex + 1);
 
-                DataType leftOperandType = getOperandDataType(previousToken);
-                DataType rightOperandType = getOperandDataType(nextToken);
+                DataType leftOperandType = null;
+                DataType rightOperandType = null;
 
-                // Check if both operands have same type.
-                if (leftOperandType != rightOperandType) {
-                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), previousToken.getLexeme() + " " + nextToken.getLexeme());
+                try {
+                    leftOperandType = getOperandDataType(previousToken);
+                } catch (IllegalArgumentException e) {
                     failed = true;
                 }
-                // Check if the operand has the same type as the variable.
-                else if (leftOperandType != variableSymbol.getDataType()) {
-                    errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), leftOperandType + " " + variableSymbol);
+                try {
+                    rightOperandType = getOperandDataType(nextToken);
+                } catch (IllegalArgumentException e) {
                     failed = true;
                 }
-            }*/
+
+                if (!failed) {
+                    // Check if both operands have same type.
+                    if (leftOperandType != rightOperandType) {
+                        errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), previousToken.getLexeme() + " " + nextToken.getLexeme());
+                        failed = true;
+                    }
+                    // Check if the operand has the same type as the variable.
+                    else if (leftOperandType != variableSymbol.getDataType()) {
+                        errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), leftOperandType + " " + variableSymbol);
+                        failed = true;
+                    }
+                }
+            }
         }
 
         return new ResultContainer(failed, true, null, null, null, "");
     }
 
-    // Method to determine the data type of token.
-    private DataType getOperandDataType(Token token) {
-        if (token.getType() == ValueSymbol.VARIABLE) {
-            Symbol<?> symbol = checkVariableExists(token);
+    /**
+     * Method to determine the data type of token.
+     *
+     * @param token the token to check.
+     * @return the data type of the token.
+     * @throws IllegalArgumentException if the token is not a variable or a value.
+     */
+    private DataType getOperandDataType(Token token) throws IllegalArgumentException {
+        if (token.getType() == ValueSymbol.VARIABLE && checkTokenIsVariable(token) && !checkVariableExists(token).isError()) {
+            Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
             return symbol.getDataType();
         } else if (token.getType() instanceof ValueSymbol) {
             return ((ValueSymbol) token.getType()).getDataType();
         } else {
-            // This case should never happen.
-            throw new IllegalArgumentException("Unsupported token type for arithmetic operations");
+            errorHandler.reportError(SemanticErrorType.INVALID_ARITHMETIC_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme() + " Unexpected token in arithmetic expression");
+            throw new IllegalArgumentException("Unexpected token in arithmetic expression");
         }
     }
 
@@ -320,23 +364,29 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         return symbolTable.findSymbol(lexeme);
     }
 
-    private Symbol<?> checkVariableExists(Token token) {
+    private ResultContainer checkVariableExists(Token token) {
         // Check if the variable exists.
         Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
-        if (symbol == null || !symbol.isVariable()) {
-            errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), token.getColumn(), token.getLexeme());
+        if (symbol == null || symbol.isFunction()) {
+            return new ResultContainer(true, false, SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), token.getColumn(), token.getLexeme());
         }
-        return symbol;
+        return new ResultContainer(false, true, null, null, null, "");
     }
 
     /**
-     * @param token
-     * @return
+     * Function to check if a given token is a variable.
+     *
+     * @param token the token to check.
+     * @return true if the token is a variable; false otherwise.
      */
     private boolean checkTokenIsVariable(Token token) {
-        Symbol<?> symbol = checkVariableExists(token);
+        ResultContainer resultContainer = checkVariableExists(token);
+
+        if (resultContainer.isError()) return false;
+        Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
+
         boolean isVariable = true;
-        if (symbol != null && !symbol.isVariable()) {
+        if (symbol != null && symbol.isFunction()) {
             isVariable = false;
             errorHandler.reportError(SemanticErrorType.ALREADY_USED_IDENTIFIER, token.getLine(), token.getColumn(), token.getLexeme());
         }
@@ -344,10 +394,17 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
     }
 
 
+    /**
+     * Function to check if given expression is a valid boolean expression. It checks if there is a combination where the
+     * tokens form a valid logical or relational expression.
+     *
+     * @param expressionTokens the tokens of the expression.
+     * @return a ResultContainer with the result of the check.
+     */
     private ResultContainer checkValidBooleanExpression(List<Token> expressionTokens) {
         List<ResultContainer> logicalExpressionEvals = checkLogicalExpression(expressionTokens);
         List<ResultContainer> relationalExpressionEvals = checkRelationalExpression(expressionTokens);
-        if (!anyContainerContainsError(logicalExpressionEvals) || !anyContainerContainsError(relationalExpressionEvals)) {
+        if (resultsContainNoErrors(logicalExpressionEvals) || resultsContainNoErrors(relationalExpressionEvals)) {
             return new ResultContainer(false, true, null, null, null, "");
         } else {
             if (relationalExpressionEvals.size() < logicalExpressionEvals.size()) {
@@ -363,18 +420,30 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
-
-    private List<ResultContainer> validateLogicalRelationalTokens(List<Token> expressionTokens, List<TokenType> validTokens) {
+    /**
+     * Function to validate logical and relational tokens within an expression.
+     * This function checks if the tokens in the given expression are valid based on the provided lists of valid tokens
+     * and data types. If a token is invalid, it generates a corresponding ResultContainer object where the error is stored.
+     * The list of ResultContainer objects is then returned, and has to be checked for errors in the calling function.
+     *
+     * @param expressionTokens A list of tokens representing the expression to be validated.
+     * @param validTokens      A list of token types that are considered valid for logical and relational operations.
+     * @param validDataTypes   A list of data types that are considered valid for the variables within the expression.
+     * @return A list of ResultContainer objects, each containing the result of the validation for each token.
+     */
+    private List<ResultContainer> validateLogicalRelationalTokens(List<Token> expressionTokens, List<TokenType> validTokens, List<DataType> validDataTypes) {
         List<ResultContainer> resultContainers = new ArrayList<>();
         ResultContainer resultContainer;
         for (Token token : expressionTokens) {
             // Check if the token is valid (it is inside the list of "validTokens" which is filled previously).
             if (!validTokens.contains(token.getType())) {
-                resultContainer = new ResultContainer(true, false, SemanticErrorType.INVALID_BOOLEAN_EXPRESSION, token.getLine(), token.getColumn(), token.getLexeme());
+                resultContainer = new ResultContainer(true, false, SemanticErrorType.OPERATOR_NOT_SUPPORTED, token.getLine(), token.getColumn(), token.getLexeme());
                 resultContainers.add(resultContainer);
             } else if (token.getType() == ValueSymbol.VARIABLE) {
                 // Check if the ID (variable or function) exists and it's a boolean.
-                resultContainer = checkVariableSameType(token, List.of(DataType.BOOLEAN, DataType.INTEGER, DataType.FLOAT));
+                resultContainer = checkVariableSameType(token, validDataTypes);
+                ResultContainer resultContainer1 = checkVariableExists(token);
+                resultContainers.add(resultContainer1);
                 resultContainers.add(resultContainer);
             }
         }
@@ -382,25 +451,90 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         return resultContainers;
     }
 
+    /**
+     * Function to check relational expressions for validity across various data types.
+     * This function validates the tokens in a relational expression for different data types, including boolean, integer,
+     * float, and char. It uses specific valid tokens for each data type and returns the result with the fewest errors.
+     *
+     * @param relationalTokens A list of tokens representing the relational expression to be validated.
+     * @return A list of ResultContainer objects containing the validation results, prioritizing the result with the fewest errors.
+     */
     private List<ResultContainer> checkRelationalExpression(List<Token> relationalTokens) {
-        // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
-        List<TokenType> validRelationalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ, ValueSymbol.VALUE_INT, ValueSymbol.VALUE_FLOAT);
-        //TODO check different type comparisons: int with float, int with char, etc.
-        return validateLogicalRelationalTokens(relationalTokens, validRelationalTokens);
+        // Check boolean relational expressions
+        List<TokenType> validBooleanRelationalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.EQ, BinaryOperator.NEQ);
+        List<ResultContainer> booleanResultContainers = validateLogicalRelationalTokens(relationalTokens, validBooleanRelationalTokens, List.of(DataType.BOOLEAN));
+
+        // Check integer relational expressions
+        List<TokenType> validIntegerRelationalTokens = List.of(ValueSymbol.VALUE_INT, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ);
+        List<ResultContainer> integerResultContainers = validateLogicalRelationalTokens(relationalTokens, validIntegerRelationalTokens, List.of(DataType.INTEGER));
+
+        // Check float relational expressions
+        List<TokenType> validFloatRelationalTokens = List.of(ValueSymbol.VALUE_FLOAT, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ);
+        List<ResultContainer> floatResultContainers = validateLogicalRelationalTokens(relationalTokens, validFloatRelationalTokens, List.of(DataType.FLOAT));
+
+        // Check char relational expressions
+        List<TokenType> validCharRelationalTokens = List.of(ValueSymbol.VALUE_CHAR, ValueSymbol.VARIABLE, BinaryOperator.GT, BinaryOperator.LT, BinaryOperator.EQ, BinaryOperator.NEQ);
+        List<ResultContainer> charResultContainers = validateLogicalRelationalTokens(relationalTokens, validCharRelationalTokens, List.of(DataType.CHAR));
+
+        return getLowestErrorsList(List.of(booleanResultContainers, integerResultContainers, floatResultContainers, charResultContainers));
     }
 
+    /**
+     * Function to find and return the list of ResultContainer objects with the fewest errors.
+     * This function iterates through multiple lists of ResultContainer objects, counts the errors in each list,
+     * and returns the list with the lowest number of errors. If a list has no errors, it is returned immediately.
+     *
+     * @param resultContainers A list of lists of ResultContainer objects, each representing validation results for different expressions.
+     * @return The list of ResultContainer objects with the fewest errors. If multiple lists have the same number of errors, the first one encountered is returned.
+     */
+    private List<ResultContainer> getLowestErrorsList(List<List<ResultContainer>> resultContainers) {
+        List<ResultContainer> lowestErrorsList = List.of();
+        int lowestErrorCount = Integer.MAX_VALUE;
+        for (List<ResultContainer> resultContainer : resultContainers) {
+            int errorCount = 0;
+            for (ResultContainer container : resultContainer) {
+                if (container.isError()) {
+                    errorCount++;
+                }
+            }
+            if (errorCount == 0) {
+                return resultContainer;
+            } else {
+                if (errorCount < lowestErrorCount) {
+                    lowestErrorCount = errorCount;
+                    lowestErrorsList = resultContainer;
+                }
+
+            }
+        }
+        return lowestErrorsList;
+    }
+
+    /**
+     * Function to check logical expressions for validity.
+     *
+     * @param logicalTokens A list of tokens representing the logical expression to be validated.
+     * @return A list of ResultContainer objects containing the validation results for the logical expression.
+     */
     private List<ResultContainer> checkLogicalExpression(List<Token> logicalTokens) {
         // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
         List<TokenType> validLogicalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
-        return validateLogicalRelationalTokens(logicalTokens, validLogicalTokens);
+        return validateLogicalRelationalTokens(logicalTokens, validLogicalTokens, List.of(DataType.BOOLEAN));
     }
 
+    /**
+     * Function to check if a token is the same type as the given data types in a list.
+     *
+     * @param token     the token to check.
+     * @param dataTypes the list of data types to check against.
+     * @return a ResultContainer with the result of the check.
+     */
     private ResultContainer checkVariableSameType(Token token, List<DataType> dataTypes) {
         // Check if the ID (variable or function) exists.
         Symbol<?> symbol = getSymbolByLexeme(token.getLexeme());
         ResultContainer resultContainer = new ResultContainer(false, true, null, null, null, "");
         if (symbol != null && !dataTypes.contains(symbol.getDataType())) {
-            resultContainer = new ResultContainer(true, false, SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), "Expected: " + dataTypes + " but received: " + token.getLexeme());
+            resultContainer = new ResultContainer(true, false, SemanticErrorType.INCOMPATIBLE_TYPES, token.getLine(), token.getColumn(), "Expected: " + dataTypes + " but received: " + token.getLexeme() + " that is of type: " + symbol.getDataType());
         }
         return resultContainer;
     }
@@ -421,138 +555,13 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
         // Add the symbol to the scope (with it's data type).
         DataType dataType = (DataType) variableDatatype.getType();
-        // TODO: Type is Integer but Generics may be removed if the value of the Symbol is never stored.
         VariableSymbol<Integer> variableSymbol = new VariableSymbol<>(variable.getLexeme(), dataType, variableDatatype.getLine(), false, Integer.class);
 
         List<Token> assignationTokens = declarationTokens.subList(1, declarationTokens.size());    // Skip DATA_TYPE token.
         // Check the assignments of the variable and add it to the table.
         checkAssignationSemantics(assignationTokens, variableSymbol);
+
         symbolTable.addSymbol(variableSymbol);
-    }
-
-
-    private void checkTypeCompatibility(Symbol symbol) {
-        // Check if the symbol is compatible with the type of the current scope
-	/*
-	if (symbolTable.currentScope().contains(symbol.getName())) {
-		errorHandler.reportError(, symbol.getLineDeclaration(), 0, "Duplicate symbol declaration");
-	} else {
-		symbolTable.addSymbol(symbol);
-	}*/
-    }
-
-    private Symbol<?> checkFunctionExists(TerminalSymbol variable) {
-        String functionName = variable.getToken().getLexeme();
-        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
-
-        // Check if the function is declared (exists in the table).
-        if (functionSymbol == null || functionSymbol.isVariable()) {
-            errorHandler.reportError(SemanticErrorType.FUNCTION_NOT_DECLARED, variable.getToken().getLine(), variable.getToken().getColumn(), functionName);
-        }
-
-        return functionSymbol;
-    }
-
-    /**
-     * Function to check if a function is called correctly (using DFS for the tree).
-     */
-    private void checkFunctionCall(Tree<AbstractSymbol> funcCallTree, int currentParameter) {
-        // We are on a leaf, check what type of terminal it is.
-        if (funcCallTree.getChildren().isEmpty()) {
-            TerminalSymbol terminal = (TerminalSymbol) funcCallTree.getNode();
-
-            // Check what terminal we are in to see what part of the statement we are in.
-            if (!terminal.isEpsilon()) {
-
-                // Get the name of the variable (or function) and check it's previously declared.
-                if (terminal.getToken().getType() == ValueSymbol.VARIABLE) {
-                    AbstractSymbol variableParentSymbol = funcCallTree.getParent().getNode();
-
-                    // Get the name of the variable
-                    if (variableParentSymbol.getName().equals("assignation")) {
-                        checkFunctionExists(terminal);
-                    }
-
-                    // Get the name of the parameters
-                    if (variableParentSymbol.getName().equals("func_call")) {
-                        // Check if the parameter is a function = invalid.
-                        String functionName = terminal.getToken().getLexeme();
-                        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
-                        if (functionSymbol != null && !functionSymbol.isVariable()) {
-                            checkFunctionParameters(funcCallTree.getParent(), (FunctionSymbol<?>) functionSymbol, currentParameter);
-                        }
-
-                        currentParameter++;
-                    }
-                }
-
-            }
-        }
-        for (Tree<AbstractSymbol> child : funcCallTree.getChildren()) {
-            checkFunctionCall(child, currentParameter);
-        }
-    }
-
-    private void checkFunctionAssignment(Tree<AbstractSymbol> funcCallTree, int currentParameter) {
-        // We are on a leaf, check what type of terminal it is.
-        if (funcCallTree.getChildren().isEmpty()) {
-            TerminalSymbol terminal = (TerminalSymbol) funcCallTree.getNode();
-
-            // Check what terminal we are in to see what part of the statement we are in.
-            if (!terminal.isEpsilon()) {
-
-                // Get the name of the variable (or function) and check it's previously declared.
-                if (terminal.getToken().getType() == ValueSymbol.VARIABLE) {
-                    AbstractSymbol variableParentSymbol = funcCallTree.getParent().getNode();
-
-                    // Get the name of the variable
-                    if (variableParentSymbol.getName().equals("assignation")) {
-                        checkFunctionExists(terminal);
-                    }
-
-                    // Get the name of the parameters
-                    if (variableParentSymbol.getName().equals("func_call")) {
-                        // Check if the parameter is a function = invalid.
-                        String functionName = terminal.getToken().getLexeme();
-                        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
-                        if (functionSymbol != null && !functionSymbol.isVariable()) {
-                            checkFunctionParameters(funcCallTree.getParent(), (FunctionSymbol<?>) functionSymbol, currentParameter);
-                        }
-
-                        currentParameter++;
-                    }
-                }
-
-            }
-        }
-        for (Tree<AbstractSymbol> child : funcCallTree.getChildren()) {
-            checkFunctionCall(child, currentParameter);
-        }
-    }
-
-    /**
-     * Function to check if the parameters of a function are correct.
-     */
-    private void checkFunctionParameters(Tree<AbstractSymbol> functionParameters, FunctionSymbol<?> functionSymbol, int numParameter) {
-        // Check there is no function in the parameters.
-        Tree<AbstractSymbol> funcParamName = functionParameters.getChildren().get(0);
-        Tree<AbstractSymbol> funcParamList = functionParameters.getChildren().get(1);
-
-        // Check if the func_call' statement derives in epsilon (it's okay) or not (calling a func = invalid).
-        TerminalSymbol funcList = (TerminalSymbol) funcParamList.getNode();
-        if (!funcList.isEpsilon()) {
-            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_INVALID, funcList.getToken().getLine(), funcList.getToken().getColumn(), funcList.getName());
-        }
-
-        // Check if the parameters from the function have the same type as expected (declaration).
-        TerminalSymbol parameter = (TerminalSymbol) funcParamName.getNode();
-        VariableSymbol<?> expectedParameterSymbol = functionSymbol.getParameters().get(numParameter);
-        DataType currentType = getOperandDataType(parameter.getToken());
-        DataType expectedType = expectedParameterSymbol.getDataType();
-
-        if (currentType != expectedType) {
-            errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_DONT_MATCH, funcList.getToken().getLine(), funcList.getToken().getColumn(), funcList.getName());
-        }
     }
 
     /**
@@ -616,21 +625,28 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
-
+    /**
+     * Function to check the semantics of a function declaration.
+     * This function performs several checks on the tokens representing a function declaration: it validates the uniqueness
+     * of parameter names, checks if the function is already defined, and adds the function along with its parameters to the symbol table.
+     * If errors are found during these checks, they are reported via an error handler.
+     *
+     * @param tokens A list of tokens representing the function declaration to be checked.
+     */
     private void checkFunctionDeclarationSemantics(List<Token> tokens) {
-
         //Obtain the parameters of the function
         int indexOfFirstSeparator = getIndexOfFirstSeparator(tokens, SpecialSymbol.CT);
         List<Token> functionDeclarationTokens = tokens.subList(0, indexOfFirstSeparator);
-        List<VariableSymbol<?>> functionParameters = getFunctionParameters(functionDeclarationTokens);
+        List<VariableSymbol<?>> functionParameters = getFunctionDeclarationParameters(functionDeclarationTokens);
 
         //Check if the parameters have unique names
         ResultContainer resultContainer = checkUniqueVariableNames(functionParameters);
-        if (resultContainer.isError() && !resultContainer.isEmpty()) {
-            errorHandler.reportError(resultContainer.errorType(), resultContainer.optionalLine(), resultContainer.optionalColumn(), resultContainer.word());
-        }
+        handleResultContainer(resultContainer);
         //Check if the function is already defined
-        checkIfFunctionExists(tokens.get(2));
+        boolean functionExists = checkIfFunctionExists(tokens.get(2));
+        if (functionExists) {
+            errorHandler.reportError(SemanticErrorType.FUNCTION_ALREADY_DEFINED, tokens.get(2).getLine(), tokens.get(2).getColumn(), tokens.get(2).getLexeme());
+        }
 
         //Obtain information about the function
         String functionName = tokens.get(2).getLexeme();
@@ -648,7 +664,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
 
         checkMainFunction(tokens);
-
     }
 
     /**
@@ -676,6 +691,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
+    /**
+     * Checks for a list of variables if they have unique names between themselves.
+     *
+     * @param variables the list of variables to check against.
+     * @return a ResultContainer object containing the result of the check.
+     */
     private ResultContainer checkUniqueVariableNames(List<VariableSymbol<?>> variables) {
         for (int i = 0; i < variables.size(); i++) {
             for (int j = i + 1; j < variables.size(); j++) {
@@ -692,30 +713,27 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      *
      * @param whileIfTokens the tokens of the while or if statement
      */
-    public ResultContainer checkWhileIfSemantics(List<Token> whileIfTokens) {
+    public void checkWhileIfSemantics(List<Token> whileIfTokens) {
         // Expected format: WHILE (<boolean_expression>) {}
         int indexLastTokenInCondition = getIndexOfFirstSeparator(whileIfTokens, SpecialSymbol.PT);
         List<Token> expressionTokens = whileIfTokens.subList(2, indexLastTokenInCondition);
 
         // Check if the condition expression is valid.
         ResultContainer resultContainer = checkValidBooleanExpression(expressionTokens);
-
-        if (resultContainer.isError()) {
-            return resultContainer;
-        }
-        return new ResultContainer(false, true, null, null, null, "");
+        handleResultContainer(resultContainer);
     }
 
     /**
-     * Check the semantics of a for statement
+     * Function to check the semantics of a 'for' loop declaration.
+     * This function validates the semantics of tokens representing a 'for' loop. It checks the initial declaration or assignment,
+     * ensures that the limit value is of a compatible type, and validates the assignment part of the loop. Errors are reported
+     * through the error handler if any semantic issues are detected.
      *
-     * @param forTokens the tokens of the for statement
-     * @param tree      the tree of the for statement
+     * @param forTokens A list of tokens representing the 'for' loop to be checked.
+     * @param tree      The abstract syntax tree representing the structure of the code.
      */
-    public ResultContainer checkForSemantics(List<Token> forTokens, Tree<AbstractSymbol> tree) {
+    public void checkForSemantics(List<Token> forTokens, Tree<AbstractSymbol> tree) {
         // Expected format: FOR (<declaration> TO <literal_num>, <assignation> ) {}
-        ResultContainer resultContainer;
-        boolean failed = false;
 
         int indexLastTokenInCondition = getIndexOfFirstSeparator(forTokens, ReservedSymbol.TO);
         List<Token> declarationTokens = forTokens.subList(2, indexLastTokenInCondition);
@@ -725,7 +743,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
         String firstTokenName = abstractSymbolTree.getChildren().get(0).getNode().getName();
 
-        /* The declared data type of the declaration/assignation to check the type of the limit value */
+        // The type of the variable declared in the for loop.
         DataType declaredType = null;
 
         // Case where the first token starts a declaration
@@ -738,52 +756,43 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 checkDeclaration(declarationTokens);
             } else if (!symbol.isVariable()) {
                 errorHandler.reportError(SemanticErrorType.ALREADY_USED_IDENTIFIER, declarationTokens.get(1).getLine(), declarationTokens.get(1).getColumn(), declarationTokens.get(1).getLexeme());
-                failed = true;
             } else {
                 errorHandler.reportError(SemanticErrorType.VARIABLE_ALREADY_DEFINED, declarationTokens.get(1).getLine(), declarationTokens.get(1).getColumn(), declarationTokens.get(1).getLexeme());
-                failed = true;
             }
             // Case where the first token starts an assignment
         } else {
-            Symbol<?> symbolGlobally = symbolTable.findSymbolGlobally(declarationTokens.get(0).getLexeme());
-            if (symbolGlobally == null) {
+            Symbol<?> variable = symbolTable.findSymbolGlobally(declarationTokens.get(0).getLexeme());
+            if (variable == null) {
                 errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, declarationTokens.get(0).getLine(), declarationTokens.get(0).getColumn(), declarationTokens.get(0).getLexeme());
-                failed = true;
             } else {
-                declaredType = symbolGlobally.getDataType();
+                declaredType = variable.getDataType();
                 ResultContainer container = checkAssignationSemantics(declarationTokens, null);
                 if (container.isError()) {
                     errorHandler.reportError(container.errorType(), container.optionalLine(), container.optionalColumn(), container.word());
-                    failed = true;
                 }
             }
         }
 
         Token limitValue = forTokens.get(indexLastTokenInCondition + 1);
-        //TODO check if its a number or a variable, check their type against the variable declared before
 
         TokenType limitValueType = limitValue.getType();
         if (limitValueType == ValueSymbol.VARIABLE) {
-            Symbol<?> symbol = checkVariableExists(limitValue);
-            if (symbol != null) {           // Variable exists
+            ResultContainer container = checkVariableExists(limitValue);
+            if (!container.isError()) {           // Variable exists
                 ResultContainer result_container = new ResultContainer(false, true, null, null, null, "");
                 if (declaredType != null) {
                     result_container = checkVariableSameType(limitValue, List.of(declaredType));
                 }
                 if (result_container.isError()) {
                     errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, limitValue.getLine(), limitValue.getColumn(), limitValue.getLexeme());
-                    failed = true;
                 }
             } else {                        // Variable doesn't exist
-                errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, limitValue.getLine(), limitValue.getColumn(), limitValue.getLexeme());
-                failed = true;
+                handleResultContainer(container);
             }
         } else {
             // Check if the numeric value is the same type as the variable declared.
-            if (limitValueType != declaredType) {
-                //todo check equivalence between the literals and variable types
-                errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, limitValue.getLine(), limitValue.getColumn(), limitValue.getLexeme());
-                failed = true;
+            if (declaredType == null || !declaredType.isValidType((ValueSymbol) limitValueType)) {
+                errorHandler.reportError(SemanticErrorType.INCOMPATIBLE_TYPES, limitValue.getLine(), limitValue.getColumn(), "Expected type " + declaredType + " but " + limitValue.getLexeme() + " is of type " + limitValueType);
             }
         }
 
@@ -791,14 +800,21 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
         int indexLastTokenUntilSeparator = getIndexOfFirstSeparator(forTokens, SpecialSymbol.PT);
         List<Token> assignationTokens = forTokens.subList(indexLastTokenInCondition + 3, indexLastTokenUntilSeparator);
-        resultContainer = checkAssignationSemantics(assignationTokens, null);
+        ResultContainer resultContainer = checkAssignationSemantics(assignationTokens, null);
         if (resultContainer.isError()) {
-            failed = true;
             errorHandler.reportError(resultContainer.errorType(), resultContainer.optionalLine(), resultContainer.optionalColumn(), resultContainer.word());
         }
-        return new ResultContainer(failed, true, null, null, null, "");
     }
 
+    /**
+     * Function to find the index of the first occurrence of a specified separator token in a list of tokens.
+     * This function iterates through the provided list of tokens and returns the index of the first token that matches
+     * the specified separator type. If the separator is not found, it returns the size of the token list.
+     *
+     * @param tokenList A list of tokens to be searched.
+     * @param separator The token type to be identified as the separator.
+     * @return The index of the first token in the list that matches the separator type, or the size of the list if the separator is not found.
+     */
     private int getIndexOfFirstSeparator(List<Token> tokenList, TokenType separator) {
         int indexLastTokenInCondition = tokenList.size();
         for (int i = 0; i < tokenList.size(); i++) {
@@ -811,7 +827,15 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         return indexLastTokenInCondition;
     }
 
-    private List<VariableSymbol<?>> getFunctionParameters(List<Token> tokens) {
+    /**
+     * Function to extract function declaration parameters from a list of tokens.
+     * This function parses the tokens within parentheses to identify and create variable symbols representing the parameters
+     * of a function. It assumes that the tokens follow a specific format where each parameter is declared with its type followed by its name.
+     *
+     * @param tokens A list of tokens representing the function declaration.
+     * @return A list of VariableSymbol objects representing the parameters of the function.
+     */
+    private List<VariableSymbol<?>> getFunctionDeclarationParameters(List<Token> tokens) {
         List<VariableSymbol<?>> parameters = new ArrayList<>();
         boolean startParams = false;
 
@@ -830,28 +854,77 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 default:
                     if (startParams) {
                         TokenType tt = token.getType();
-                        if (token.getType().toString().equals("VARIABLE")) {
+                        if (token.getType() == ValueSymbol.VARIABLE) {
                             String name = token.getLexeme();
                             long lineDeclaration = token.getLine();
                             DataType dt = (DataType) tokens.get(i - 1).getType();
 
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
                         }
-
-                        System.out.println(tt.toString());
                     }
             }
         }
         return parameters;
     }
 
-    private boolean checkIfFunctionExists(Token token) {
-        Symbol<?> symbol = symbolTable.findSymbolGlobally(token.getLexeme());
-        return (symbol != null && !symbol.isVariable());
+    /**
+     * Function to extract parameters from a function call represented by a list of tokens.
+     * This function parses the tokens within parentheses to identify variables passed as parameters
+     * in a function call. It checks if each variable exists and retrieves its data type, reporting errors
+     * if any variables are not found.
+     *
+     * @param tokens A list of tokens representing the function call.
+     * @return A list of VariableSymbol objects representing the parameters of the function call.
+     */
+    private List<VariableSymbol<?>> getFunctionCallParameters(List<Token> tokens) {
+        List<VariableSymbol<?>> parameters = new ArrayList<>();
+        boolean startParams = false;
+
+        for (Token token : tokens) {
+            if (Objects.isNull(token)) continue;
+            switch (token.getLexeme()) {
+                case "(":
+                    startParams = true;
+                    break;
+                case ")":
+                    startParams = false;
+                    break;
+                case ",":
+                    break;
+                default:
+                    if (startParams) {
+                        TokenType tt = token.getType();
+                        if (token.getType() == ValueSymbol.VARIABLE) {
+                            String name = token.getLexeme();
+                            long lineDeclaration = token.getLine();
+                            ResultContainer resultContainer = checkVariableExists(token);
+                            DataType dt = null;
+                            if (resultContainer.isError()) {
+                                errorHandler.reportError(resultContainer.errorType(), resultContainer.optionalLine(), resultContainer.optionalColumn(), resultContainer.word());
+                            } else {
+                                dt = getSymbolByLexeme(name).getDataType();
+                            }
+                            parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
+                        }
+                    }
+            }
+        }
+        return parameters;
     }
 
     /**
-     * Logs the error in the error handler if the result container is an error and it contains a non-empty message.
+     * Checks if a function has already been declared in the symbol table.
+     *
+     * @param token the token of the function to check.
+     * @return true if the function exists, false otherwise.
+     */
+    private boolean checkIfFunctionExists(Token token) {
+        Symbol<?> symbol = symbolTable.findSymbolGlobally(token.getLexeme());
+        return (symbol != null && symbol.isFunction());
+    }
+
+    /**
+     * Logs the error in the error handler if the result container is an error, and it contains a non-empty message.
      *
      * @param resultContainer the result container to check.
      */
@@ -861,12 +934,18 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         }
     }
 
-    private boolean anyContainerContainsError(List<ResultContainer> resultContainers) {
+    /**
+     * Checks if a list of result containers contain any errors.
+     *
+     * @param resultContainers the list of result containers to check.
+     * @return true if there are no errors in the list of result containers, false otherwise.
+     */
+    private boolean resultsContainNoErrors(List<ResultContainer> resultContainers) {
         for (ResultContainer resultContainer : resultContainers) {
             if (resultContainer.isError()) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 }
