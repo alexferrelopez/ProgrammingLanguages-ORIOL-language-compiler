@@ -9,8 +9,8 @@ import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
-import javax.xml.crypto.Data;
 import java.util.Objects;
+
 
 public class AssignmentOperations extends MIPSOperations {
 
@@ -26,7 +26,8 @@ public class AssignmentOperations extends MIPSOperations {
 
         if (destinationType == DataType.INTEGER) {
             registerAllocator = registerAllocatorInteger;
-        } else {
+        }
+        else {
             registerAllocator = registerAllocatorFloat;
         }
 
@@ -39,17 +40,15 @@ public class AssignmentOperations extends MIPSOperations {
             if (variableRegister.getNotNullRegister().startsWith("$t")) {
                 text += LINE_INDENTATION +
                         ("mtc1 " + variableRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + LINE_SEPARATOR;
-            } else {
+            }
+            else {
                 text += LINE_INDENTATION +
                         ("mov.s " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
             }
-        } else {
+        }
+        else {
             text += LINE_INDENTATION +
                     ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
-        }
-
-        if (registerValue.isTemporal()) {
-            registerAllocator.freeRegister(registerValue.getValue());
         }
 
         return text;
@@ -57,9 +56,10 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String literalAssignment(Register destination, Operand literal, DataType dataType) {
         if (dataType == DataType.INTEGER) {
-            return LINE_INDENTATION +
+            return  LINE_INDENTATION +
                     ("li " + destination.getNotNullRegister() + ", " + literal.getValue()) + LINE_SEPARATOR;
-        } else {
+        }
+        else {
             String floatNumber = floatToHex(Float.parseFloat(literal.getValue()));
             Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
             Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
@@ -78,16 +78,55 @@ public class AssignmentOperations extends MIPSOperations {
         }
     }
 
+    public String assignValueToRegister(String operand1, String destination, DataType destinationType, boolean freeTemporalsUsed) {
+        StringBuilder text = new StringBuilder();
+        OperandContainer operandContainer = new OperandContainer();
+        loadOperands(operandContainer, destination, operand1, null, "=", !freeTemporalsUsed);
+        RegisterAllocator registerAllocator;
 
-    public String assignValue(String operand1, String destination) {
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName);
+        // Load the destination register into memory (in case it is not already).
+        if (destinationType == DataType.INTEGER) {
+            registerAllocator = registerAllocatorInteger;
+        }
+        else {
+            registerAllocator = registerAllocatorFloat;
+        }
+
+        Register destionationRegister = registerAllocator.allocateRegister(operandContainer.getDestination());
+        text.append(saveVariableIntoMemory(destionationRegister, operandContainer.getDestination(), destinationType));
+
+        // Check if it's a register to register assignment (a = b) or a direct assignment (a = 2).
+        // REGISTER ASSIGNMENT
+        if (operandContainer.getOperand1().isRegister()) {
+            text.append(registerToRegisterAssignment(destionationRegister, operandContainer.getOperand1(), destinationType));
+            if (freeTemporalsUsed) {
+                if (operandContainer.getOperand1().isTemporal()) {
+                    registerAllocator.freeRegister(operandContainer.getOperand1().getValue());
+                }
+            }
+        } else {
+            // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
+            return switch (destinationType) {
+                case INTEGER, BOOLEAN -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
+                case FLOAT -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
+                default -> "";
+            };
+        }
+
+        // Ask for registers and assign the new values.
+
+        return text.toString();
+    }
+
+    public String assignmentOperation(String operand1, String destination) {
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName.peek());
         DataType destinationType = variable.getDataType(); // We have the datatype of the variable that is being assigned.
         StringBuilder text = new StringBuilder();
 
         // Do all the previous operations.
         for (OperandContainer operation : this.pendingOperations) {
             switch (destinationType) {
-                case INTEGER -> {
+                case INTEGER, BOOLEAN -> {
                     text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
                 }
                 case FLOAT -> {
@@ -99,38 +138,7 @@ public class AssignmentOperations extends MIPSOperations {
         // Clear all the operations.
         this.pendingOperations.clear();
 
-        OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, null, "=");
-        RegisterAllocator registerAllocator;
-
-        // Load the destination register into memory (in case it is not already).
-        if (destinationType == DataType.INTEGER) {
-            registerAllocator = registerAllocatorInteger;
-        } else {
-            registerAllocator = registerAllocatorFloat;
-        }
-
-        Register destionationRegister = registerAllocator.allocateRegister(operandContainer.getDestination());
-        text.append(saveVariableIntoMemory(destionationRegister, operandContainer.getDestination(), destinationType));
-
-        // Check if it's a register to register assignment (a = b) or a direct assignment (a = 2).
-        // REGISTER ASSIGNMENT
-        if (operandContainer.getOperand1().isRegister()) {
-            text.append(registerToRegisterAssignment(destionationRegister, operandContainer.getOperand1(), destinationType));
-        } else {
-            // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
-            return switch (destinationType) {
-                case INTEGER ->
-                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
-                case FLOAT ->
-                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
-                default -> null;
-            };
-        }
-
-        // Ask for registers and assign the new values.
-
-        return text.toString();
+        return text.append(assignValueToRegister(operand1, destination, destinationType, true)).toString();
     }
 
     private String floatOperation(Operand destination, Operand operand1, Operand operand2, String operator) {
@@ -177,7 +185,7 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String addPendingOperation(String operand1, String operand2, String destination, String operator) {
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        loadOperands(operandContainer, destination, operand1, operand2, operator, false);
         this.pendingOperations.add(operandContainer);
 
         return null;
@@ -185,7 +193,7 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String addPendingLogicalOperation(String operand1, String operand2, String destination, String operator) {
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        loadOperands(operandContainer, destination, operand1, operand2, operator, false);
         this.pendingLogicalOperations.add(operandContainer);
 
         return null;
@@ -259,7 +267,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         DataType dataType;
 
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName);
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName.peek());
         if (variable == null) {
             dataType = this.pendingLogicalOperations.get(0).getOperand1().getType();
         } else {
@@ -269,7 +277,7 @@ public class AssignmentOperations extends MIPSOperations {
         for (OperandContainer operation : this.pendingLogicalOperations) {
             if (!Objects.equals(operation.getOperator(), "IfZ")) {
                 switch (dataType) {
-                    case INTEGER -> {
+                    case INTEGER, BOOLEAN -> {
                         text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
                     }
                     case FLOAT -> {
@@ -280,7 +288,7 @@ public class AssignmentOperations extends MIPSOperations {
             } else {
                 text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), null, operation.getOperator().toLowerCase(), label);
             }
-            
+
         }
 
         this.pendingLogicalOperations.clear();

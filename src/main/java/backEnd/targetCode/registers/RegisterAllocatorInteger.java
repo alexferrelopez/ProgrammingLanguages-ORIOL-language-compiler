@@ -9,10 +9,12 @@ import static backEnd.targetCode.registers.OptionRegisterEnum.*;
 public class RegisterAllocatorInteger implements RegisterAllocator {
 	private static final int NUM_TEMP_REGISTERS = 10;
 	private static final int NUM_SAVE_REGISTERS = 8;
-	public static final String REGISTER_PREFIX_TEMP = "$t";
-	public static final String REGISTER_PREFIX_SAVE = "$s";
+	public static final String REGISTER_PREFIX = "$";
+	public static final String REGISTER_PREFIX_TEMP = REGISTER_PREFIX + "t";
+	public static final String REGISTER_PREFIX_SAVE = REGISTER_PREFIX + "s";
 	private final Stack<String> availableRegisters;
 	private final Map<String, String> variableToRegister; // <variableOffset, register>
+	private final Map<String, String> variableToCustomRegister; // <variableOffset, register>
 
 	public RegisterAllocatorInteger() {
 		availableRegisters = new Stack<>();
@@ -30,12 +32,29 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
 		}
 
 		variableToRegister = new LinkedHashMap<>();
+		variableToCustomRegister = new LinkedHashMap<>();
+	}
+
+	public Register customAllocateRegister(String variable, String destination) {
+		Register custom = new Register (AVAILABLE_REGISTER, destination, null);
+		variableToRegister.put(variable, destination);
+		return custom;
 	}
 
 	// First position is the available register for the variable.
 	// Second position is the variable that was removed from the register (in case it was needed).
 	public Register allocateRegister(Operand variableOperand) {
 		String variable = variableOperand.getValue();
+
+		// Accept any register passed (starting with $) that is not $t.
+		if (variable.startsWith(REGISTER_PREFIX) && !variable.startsWith(REGISTER_PREFIX_TEMP)) {
+			return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variable);
+		}
+
+		// Check first in the custom registers.
+		if (variableToCustomRegister.containsKey(variable)) {
+			return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variable);
+		}
 
 		// Check if the variable already has a register assigned.
 		if (variableToRegister.containsKey(variable)) {
@@ -71,6 +90,10 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
 		}
 	}
 
+	public Map<String, String> getVariableToRegister() {
+		return variableToRegister;
+	}
+
 	public Register getRegister(String variable) {
 		String variableRegister = variableToRegister.get(variable);
 		variableToRegister.remove(variable);
@@ -84,5 +107,10 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
 			availableRegisters.add(variableToRegister.remove(variable));
 			variableToRegister.remove(variable);
 		}
+	}
+
+	@Override
+	public Map<String, String> getVariableToCustomRegister() {
+		return this.variableToCustomRegister;
 	}
 }

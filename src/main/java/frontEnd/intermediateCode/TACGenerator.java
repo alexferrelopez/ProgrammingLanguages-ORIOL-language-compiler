@@ -47,8 +47,10 @@ public class TACGenerator {
             tacModule.addUnaryInstruction(null, "EndFunc", null);
         }
 
-        tacModule.addFunctionLabel("ranch");
-        tacModule.addUnaryInstruction(null, "BeginFunc", "0");
+        String mainFunction = "ranch";
+        tacModule.addFunctionLabel(mainFunction);
+        int bytesNeeded = symbolTable.calculateFunctionSize(mainFunction);
+        tacModule.addUnaryInstruction(null, "BeginFunc", String.valueOf(bytesNeeded));
         // Generate TAC code for main program
         generateCode(program);
         tacModule.addUnaryInstruction(null, "EndFunc", null);
@@ -265,7 +267,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
 
-        Expression expr = new Expression(firstVar, "GT", lastVar);
+        Expression expr = new Expression(firstVar, "LT", lastVar);
 
         // Create a label
         String labelStart = tacModule.createLabel();

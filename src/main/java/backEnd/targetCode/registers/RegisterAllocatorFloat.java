@@ -13,6 +13,7 @@ public class RegisterAllocatorFloat implements RegisterAllocator {
 	public static final String REGISTER_PREFIX_FLOAT = "$f";
 	private final Stack<String> availableRegisters;
 	private final Map<String, String> variableToRegister; // <variableOffset, register>
+	private final Map<String, String> variableToCustomRegister; // <variableOffset, register>
 
 	public RegisterAllocatorFloat() {
 		availableRegisters = new Stack<>();
@@ -25,12 +26,29 @@ public class RegisterAllocatorFloat implements RegisterAllocator {
 		}
 
 		variableToRegister = new LinkedHashMap<>();
+		variableToCustomRegister = new LinkedHashMap<>();
+	}
+
+	public Register customAllocateRegister(String variable, String destination) {
+		Register custom = new Register (AVAILABLE_REGISTER, destination, null);
+		variableToCustomRegister.put(variable, destination);
+		return custom;
+	}
+
+	@Override
+	public Map<String, String> getVariableToCustomRegister() {
+		return this.variableToCustomRegister;
 	}
 
 	// First position is the available register for the variable.
 	// Second position is the variable that was removed from the register (in case it was needed).
 	public Register allocateRegister(Operand variableOperand) {
 		String variable = variableOperand.getValue();
+
+		// Check first in the custom registers.
+		if (variableToCustomRegister.containsKey(variable)) {
+			return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variable);
+		}
 
 		// Check if the variable already has a register assigned.
 		if (variableToRegister.containsKey(variable)) {
@@ -79,5 +97,10 @@ public class RegisterAllocatorFloat implements RegisterAllocator {
 			availableRegisters.add(variableToRegister.remove(variable));
 			variableToRegister.remove(variable);
 		}
+	}
+
+	@Override
+	public Map<String, String> getVariableToRegister() {
+		return variableToRegister;
 	}
 }
