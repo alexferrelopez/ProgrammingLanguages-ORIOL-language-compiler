@@ -130,7 +130,7 @@ public class FunctionOperations extends MIPSOperations {
 
 		registerAllocatorInteger.freeRegister("test");
 
-		String text = LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
+		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
 				("lw " + RETURN_VALUE_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("lw " + FRAME_POINTER + ", 0(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION;

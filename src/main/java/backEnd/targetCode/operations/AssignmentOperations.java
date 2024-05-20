@@ -9,6 +9,8 @@ import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
+import java.util.Objects;
+
 
 public class AssignmentOperations extends MIPSOperations {
 
@@ -191,7 +193,7 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String addPendingLogicalOperation(String operand1, String operand2, String destination, String operator) {
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        loadOperands(operandContainer, destination, operand1, operand2, operator, false);
         this.pendingLogicalOperations.add(operandContainer);
 
         return null;
@@ -265,7 +267,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         DataType dataType;
 
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName);
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName.peek());
         if (variable == null) {
             dataType = this.pendingLogicalOperations.get(0).getOperand1().getType();
         } else {

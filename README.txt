@@ -14,3 +14,6 @@ src/test/resources/ExempleFibonacci.farm
 
 A més cal instal·lar les dependències de Maven, per tal de poder executar el programa. El fitxer pom.xml ja conté les dependències necessàries.
 L'IDE d'IntelliJ permet tant instal·lar les dependències com executar fàcilment i és el que hem usat tots els membres de l'equip, recomanem fer-lo servir.
+
+La classe PrettyPrintTree permet mostrar tot l'arbre sintàctic generat per el parser recursiu descendent; a més, el fitxer
+de MIPS generat amb la compilació del codi es troba a "target/farm.asm".
