@@ -109,9 +109,19 @@ public class MIPSOperations {
             if (mainReturn && currentFunctionName.size() > 1) {
                 currentFunction = currentFunctionName.get(currentFunctionName.size() - 2);
             }
-            Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunction);
-            String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
-            operand = new Operand(true, variable.getDataType(), variableRegister, false);
+
+            // Check if it's a function (assign the value to the return register).
+            Symbol<?> function = symbolTable.findSymbolGlobally(operandValue);
+            if (function != null && function.isFunction()) {
+                operand = new Operand(true, function.getDataType(), RETURN_VALUE_REGISTER, false);
+            }
+            else {
+                // It's a variable.
+                Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunction);
+                String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
+                operand = new Operand(true, variable.getDataType(), variableRegister, false);
+            }
+
         }
         // Check if it's a register. It's treated as a temporal (it will be removed from the registers when operated).
         else if (operandValue.startsWith(RegisterAllocatorInteger.REGISTER_PREFIX_TEMP)) {

@@ -118,15 +118,6 @@ public class FunctionOperations extends MIPSOperations {
 		}
 
 		return text + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
-
-//		if (returnSymbol != null && returnSymbol.isVariable()) {
-//			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnSymbol.getOffset() + "(" + FRAME_POINTER + ")");
-//		}
-//		else {
-//			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnValue);
-//		}
-//
-//		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
 
 	public String endFunction() {
