@@ -77,7 +77,7 @@ public class AssignmentOperations extends MIPSOperations {
     public String assignValueToRegister(String operand1, String destination, DataType destinationType, boolean freeTemporalsUsed) {
         StringBuilder text = new StringBuilder();
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, null, "=");
+        loadOperands(operandContainer, destination, operand1, null, "=", !freeTemporalsUsed);
         RegisterAllocator registerAllocator;
 
         // Load the destination register into memory (in case it is not already).
@@ -115,7 +115,7 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     public String assignmentOperation(String operand1, String destination) {
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName);
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName.peek());
         DataType destinationType = variable.getDataType(); // We have the datatype of the variable that is being assigned.
         StringBuilder text = new StringBuilder();
 
@@ -177,7 +177,7 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String addPendingOperation(String operand1, String operand2, String destination, String operator) {
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        loadOperands(operandContainer, destination, operand1, operand2, operator, false);
         this.pendingOperations.add(operandContainer);
 
         return null;

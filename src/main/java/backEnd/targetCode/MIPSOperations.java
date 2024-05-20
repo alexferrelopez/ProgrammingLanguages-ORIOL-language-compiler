@@ -1,6 +1,5 @@
 package backEnd.targetCode;
 
-import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
 import backEnd.targetCode.registers.RegisterAllocatorInteger;
@@ -13,6 +12,7 @@ import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 public class MIPSOperations {
     protected static final String LINE_SEPARATOR = System.lineSeparator();
@@ -21,13 +21,14 @@ public class MIPSOperations {
 
     protected static final String FRAME_POINTER = "$fp";
     protected static final String STACK_POINTER = "$sp";
-    protected static final String RETURN_REGISTER = "$ra";
+    protected static final String RETURN_ADDRESS_REGISTER = "$ra";
+    protected static final String RETURN_VALUE_REGISTER = "$v0";
     protected static final String END_PROGRAM_INSTRUCTION = "syscall";
     protected static final String FUNCTION_RESULT_REGISTER = "$v0";
 
     protected final SymbolTableInterface symbolTable;
     protected final static String MAIN_FUNCTION = "ranch";
-    protected static String currentFunctionName;
+    protected static Stack<String> currentFunctionName = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
     protected List<OperandContainer> pendingOperations = new LinkedList<>();
@@ -92,7 +93,7 @@ public class MIPSOperations {
         }
     }
 
-    protected Operand loadSingleOperand(String operandValue) {
+    protected Operand loadSingleOperand(String operandValue, boolean mainReturn) {
         if (operandValue == null) {
             return null;
         }
@@ -102,7 +103,13 @@ public class MIPSOperations {
 
         // Check if it's a variable (check its type in the symbols table).
         if (operandValueSymbol == ValueSymbol.VARIABLE) {
-            Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunctionName);
+            String currentFunction = currentFunctionName.peek();
+
+            // Get the previous function name if trying to return value from main.
+            if (mainReturn && currentFunctionName.size() > 1) {
+                currentFunction = currentFunctionName.get(currentFunctionName.size() - 2);
+            }
+            Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunction);
             String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
             operand = new Operand(true, variable.getDataType(), variableRegister, false);
         }
@@ -119,11 +126,11 @@ public class MIPSOperations {
         return operand;
     }
 
-    protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str, String operatorStr) {
-        operandContainer.setDestination(loadSingleOperand(destinationStr));
-        operandContainer.setOperand1(loadSingleOperand(operand1Str));
+    protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str, String operatorStr, boolean returnValue) {
+        operandContainer.setDestination(loadSingleOperand(destinationStr, returnValue));
+        operandContainer.setOperand1(loadSingleOperand(operand1Str, returnValue));
         if (operand2Str != null) {
-            operandContainer.setOperand2(loadSingleOperand(operand2Str));
+            operandContainer.setOperand2(loadSingleOperand(operand2Str, returnValue));
         }
         operandContainer.setOperator(operatorStr);
     }

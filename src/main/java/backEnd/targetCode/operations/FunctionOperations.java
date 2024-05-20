@@ -27,7 +27,7 @@ public class FunctionOperations extends MIPSOperations {
 	}
 
 	public String funcDeclaration(String functionLabel) {
-		currentFunctionName = functionLabel;
+		currentFunctionName.push(functionLabel);
 
 		String text = writeComment("Start of function " + functionLabel) + LINE_SEPARATOR +
 				(functionLabel + ":") + LINE_SEPARATOR;
@@ -42,7 +42,7 @@ public class FunctionOperations extends MIPSOperations {
 		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + RETURN_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + RETURN_VALUE_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("subi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		return text + LINE_SEPARATOR;
@@ -96,8 +96,8 @@ public class FunctionOperations extends MIPSOperations {
 
 		// Set the offset for each variable in the function (in all the nested scopes).
 		long currentOffset = 0;
-		currentOffset = assignParametersOffset(currentOffset, currentFunctionName);
-		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName);
+		currentOffset = assignParametersOffset(currentOffset, currentFunctionName.peek());
+		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName.peek());
 		assignOffset(function, currentOffset);
 
 		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
@@ -109,15 +109,24 @@ public class FunctionOperations extends MIPSOperations {
 		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// Check if the return value is a symbol in the scope.
-		Symbol<?> returnSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName);
-		if (returnSymbol != null && returnSymbol.isVariable()) {
-			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnSymbol.getOffset() + "(" + FRAME_POINTER + ")");
-		}
-		else {
-			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnValue);
+		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
+		Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
+
+		boolean isLiteral = true;
+		if (variableSymbol != null && variableSymbol.isVariable()) {
+			isLiteral = false;
 		}
 
-		return text + LINE_SEPARATOR + LINE_SEPARATOR;
+		return text + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
+
+//		if (returnSymbol != null && returnSymbol.isVariable()) {
+//			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnSymbol.getOffset() + "(" + FRAME_POINTER + ")");
+//		}
+//		else {
+//			text += ("li " + FUNCTION_RESULT_REGISTER + ", " + returnValue);
+//		}
+//
+//		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
 
 	public String endFunction() {
@@ -132,18 +141,21 @@ public class FunctionOperations extends MIPSOperations {
 
 		String text = LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + RETURN_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("lw " + RETURN_VALUE_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("lw " + FRAME_POINTER + ", 0(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// End the program if it's the main or add the return value if it's another function.
-		if (currentFunctionName.equals(MAIN_FUNCTION)) {
+		if (currentFunctionName.peek().equals(MAIN_FUNCTION)) {
 			text += writeComment("End of the main") + LINE_SEPARATOR + LINE_INDENTATION +
 					("li " + FUNCTION_RESULT_REGISTER + ", 10") + LINE_SEPARATOR + LINE_INDENTATION +
 					(END_PROGRAM_INSTRUCTION);
 		}
 		else {
-			text += ("jr " + RETURN_REGISTER);
+			text += ("jr " + RETURN_ADDRESS_REGISTER);
 		}
+
+		// Leave the current function.
+		currentFunctionName.pop();
 
 		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
@@ -158,7 +170,7 @@ public class FunctionOperations extends MIPSOperations {
 
 		// Save the parameter to see its type when the "call" instruction is received.
 		OperandContainer pushFunctionParameter = new OperandContainer();
-		loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator);
+		loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator, false);
 		Operand parameter = new Operand(true, null, parameterValue, false);
 		pushFunctionParameter.setOperand1(parameter);
 		this.pendingOperations.add(pushFunctionParameter);
@@ -169,6 +181,7 @@ public class FunctionOperations extends MIPSOperations {
 
 	public String callFunction(String functionName) {
 		StringBuilder text = new StringBuilder();
+		currentFunctionName.push(functionName);	// Update the new current function.
 
 		int numParameter = 0;
 		// Do all the previous operations.
@@ -178,7 +191,7 @@ public class FunctionOperations extends MIPSOperations {
 			if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
 
 				// Get the current parameter to see the expected type.
-				Symbol<?> function = symbolTable.findSymbolGlobally(functionName);
+				Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName.peek());
 				VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(numParameter);
 
 				// Assign the value to an arguments' register.
@@ -187,7 +200,7 @@ public class FunctionOperations extends MIPSOperations {
 			}
 		}
 
-		currentFunctionName = functionName;	// Update the new current function.
+		currentFunctionName.pop();	// Leave the new current function.
 		this.pendingOperations.clear();
 
 		return text.append(LINE_INDENTATION).append("jal ").append(functionName).append(LINE_SEPARATOR).toString();
