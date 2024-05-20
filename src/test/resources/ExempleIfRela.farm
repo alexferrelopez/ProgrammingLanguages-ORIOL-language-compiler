@@ -1,20 +1,10 @@
-miau : f1 ( miau tio, miau tia ) {
-    poop 0 ;
-}
-
-miau : f2 ( miau tio, miau tia ) {
-    poop tio ;
-}
-
 miau : ranch ( ) {
-    status a is dead ;
+    miau a is 2 ;
 
-    miau b is 5 ;
+    oink prova is 1.0 ;
+    oink c is 1.1 sum prova;
 
-    b is 1;
+    c is 2.0 div 1.0 ;
 
-    miau c is b;
-
-    miau abcd is 0 ;
     poop 0;
 }

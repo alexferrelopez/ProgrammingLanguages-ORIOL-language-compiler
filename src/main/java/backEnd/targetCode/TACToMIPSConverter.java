@@ -5,6 +5,7 @@ import backEnd.exceptions.targetCode.FailedFileCreationException;
 import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.operations.FunctionOperations;
 import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 
@@ -23,9 +24,9 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final FunctionOperations functionOperations;
 	private final AssignmentOperations assignmentOperations;
 
-	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocator) {
-		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocator);
-		functionOperations = new FunctionOperations(symbolTable, registerAllocator, assignmentOperations);
+	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, assignmentOperations);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
@@ -96,11 +97,8 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 				// If zero
 
 			// *** Arithmetic Operations ***
+			case "SUM", "SUB", "MUL", "DIV" -> showOperation(instruction, assignmentOperations.addPendingOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
 
-			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "SUB" -> showOperation(instruction, assignmentOperations.subtractAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "MUL" -> showOperation(instruction, assignmentOperations.multiplicationAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "DIV" -> showOperation(instruction, assignmentOperations.divisionAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			default -> null;
 		};
 	}
@@ -108,6 +106,6 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private String showOperation(TACInstruction instruction, String codeMIPS) {
 		return 	LINE_SEPARATOR + LINE_INDENTATION +
 				assignmentOperations.writeComment("TAC: " + instruction.toString()) + LINE_SEPARATOR +
-				codeMIPS;
+				((codeMIPS == null) ? (LINE_INDENTATION + "# Store the temporary variable into a pending list"): codeMIPS) + LINE_SEPARATOR;
 	}
 }
