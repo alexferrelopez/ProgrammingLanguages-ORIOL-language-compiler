@@ -1,0 +1,36 @@
+package backEnd.targetCode.registers;
+
+public class Register {
+    private final OptionRegisterEnum registerEnum;
+    private final String registerName;
+    private final String variableName;
+
+    public Register(OptionRegisterEnum registerEnum, String registerName, String variableName) {
+        this.registerEnum = registerEnum;
+        this.registerName = registerName;
+        this.variableName = variableName;
+    }
+
+    public OptionRegisterEnum getRegisterEnum() {
+        return registerEnum;
+    }
+
+    public boolean sameEnum(OptionRegisterEnum registerEnum) {
+        return this.registerEnum == registerEnum;
+    }
+
+    public String getRegisterName() {
+        return registerName;
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public String getNotNullRegister() {
+        if (this.registerName != null) {
+            return this.registerName;
+        }
+        return this.variableName;
+    }
+}

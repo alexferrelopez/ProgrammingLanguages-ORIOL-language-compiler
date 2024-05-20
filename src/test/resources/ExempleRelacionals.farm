@@ -1,0 +1,26 @@
+miau : ranch ( ) {
+    status bool is a bg b ;
+    status bool is a bg 2 ;
+    status bool is 2 bg a ;
+    status bool is 2 bg 2 ;
+    status bool2 is a bigger b ;
+    status bool3 is a sm b ;
+    status bool4 is a smaller b ;
+    status bool4 is a smaller 2 ;
+    status bool4 is 2 smaller b ;
+    status bool4 is 2 smaller 2 ;
+    status bool5 is a eq b ;
+    status bool6 is a equ b ;
+    status bool6 is 4 equ 4 ;
+    status bool6 is 4 equ b ;
+    status bool6 is b equ 4 ;
+    status bool6 is b equ b ;
+    status bool7 is a equals b ;
+    status bool8 is a diff b ;
+    status bool8 is 4 diff b ;
+    status bool8 is 4 diff 4 ;
+    status bool8 is a diff 4 ;
+    status bool9 is a different b ;
+
+    poop 0 ;
+}

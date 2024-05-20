@@ -1,0 +1,5 @@
+<E> ::= <T> <E'>
+<E'> ::= SUM <T> <E'> | ε
+<T> ::= <F> <T'>
+<T'> ::= MUL <F> <T'> | ε
+<F> ::= VARIABLE | PO<E>PT

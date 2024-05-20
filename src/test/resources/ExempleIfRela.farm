@@ -1,0 +1,8 @@
+miau : ranch ( ) {
+    miau a is 1 ;
+
+    breed ( a sm 10 ) {
+        a is a sum 1 ;
+    }
+    poop 0;
+}

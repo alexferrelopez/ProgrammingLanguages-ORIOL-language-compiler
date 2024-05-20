@@ -1,0 +1,17 @@
+miau: ranch() {
+    a is alive;
+    a2 is dead;
+    a3 is trueVar;
+    a4 is not alive;
+    a5 is not dead;
+    a6 is not trueVar;
+    a7 is alive or dead;
+    a8 is alive and dead;
+    a9 is not (alive or dead);
+    a10 is not (alive and dead);
+    a11 is trueVar or falseVar;
+    a12 is trueVar and falseVar;
+    a13 is not (trueVar or falseVar);
+    a14 is not (trueVar and falseVar);
+    poop 0;
+}
