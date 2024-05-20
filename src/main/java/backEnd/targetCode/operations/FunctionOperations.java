@@ -1,8 +1,9 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
+import backEnd.targetCode.Operand;
+import backEnd.targetCode.OperandContainer;
 import backEnd.targetCode.registers.RegisterAllocator;
-import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
@@ -18,6 +19,7 @@ public class FunctionOperations extends MIPSOperations {
 	private final static int MAX_FUNCTION_PARAMETERS = 4;	// Only $a0 to $3 parameters are available.
 	private final static String PARAMETERS_REGISTER_PREFIX = "$a";	// Only $a0 to $3 parameters are available.
 	private int currentParameterNumber = 0;
+	private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
 
 	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations) {
 		super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
@@ -32,7 +34,7 @@ public class FunctionOperations extends MIPSOperations {
 		/*
 			sw $fp, 0($sp)      # Save previous (called function) frame pointer
 			move $fp, $sp       # Set frame pointer ($fp = $sp)
-			sw $ra, -4($sp)     # Save return address
+			sw $ra, -4($fp)     # Save return address
 			subi $sp, $sp, 8   	# Allocate stack frame
 		 */
 
@@ -40,7 +42,7 @@ public class FunctionOperations extends MIPSOperations {
 		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + RETURN_REGISTER + ", -4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + RETURN_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("subi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		return text + LINE_SEPARATOR;
@@ -146,19 +148,48 @@ public class FunctionOperations extends MIPSOperations {
 		return text + LINE_SEPARATOR + LINE_SEPARATOR;
 	}
 
-	public String assignFunctionParameter(String parameterValue) {
-		// Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName);
-		// VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(currentParameterNumber);
-		String functionRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
+	public String assignFunctionParameter(String parameterValue, String callOperator) {
+		String destinationRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
 		currentParameterNumber++;
+
+//		if (currentParameterNumber > MAX_FUNCTION_PARAMETERS) {
+//
+//		}
+
+		// Save the parameter to see its type when the "call" instruction is received.
+		OperandContainer pushFunctionParameter = new OperandContainer();
+		loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator);
+		Operand parameter = new Operand(true, null, parameterValue, false);
+		pushFunctionParameter.setOperand1(parameter);
+		this.pendingOperations.add(pushFunctionParameter);
 
 		// The assignment internally checks if it's a variable or a normal value.
 		return null;
 	}
 
 	public String callFunction(String functionName) {
-		currentFunctionName = functionName;
-		return 	LINE_INDENTATION +
-				"jal " + functionName + LINE_SEPARATOR;
+		StringBuilder text = new StringBuilder();
+
+		int numParameter = 0;
+		// Do all the previous operations.
+		for (OperandContainer operation : this.pendingOperations) {
+
+			// Make an assignment for the operators to be pushed into the function called.
+			if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
+
+				// Get the current parameter to see the expected type.
+				Symbol<?> function = symbolTable.findSymbolGlobally(functionName);
+				VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(numParameter);
+
+				// Assign the value to an arguments' register.
+				text.append(assignmentOperations.assignValueToRegister(operation.getOperand1().getValue(), operation.getDestination().getValue(), parameter.getDataType(), false));
+				numParameter++;
+			}
+		}
+
+		currentFunctionName = functionName;	// Update the new current function.
+		this.pendingOperations.clear();
+
+		return text.append(LINE_INDENTATION).append("jal ").append(functionName).append(LINE_SEPARATOR).toString();
 	}
 }
