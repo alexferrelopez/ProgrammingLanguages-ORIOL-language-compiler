@@ -171,6 +171,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             terminal.setToken(lookahead);
             if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
                 Tree<AbstractSymbol> parent = tree.getParent();
+                if(Objects.isNull(parent))return false;
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.peek();
                 if (symbolToSend.getName().equals("ELSE")) {
@@ -183,6 +184,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                     ) {
                         parent = parent.getParent();
+                        if(Objects.isNull(parent))return false;
                         nodeName = (parent.getNode()).getName();
                     }
                     if (terminal.getName().equals("CT")) {
@@ -254,8 +256,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             symbol = stack.pop();
             startTokensStack.pop();
 
-        } catch (NullPointerException | EmptyStackException e) {
-            e.printStackTrace();
+        } catch (NullPointerException | EmptyStackException ignored) {
         }
         if (!symbol.isTerminal()) {
             outputMap = parsingTable.getProduction((NonTerminalSymbol) symbol, lookahead); //Retrieve the predicted production
