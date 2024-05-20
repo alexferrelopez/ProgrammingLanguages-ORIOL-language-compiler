@@ -1,6 +1,10 @@
 package backEnd.targetCode;
 
+import backEnd.targetCode.operations.Register;
+
 import java.util.*;
+
+import static backEnd.targetCode.operations.OptionRegisterEnum.*;
 
 public class RegisterAllocator {
 	private static final int NUM_TEMP_REGISTERS = 10;
@@ -30,7 +34,7 @@ public class RegisterAllocator {
 
 	// First position is the available register for the variable.
 	// Second position is the variable that was removed from the register (in case it was needed).
-	public String[] allocateRegister(Operand variableOperand) {
+	public Register allocateRegister(Operand variableOperand) {
 		String variable = variableOperand.getValue();
 
 		// Check if the variable already has a register assigned.
@@ -42,14 +46,14 @@ public class RegisterAllocator {
 			variableToRegister.remove(variable);
 			variableToRegister.put(variable, variableRegister);	// Set the register to be the most recent one.
 
-			return new String[] { variableRegister, null };
+			return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variableRegister);
 		}
 
 		// Find an unused register (if there is one at least).
 		if (!availableRegisters.isEmpty()) {
 			String reg = availableRegisters.pop();
 			variableToRegister.put(variable, reg);
-			return new String[] { reg };
+			return new Register (AVAILABLE_REGISTER, reg, null);
 		}
 		else {
 			// There are no available registers.
@@ -67,7 +71,7 @@ public class RegisterAllocator {
 			variableToRegister.put(variable, oldestRegister);
 
 			// Check if it's a variable (not a temporal).
-			return new String[] { oldestRegister, oldestVariable };
+			return new Register (SWAP_REGISTERS, oldestRegister, oldestVariable);
 		}
 	}
 
