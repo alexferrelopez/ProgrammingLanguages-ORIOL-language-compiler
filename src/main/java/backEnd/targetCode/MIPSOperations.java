@@ -1,6 +1,7 @@
 package backEnd.targetCode;
 
 import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -25,12 +26,14 @@ public class MIPSOperations {
 	protected final SymbolTableInterface symbolTable;
 	protected final static String MAIN_FUNCTION = "ranch";
 	protected static String currentFunctionName;
-	protected static RegisterAllocator registerAllocator;
+	protected static RegisterAllocator registerAllocatorInteger;
+	protected static RegisterAllocator registerAllocatorFloat;
 	protected List<OperandContainer> pendingOperations = new LinkedList<>();
 
-	public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
+	public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
 		this.symbolTable = symbolTableInterface;
-		MIPSOperations.registerAllocator = registerAllocator;
+		MIPSOperations.registerAllocatorInteger = registerAllocatorInteger;
+		MIPSOperations.registerAllocatorFloat = registerAllocatorFloat;
 	}
 
 	protected String writeComment(String comment) {
@@ -68,7 +71,7 @@ public class MIPSOperations {
 			operand = new Operand(true, variable.getDataType(), variableRegister, false);
 		}
 		// Check if it's a register. It's treated as a temporal (it will be removed from the registers when operated).
-		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX_TEMP)) {
+		else if (operandValue.startsWith(RegisterAllocatorInteger.REGISTER_PREFIX_TEMP)) {
 			operand = new Operand(true, null, operandValue, true);
 		}
 		// Any other type of data (integer, float, boolean...). It's treated as a temporal (it will be removed from the registers when operated).

@@ -2,31 +2,26 @@ package backEnd.targetCode.registers;
 
 import backEnd.targetCode.Operand;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Stack;
 
 import static backEnd.targetCode.registers.OptionRegisterEnum.*;
 
-public class RegisterAllocator {
-	private static final int NUM_TEMP_REGISTERS = 10;
-	private static final int NUM_SAVE_REGISTERS = 8;
-	public static final String REGISTER_PREFIX_TEMP = "$t";
-	public static final String REGISTER_PREFIX_SAVE = "$s";
+public class RegisterAllocatorFloat implements RegisterAllocator {
+	private static final int NUM_TEMP_REGISTERS = 32;
+	public static final String REGISTER_PREFIX_FLOAT = "$f";
 	private final Stack<String> availableRegisters;
 	private final Map<String, String> variableToRegister; // <variableOffset, register>
 
-	public RegisterAllocator() {
+	public RegisterAllocatorFloat() {
 		availableRegisters = new Stack<>();
 
 		// Add the temporary registers to the list.
 
-		// For $s registers
-		for (int i = NUM_SAVE_REGISTERS - 1; i >= 0 ; i--) {
-			availableRegisters.add(REGISTER_PREFIX_SAVE + i);
-		}
-
 		// For $t registers
 		for (int i = NUM_TEMP_REGISTERS - 1; i >= 0 ; i--) {
-			availableRegisters.add(REGISTER_PREFIX_TEMP + i);
+			availableRegisters.add(REGISTER_PREFIX_FLOAT + i);
 		}
 
 		variableToRegister = new LinkedHashMap<>();

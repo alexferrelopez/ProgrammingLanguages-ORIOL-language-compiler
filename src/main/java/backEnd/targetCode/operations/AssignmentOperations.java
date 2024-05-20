@@ -5,26 +5,27 @@ import backEnd.targetCode.Operand;
 import backEnd.targetCode.OperandContainer;
 import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 public class AssignmentOperations extends MIPSOperations {
-    public AssignmentOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
-        super(symbolTableInterface, registerAllocator);
+    public AssignmentOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
     }
 
     // Destination must always be loaded into memory when calling this function.
     public String registerToRegisterAssignment(Register destination, Operand registerValue) {
         // Get the register from the variable that is being assigned.
-        Register variableRegister = registerAllocator.allocateRegister(registerValue);
+        Register variableRegister = registerAllocatorInteger.allocateRegister(registerValue);
         String text = saveVariableIntoMemory(variableRegister, registerValue);
 
         text += LINE_INDENTATION +
                 ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
 
         if (registerValue.isTemporal()) {
-            registerAllocator.freeRegister(registerValue.getValue());
+            registerAllocatorInteger.freeRegister(registerValue.getValue());
         }
 
         return text;
@@ -38,11 +39,11 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String assignValue(String operand1, String destination) {
         Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName);
-        DataType type = variable.getDataType(); // We have the datatype of the variable that is being assigned.
+        DataType destinationType = variable.getDataType(); // We have the datatype of the variable that is being assigned.
         StringBuilder text = new StringBuilder();
 
         // Do all the previous operations.
-        switch (type) {
+        switch (destinationType) {
             case INTEGER -> {
                 for (OperandContainer operation : this.pendingOperations) {
                     text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
@@ -53,11 +54,18 @@ public class AssignmentOperations extends MIPSOperations {
             }
         }
 
-
         OperandContainer operandContainer = new OperandContainer();
         loadOperands(operandContainer, destination, operand1, null, "=");
+        RegisterAllocator registerAllocator;
 
         // Load the destination register into memory (in case it is not already).
+        if (destinationType == DataType.INTEGER) {
+            registerAllocator = registerAllocatorInteger;
+        }
+        else {
+            registerAllocator = registerAllocatorInteger;
+        }
+
         Register destionationRegister = registerAllocator.allocateRegister(operandContainer.getDestination());
         text.append(saveVariableIntoMemory(destionationRegister, operandContainer.getDestination()));
 
@@ -68,7 +76,7 @@ public class AssignmentOperations extends MIPSOperations {
         } else {
             // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
 
-            return switch (operandContainer.getOperandsType()) {
+            return switch (destinationType) {
                 case INTEGER ->
                         text.append(integerLiteralAssignment(destionationRegister, operandContainer.getOperand1())).toString();
                 //case FLOAT -> floatAssignment(destinationVariable);
@@ -121,13 +129,13 @@ public class AssignmentOperations extends MIPSOperations {
         String text;
 
         // Allocate temporary registers.
-        Register regOp1 = registerAllocator.allocateRegister(operand1);
+        Register regOp1 = registerAllocatorInteger.allocateRegister(operand1);
         text = saveVariableIntoMemory(regOp1, operand1);
 
-        Register regOp2 = registerAllocator.allocateRegister(operand2);
+        Register regOp2 = registerAllocatorInteger.allocateRegister(operand2);
         text += saveVariableIntoMemory(regOp2, operand2);
 
-        Register regDest = registerAllocator.allocateRegister(destination);
+        Register regDest = registerAllocatorInteger.allocateRegister(destination);
         text += saveVariableIntoMemory(regDest, destination);
 
         // Make a division or a general operation (sum, subtract or multiplication).
@@ -141,11 +149,11 @@ public class AssignmentOperations extends MIPSOperations {
 
         // Free temporary registers (temporal registers generated by TAC or literals).
         if (operand2.isTemporal()) {
-            registerAllocator.freeRegister(operand2.getValue());
+            registerAllocatorInteger.freeRegister(operand2.getValue());
         }
 
         if (operand1.isTemporal()) {
-            registerAllocator.freeRegister(operand1.getValue());
+            registerAllocatorInteger.freeRegister(operand1.getValue());
         }
 
         return text;

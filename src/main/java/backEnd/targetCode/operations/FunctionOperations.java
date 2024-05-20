@@ -2,6 +2,7 @@ package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
 import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
@@ -18,8 +19,8 @@ public class FunctionOperations extends MIPSOperations {
 	private final static String PARAMETERS_REGISTER_PREFIX = "$a";	// Only $a0 to $3 parameters are available.
 	private int currentParameterNumber = 0;
 
-	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator, AssignmentOperations assignmentOperations) {
-		super(symbolTableInterface, registerAllocator);
+	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations) {
+		super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
 		this.assignmentOperations = assignmentOperations;
 	}
 
@@ -125,7 +126,7 @@ public class FunctionOperations extends MIPSOperations {
 			jr $ra              # Return from function
 		 */
 
-		registerAllocator.freeRegister("test");
+		registerAllocatorInteger.freeRegister("test");
 
 		String text = LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
@@ -152,7 +153,7 @@ public class FunctionOperations extends MIPSOperations {
 		currentParameterNumber++;
 
 		// The assignment internally checks if it's a variable or a normal value.
-		return assignmentOperations.assignValue(parameterValue, null/*, functionRegister*/);
+		return null;
 	}
 
 	public String callFunction(String functionName) {

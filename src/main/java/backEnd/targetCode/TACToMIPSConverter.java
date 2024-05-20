@@ -5,6 +5,7 @@ import backEnd.exceptions.targetCode.FailedFileCreationException;
 import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.operations.FunctionOperations;
 import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 
@@ -23,9 +24,9 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final FunctionOperations functionOperations;
 	private final AssignmentOperations assignmentOperations;
 
-	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocator) {
-		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocator);
-		functionOperations = new FunctionOperations(symbolTable, registerAllocator, assignmentOperations);
+	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorInteger, assignmentOperations);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
