@@ -1,10 +1,10 @@
 miau : ranch ( ) {
-    miau a is 2 ;
+    miau a is 1 ;
+    miau b is 2 ;
 
-    oink prova is 1.0 ;
-    oink c is 1.1 sum prova;
-
-    c is 2.0 div 1.0 ;
+    check ( a bg b ) {
+        status c is 4 ;
+    }
 
     poop 0;
 }
