@@ -32,6 +32,7 @@ public class MIPSOperations {
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
     protected List<OperandContainer> pendingOperations = new LinkedList<>();
+    protected List<OperandContainer> pendingLogicalOperations = new LinkedList<>();
 
     public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
         this.symbolTable = symbolTableInterface;

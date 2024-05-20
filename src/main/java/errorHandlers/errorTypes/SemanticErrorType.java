@@ -23,7 +23,7 @@ public enum SemanticErrorType implements ErrorType {
 	MAIN_FUNCTION_MISSING("Main function missing"),
     MAIN_FUNCTION_PARAMETERS("Main function cannot have parameters"),
     MAIN_FUNCTION_RETURN_TYPE("Main function must have miau return type"),
-    UNEXPECTED_TOKEN_ASSIGNATION("An unexpected token is being assigned a value");
+    UNEXPECTED_TOKEN_ASSIGNATION("An unexpected token is being called or assigned a value");
 
     final String message;
 

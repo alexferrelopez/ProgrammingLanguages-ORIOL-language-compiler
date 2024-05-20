@@ -188,7 +188,16 @@ public class TACGenerator {
         if (leafNodes.get(0).getNode().getName().equals("NOT")) {
             leafNodes.remove(0);
             tempVar = handleNotAliveDead(leafNodes);
-        } else {
+        } else if (leafNodes.size() == 1) {
+            // We have a variable or a true / false value
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+            tempVar = terminalSymbol.getToken().getLexeme();
+
+            // Convert the operand to a number
+            tempVar = convertLogicOperand(tempVar);
+
+        }
+        else {
             Expression expr = generateExpressionCode(condition_expr);
             tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
         }
@@ -258,7 +267,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
 
-        Expression expr = new Expression(firstVar, ">", lastVar);
+        Expression expr = new Expression(firstVar, "GT", lastVar);
 
         // Create a label
         String labelStart = tacModule.createLabel();
@@ -328,7 +337,17 @@ public class TACGenerator {
         // Add label for the start of the while loop
         tacModule.addLabel(labelStart);
 
-        if (!Objects.equals(expr.getOperator(), "") && !Objects.equals(expr.getRightOperand(), "")) {
+
+        // Get leafnodes
+        List<Tree<AbstractSymbol>> leafNodes = condition_expr.getLeafNodes(condition_expr);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        if (leafNodes.size() == 1) {
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+            String operand = convertLogicOperand(terminalSymbol.getToken().getLexeme());
+            tacModule.addConditionalJump(operand, labelEnd);
+        } else if (!Objects.equals(expr.getOperator(), "") && !Objects.equals(expr.getRightOperand(), "")) {
             String leftOperand = expr.getLeftOperand();
             leftOperand = convertLogicOperand(leftOperand);
 
@@ -337,7 +356,8 @@ public class TACGenerator {
 
             String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), leftOperand, rightOperand);
             tacModule.addConditionalJump(tempVar, labelEnd);
-        } else {
+        }
+        else {
             String operand = expr.getLeftOperand();
             operand = convertLogicOperand(operand);
             tacModule.addConditionalJump(operand, labelEnd);
