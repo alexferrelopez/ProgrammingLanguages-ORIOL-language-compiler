@@ -1,5 +1,6 @@
 package backEnd.targetCode;
 
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -75,9 +76,11 @@ public class MIPSOperations {
 		return operand;
 	}
 
-	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String Operand2Str) {
+	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str) {
 		operandContainer.setDestination(loadSingleOperand(destinationStr));
 		operandContainer.setOperand1(loadSingleOperand(operand1Str));
-		operandContainer.setOperand2(loadSingleOperand(Operand2Str));
+		if (operand2Str != null) {
+			operandContainer.setOperand2(loadSingleOperand(operand2Str));
+		}
 	}
 }

@@ -1,4 +1,4 @@
-package backEnd.targetCode.operations;
+package backEnd.targetCode.registers;
 
 public enum OptionRegisterEnum {
     VARIABLE_ALREADY_IN_REGISTER,   // The variable is already stored in a register.

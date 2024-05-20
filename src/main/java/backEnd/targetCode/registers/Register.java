@@ -1,4 +1,4 @@
-package backEnd.targetCode.operations;
+package backEnd.targetCode.registers;
 
 public class Register {
     private final OptionRegisterEnum registerEnum;
@@ -25,5 +25,12 @@ public class Register {
 
     public String getVariableName() {
         return variableName;
+    }
+
+    public String getNotNullRegister() {
+        if (this.registerName != null) {
+            return this.registerName;
+        }
+        return this.variableName;
     }
 }

@@ -4,6 +4,7 @@ import backEnd.exceptions.TargetCodeException;
 import backEnd.exceptions.targetCode.FailedFileCreationException;
 import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.operations.FunctionOperations;
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 
@@ -74,7 +75,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "LCall" -> functionOperations.callFunction(instruction.getOperand1());
 
 			// ** Assignments
-			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
+			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getResult()));
 
 			// *** Binary Operations ***
 			case "GT" -> null;
@@ -98,9 +99,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 
 			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			case "SUB" -> showOperation(instruction, assignmentOperations.subtractAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "MOD" -> null;
-			case "MUL" -> null;
-			case "POW" -> null;
+			case "MUL" -> showOperation(instruction, assignmentOperations.multiplicationAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			case "DIV" -> null;
 			default -> null;
 		};

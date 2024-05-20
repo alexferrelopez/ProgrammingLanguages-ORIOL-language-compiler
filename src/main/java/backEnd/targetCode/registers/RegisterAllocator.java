@@ -1,10 +1,10 @@
-package backEnd.targetCode;
+package backEnd.targetCode.registers;
 
-import backEnd.targetCode.operations.Register;
+import backEnd.targetCode.Operand;
 
 import java.util.*;
 
-import static backEnd.targetCode.operations.OptionRegisterEnum.*;
+import static backEnd.targetCode.registers.OptionRegisterEnum.*;
 
 public class RegisterAllocator {
 	private static final int NUM_TEMP_REGISTERS = 10;
@@ -42,11 +42,7 @@ public class RegisterAllocator {
 			// If the variable is already in a register, move it to the top of the list.
 
 			// Do the swap between the register and the last element of the list.
-			String variableRegister = variableToRegister.get(variable);
-			variableToRegister.remove(variable);
-			variableToRegister.put(variable, variableRegister);	// Set the register to be the most recent one.
-
-			return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variableRegister);
+			return getRegister(variable);
 		}
 
 		// Find an unused register (if there is one at least).
@@ -75,8 +71,12 @@ public class RegisterAllocator {
 		}
 	}
 
-	public String getRegister(String variable) {
-		return variableToRegister.get(variable);
+	public Register getRegister(String variable) {
+		String variableRegister = variableToRegister.get(variable);
+		variableToRegister.remove(variable);
+		variableToRegister.put(variable, variableRegister);	// Set the register to be the most recent one.
+
+		return new Register (VARIABLE_ALREADY_IN_REGISTER, null, variableRegister);
 	}
 
 	public void freeRegister(String variable) {

@@ -1,8 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
-import backEnd.targetCode.Operand;
-import backEnd.targetCode.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
@@ -153,7 +152,7 @@ public class FunctionOperations extends MIPSOperations {
 		currentParameterNumber++;
 
 		// The assignment internally checks if it's a variable or a normal value.
-		return assignmentOperations.assignValue(parameterValue, null, functionRegister);
+		return assignmentOperations.assignValue(parameterValue, null/*, functionRegister*/);
 	}
 
 	public String callFunction(String functionName) {
