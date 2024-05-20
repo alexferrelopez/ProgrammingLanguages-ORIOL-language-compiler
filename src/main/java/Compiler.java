@@ -1,4 +1,4 @@
-import backEnd.targetCode.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocator;
 import backEnd.targetCode.TACToMIPSConverter;
 import backEnd.targetCode.TargetCodeGeneratorInterface;
 import backEnd.exceptions.TargetCodeException;

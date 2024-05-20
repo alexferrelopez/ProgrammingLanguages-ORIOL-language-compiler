@@ -1,8 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
-import backEnd.targetCode.Operand;
-import backEnd.targetCode.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
@@ -30,18 +29,18 @@ public class FunctionOperations extends MIPSOperations {
 		String text = writeComment("Start of function " + functionLabel) + LINE_SEPARATOR +
 				(functionLabel + ":") + LINE_SEPARATOR;
 		/*
-			addi $sp, $sp, -8   # Allocate stack frame
-			sw $ra, 4($sp)      # Save return address
-			sw $fp, 0($sp)      # Save frame pointer
-			move $fp, $sp       # Set frame pointer
+			sw $fp, 0($sp)      # Save previous (called function) frame pointer
+			move $fp, $sp       # Set frame pointer ($fp = $sp)
+			sw $ra, -4($sp)     # Save return address
+			subi $sp, $sp, 8   	# Allocate stack frame
 		 */
 
 		// Save stack
 		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
-				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", -8") + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + RETURN_REGISTER + ", 4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR;
+				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
+				("sw " + RETURN_REGISTER + ", -4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("subi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		return text + LINE_SEPARATOR;
 	}
@@ -120,18 +119,18 @@ public class FunctionOperations extends MIPSOperations {
 
 	public String endFunction() {
 		/*
-			move $sp, $fp       # Restore stack pointer
-			lw $ra, 4($sp)      # Restore return address
-			lw $fp, 0($sp)      # Restore frame pointer
-			addi $sp, $sp, 8    # Deallocate stack frame
+			move $sp, $fp       # Restore stack pointer ($sp = $fp) - All current function's memory is overwritten
+			lw $ra, -4($fp)     # Restore return address ($ra = -4($fp))
+			lw $fp, 0($fp)      # Restore frame pointer ($fp = previos $fp).
 			jr $ra              # Return from function
 		 */
 
+		registerAllocator.freeRegister("test");
+
 		String text = LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + RETURN_REGISTER + ", 4(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("addi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
+				("lw " + RETURN_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("lw " + FRAME_POINTER + ", 0(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// End the program if it's the main or add the return value if it's another function.
 		if (currentFunctionName.equals(MAIN_FUNCTION)) {
@@ -153,7 +152,7 @@ public class FunctionOperations extends MIPSOperations {
 		currentParameterNumber++;
 
 		// The assignment internally checks if it's a variable or a normal value.
-		return assignmentOperations.assignValue(parameterValue, null, functionRegister);
+		return assignmentOperations.assignValue(parameterValue, null/*, functionRegister*/);
 	}
 
 	public String callFunction(String functionName) {

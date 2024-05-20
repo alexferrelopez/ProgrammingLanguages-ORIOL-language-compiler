@@ -7,14 +7,13 @@ miau : f2 ( miau tio, miau tia ) {
 }
 
 miau : ranch ( ) {
-    miau a is 2 ;
+    status a is dead ;
 
-    check ( a sm a ) {
-        miau b is 3 ;
-        b is 4 ;
-    }
+    miau b is 5 ;
 
-    f1 ( a, b ) ;
+    b is 1;
+
+    miau c is b;
 
     miau abcd is 0 ;
     poop 0;

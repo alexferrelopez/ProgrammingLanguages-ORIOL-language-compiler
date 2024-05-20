@@ -1,6 +1,7 @@
 package frontEnd.intermediateCode;
 
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.NonTerminalSymbol;
@@ -36,9 +37,8 @@ public class TACGenerator {
 
             // Start the function with result: BeginFunc, operand1: bytes_needed
             // The bytes_needed are calculated by the number of variables declared in the function
-            int bytesNeeded = 0; //symbolTable.calculateFunctionSize(functionName);
+            int bytesNeeded = symbolTable.calculateFunctionSize(functionName);
             // Use symbolTable to get the number of bytes needed. The node of the function has a hash table with the variables declared in the function
-            // TODO -> calculate bytesNeeded
             tacModule.addUnaryInstruction(null, "BeginFunc", Integer.toString(bytesNeeded));
 
             generateCode(funcTree);
@@ -129,7 +129,7 @@ public class TACGenerator {
         for (int i = 0; i < leafNodes.size() - 1; i++) {
             TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(i).getNode();
             // The parameters are between 'PO' and 'PC'
-            if (terminalSymbol.getName().equals("PO") ) {
+            if (terminalSymbol.getName().equals("PO")) {
                 for (int j = i + 1; j < leafNodes.size(); j++) {
                     TerminalSymbol parameterSymbol = (TerminalSymbol) leafNodes.get(j).getNode();
                     if (parameterSymbol.getName().equals("PT")) {
@@ -233,16 +233,27 @@ public class TACGenerator {
         // Initialization (get the loop variable, and it's value, normally "i")
         Tree<AbstractSymbol> initialization = getNodeBySymbolName(tree, "loop_variable");
 
-        Tree<AbstractSymbol> terminalFirstVar = getNodeBySymbolName(initialization, "VARIABLE");
-        String firstVar = ((TerminalSymbol) terminalFirstVar.getNode()).getToken().getLexeme();
+        // Get leaf nodes of the initialization node
+        assert initialization != null;
+        List<Tree<AbstractSymbol>> leafNodes = initialization.getLeafNodes(initialization);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        String firstVar;
+        if (leafNodes.get(0).getNode().getName().equals("VARIABLE")) {
+            firstVar = ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme();
+        } else {
+            firstVar = ((TerminalSymbol) leafNodes.get(1).getNode()).getToken().getLexeme();
+        }
+
         generateCode(initialization);
 
         // Condition
         Tree<AbstractSymbol> untilNumberNode = tree.getChildren().get(4);
 
         // Get the number to loop until
-        Tree<AbstractSymbol> terminal = getNodeBySymbolName(untilNumberNode, "VALUE_INT");
-
+        Tree<AbstractSymbol> terminal = untilNumberNode.getLeafNodes(untilNumberNode).get(0);
+        // Remove "ε" nodes in leafNodes
         String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
 
         Expression expr = new Expression(firstVar, ">", lastVar);
@@ -266,17 +277,17 @@ public class TACGenerator {
 
         Tree<AbstractSymbol> var_assignationTree = getNodeBySymbolName(tree.getChildren().get(6), "var_assignation");
         // Get all the leaf nodes of the var_assignation node
-        List<Tree<AbstractSymbol>> leafNodes = var_assignationTree.getLeafNodes(var_assignationTree);
+        List<Tree<AbstractSymbol>> leafNodes2 = var_assignationTree.getLeafNodes(var_assignationTree);
         // Remove "ε" nodes in leafNodes
-        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+        leafNodes2.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
         // Get the last leaf node, which is the increment value
-        Tree<AbstractSymbol> incrementTree = leafNodes.get(leafNodes.size() - 1);
+        Tree<AbstractSymbol> incrementTree = leafNodes2.get(leafNodes2.size() - 1);
         String increment = ((TerminalSymbol) incrementTree.getNode()).getToken().getLexeme();
 
         // Get the assigment operation
 
-        String assigmentOperation = leafNodes.get(2).getNode().getName();
+        String assigmentOperation = leafNodes2.get(2).getNode().getName();
 
         // Modify the value of the loop variable with a temporary variable
         String tempVar2 = tacModule.addBinaryInstruction(assigmentOperation, firstVar, increment);
@@ -357,22 +368,32 @@ public class TACGenerator {
                 return;
             }
             tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
+
         } else if (containOperation(leafNodes) != null) {
             // We have an operation
             handleOperation(tree, containOperation(leafNodes));
         } else {
             // We have a function call
-            String functionName = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
-            handleFunctionCall(tree, functionName);
-            // Add the result of the function call to a temporary variable
-            // Modify the value of the left operand with a temporary variable
-            tacModule.addUnaryInstruction(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme(), "=", functionName);
+
+            // We have to know if the return value of the function is stored in a variable
+            Symbol<?> symbol = symbolTable.findSymbolGlobally(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme());
+            if (symbol != null) {
+                if (symbol.isFunction()) {
+                    handleFunctionCall(tree, ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme());
+                }
+            } else {
+                String functionName = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
+                handleFunctionCall(tree, functionName);
+                // Add the result of the function call to a temporary variable
+                // Modify the value of the left operand with a temporary variable
+                tacModule.addUnaryInstruction(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme(), "=", functionName);
+            }
         }
     }
 
     private String containOperation(List<Tree<AbstractSymbol>> leafNodes) {
         for (Tree<AbstractSymbol> leafNode : leafNodes) {
-            if (leafNode.getNode().getName().equals("SUM") || leafNode.getNode().getName().equals("SUB") || leafNode.getNode().getName().equals("MUL") || leafNode.getNode().getName().equals("DIV") || leafNode.getNode().getName().equals("MOD") || leafNode.getNode().getName().equals("POW") || leafNode.getNode().getName().equals("AND") || leafNode.getNode().getName().equals("OR") || leafNode.getNode().getName().equals("NOT") || leafNode.getNode().getName().equals("EQ") || leafNode.getNode().getName().equals("NEQ") || leafNode.getNode().getName().equals("GT") || leafNode.getNode().getName().equals("LT") || leafNode.getNode().getName().equals("GTE") || leafNode.getNode().getName().equals("LTE")){
+            if (leafNode.getNode().getName().equals("SUM") || leafNode.getNode().getName().equals("SUB") || leafNode.getNode().getName().equals("MUL") || leafNode.getNode().getName().equals("DIV") || leafNode.getNode().getName().equals("MOD") || leafNode.getNode().getName().equals("POW") || leafNode.getNode().getName().equals("AND") || leafNode.getNode().getName().equals("OR") || leafNode.getNode().getName().equals("NOT") || leafNode.getNode().getName().equals("EQ") || leafNode.getNode().getName().equals("NEQ") || leafNode.getNode().getName().equals("GT") || leafNode.getNode().getName().equals("LT") || leafNode.getNode().getName().equals("GTE") || leafNode.getNode().getName().equals("LTE")) {
                 return leafNode.getNode().getName();
             }
         }
@@ -413,6 +434,10 @@ public class TACGenerator {
             TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(4).getNode();
             rightOperand = rightOperandSymbol.getToken().getLexeme();
 
+            // Check if operands are logic operands
+            leftOperand = convertLogicOperand(leftOperand);
+            rightOperand = convertLogicOperand(rightOperand);
+
             // Create a temporary variable to store the result of the operation
             tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
         }
@@ -442,9 +467,11 @@ public class TACGenerator {
 
         TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
         String leftOperand = leftOperandSymbol.getToken().getLexeme();
+        leftOperand = convertLogicOperand(leftOperand);
 
         TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
         String rightOperand = rightOperandSymbol.getToken().getLexeme();
+        rightOperand = convertLogicOperand(rightOperand);
 
         return new Expression(leftOperand, operator, rightOperand);
     }

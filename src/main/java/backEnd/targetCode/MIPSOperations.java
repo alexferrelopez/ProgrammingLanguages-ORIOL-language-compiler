@@ -1,5 +1,6 @@
 package backEnd.targetCode;
 
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -40,6 +41,13 @@ public class MIPSOperations {
 		}
 	}
 
+	protected String loadVariableToMemory(String oldestVariable, String oldestRegister) {
+		return "sw " + oldestRegister + ", " + oldestVariable;
+	}
+
+	protected String loadVariableToRegister(String oldestVariable, String oldestRegister) {
+		return "lw " + oldestRegister + ", " + oldestVariable;
+	}
 
 	protected Operand loadSingleOperand(String operandValue) {
 		if (operandValue == null) {
@@ -53,24 +61,26 @@ public class MIPSOperations {
 		if (operandValueSymbol == ValueSymbol.VARIABLE) {
 			Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunctionName);
 			String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
-			operand = new Operand(true, variable.getDataType(), variableRegister);
+			operand = new Operand(true, variable.getDataType(), variableRegister, false);
 		}
-		// Check if it's a register
-		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX)) {
-			operand = new Operand(true, null, operandValue);
+		// Check if it's a register. It's treated as a temporal (it will be removed from the registers when operated).
+		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX_TEMP)) {
+			operand = new Operand(true, null, operandValue, true);
 		}
-		// Any other type of data (integer, float, boolean...)
+		// Any other type of data (integer, float, boolean...). It's treated as a temporal (it will be removed from the registers when operated).
 		else {
 			DataType operandType = operandValueSymbol.getDataType();
-			operand = new Operand(false, operandType, operandValue);
+			operand = new Operand(false, operandType, operandValue, true);
 		}
 
 		return operand;
 	}
 
-	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String Operand2Str) {
+	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str) {
 		operandContainer.setDestination(loadSingleOperand(destinationStr));
 		operandContainer.setOperand1(loadSingleOperand(operand1Str));
-		operandContainer.setOperand2(loadSingleOperand(Operand2Str));
+		if (operand2Str != null) {
+			operandContainer.setOperand2(loadSingleOperand(operand2Str));
+		}
 	}
 }
