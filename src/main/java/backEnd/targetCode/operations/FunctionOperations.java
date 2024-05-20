@@ -3,7 +3,9 @@ package backEnd.targetCode.operations;
 import backEnd.targetCode.MIPSOperations;
 import backEnd.targetCode.Operand;
 import backEnd.targetCode.OperandContainer;
+import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.scope.ScopeNode;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
@@ -85,14 +87,6 @@ public class FunctionOperations extends MIPSOperations {
 	}
 
 	public String beginFunction(String functionSize) {
-		/*if (functionLabel.equals(MAIN_FUNCTION)) {
-			return functionLabel + ":" + LINE_SEPARATOR +                    										// function start
-					LINE_INDENTATION + "move" + FRAME_POINTER + ", " + STACK_POINTER + LINE_SEPARATOR +				// move $fp, $sp
-					LINE_INDENTATION +  "sub " + STACK_POINTER + ", " + STACK_POINTER + ", " + functionSize + "\n";	// sub $sp, $sp, size
-		}
-		else {
-			return functionLabel + ":" + LINE_SEPARATOR;
-		}*/
 
 		// Set the offset for each variable in the function (in all the nested scopes).
 		long currentOffset = 0;
@@ -112,12 +106,25 @@ public class FunctionOperations extends MIPSOperations {
 		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
 		Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
 
+		String destinationRegister = returnValue;
 		boolean isLiteral = true;
 		if (variableSymbol != null && variableSymbol.isVariable()) {
 			isLiteral = false;
+
+			RegisterAllocator registerAllocator;
+			if (functionSymbol.getDataType() == DataType.FLOAT) {
+				registerAllocator = registerAllocatorFloat;
+			}
+			else {
+				registerAllocator = registerAllocatorInteger;
+			}
+
+			Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FRAME_POINTER + ")", false);
+			Register variableRegister = registerAllocator.allocateRegister(operand);
+			destinationRegister = variableRegister.getNotNullRegister();
 		}
 
-		return text + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
+		return text + loadVariableToRegister(destinationRegister, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
 	}
 
 	public String endFunction() {
@@ -191,6 +198,7 @@ public class FunctionOperations extends MIPSOperations {
 			}
 		}
 
+		this.currentParameterNumber = 0;
 		currentFunctionName.pop();	// Leave the new current function.
 		this.pendingOperations.clear();
 
