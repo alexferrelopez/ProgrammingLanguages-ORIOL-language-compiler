@@ -186,7 +186,16 @@ public class TACGenerator {
         if (leafNodes.get(0).getNode().getName().equals("NOT")) {
             leafNodes.remove(0);
             tempVar = handleNotAliveDead(leafNodes);
-        } else {
+        } else if (leafNodes.size() == 1) {
+            // We have a variable or a true / false value
+            TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
+            tempVar = terminalSymbol.getToken().getLexeme();
+
+            // Convert the operand to a number
+            tempVar = convertLogicOperand(tempVar);
+
+        }
+        else {
             Expression expr = generateExpressionCode(condition_expr);
             tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
         }

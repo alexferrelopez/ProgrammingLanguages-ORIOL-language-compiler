@@ -10,6 +10,7 @@ import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 import javax.xml.crypto.Data;
+import java.util.Objects;
 
 public class AssignmentOperations extends MIPSOperations {
 
@@ -25,8 +26,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         if (destinationType == DataType.INTEGER) {
             registerAllocator = registerAllocatorInteger;
-        }
-        else {
+        } else {
             registerAllocator = registerAllocatorFloat;
         }
 
@@ -39,13 +39,11 @@ public class AssignmentOperations extends MIPSOperations {
             if (variableRegister.getNotNullRegister().startsWith("$t")) {
                 text += LINE_INDENTATION +
                         ("mtc1 " + variableRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + LINE_SEPARATOR;
-            }
-            else {
+            } else {
                 text += LINE_INDENTATION +
                         ("mov.s " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
             }
-        }
-        else {
+        } else {
             text += LINE_INDENTATION +
                     ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
         }
@@ -59,10 +57,9 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String literalAssignment(Register destination, Operand literal, DataType dataType) {
         if (dataType == DataType.INTEGER) {
-            return  LINE_INDENTATION +
+            return LINE_INDENTATION +
                     ("li " + destination.getNotNullRegister() + ", " + literal.getValue()) + LINE_SEPARATOR;
-        }
-        else {
+        } else {
             String floatNumber = floatToHex(Float.parseFloat(literal.getValue()));
             Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
             Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
@@ -109,8 +106,7 @@ public class AssignmentOperations extends MIPSOperations {
         // Load the destination register into memory (in case it is not already).
         if (destinationType == DataType.INTEGER) {
             registerAllocator = registerAllocatorInteger;
-        }
-        else {
+        } else {
             registerAllocator = registerAllocatorFloat;
         }
 
@@ -124,8 +120,10 @@ public class AssignmentOperations extends MIPSOperations {
         } else {
             // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
             return switch (destinationType) {
-                case INTEGER -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
-                case FLOAT -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
+                case INTEGER ->
+                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
+                case FLOAT ->
+                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
                 default -> null;
             };
         }
@@ -150,10 +148,14 @@ public class AssignmentOperations extends MIPSOperations {
 
         // Make a division or a general operation (sum, subtract or multiplication).
         switch (operator) {
-            case "sum" -> text += LINE_INDENTATION + ("add.s " + regDest.getRegisterName() +  ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
-            case "sub" -> text += LINE_INDENTATION + ("sub.s " + regDest.getRegisterName() +  ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
-            case "mul" -> text += LINE_INDENTATION + ("mul.s " + regDest.getRegisterName() +  ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
-            case "div" -> text += LINE_INDENTATION + ("div.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            case "sum" ->
+                    text += LINE_INDENTATION + ("add.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            case "sub" ->
+                    text += LINE_INDENTATION + ("sub.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            case "mul" ->
+                    text += LINE_INDENTATION + ("mul.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            case "div" ->
+                    text += LINE_INDENTATION + ("div.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
         }
 
         // Free temporary registers (temporal registers generated by TAC or literals).
@@ -177,6 +179,14 @@ public class AssignmentOperations extends MIPSOperations {
         OperandContainer operandContainer = new OperandContainer();
         loadOperands(operandContainer, destination, operand1, operand2, operator);
         this.pendingOperations.add(operandContainer);
+
+        return null;
+    }
+
+    public String addPendingLogicalOperation(String operand1, String operand2, String destination, String operator) {
+        OperandContainer operandContainer = new OperandContainer();
+        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        this.pendingLogicalOperations.add(operandContainer);
 
         return null;
     }
@@ -221,8 +231,7 @@ public class AssignmentOperations extends MIPSOperations {
         if (operator.equals("div")) {
             text += LINE_INDENTATION + (operator + " " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
             text += LINE_INDENTATION + ("mflo " + regDest.getRegisterName()) + LINE_SEPARATOR;
-        }
-        else {
+        } else {
             text += LINE_INDENTATION + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
         }
 
@@ -240,33 +249,38 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String conditionalJump(String label, String operator) {
         // When pendingOperations is empty and the last operation it wasn't "or" or "and" we can do a direct jump.
-        if (this.pendingOperations.isEmpty()) {
+        if (this.pendingLogicalOperations.isEmpty()) {
             // Do a direct jump.
             return LINE_INDENTATION + "j " + label + LINE_SEPARATOR;
         }
 
         DataType dataType;
 
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingOperations.get(0).getOperand1().getValue(), currentFunctionName);
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName);
         if (variable == null) {
-            dataType = this.pendingOperations.get(0).getOperand1().getType();
-        }
-        else {
+            dataType = this.pendingLogicalOperations.get(0).getOperand1().getType();
+        } else {
             dataType = variable.getDataType();
         }
         String text = "";
-        for (OperandContainer operation : this.pendingOperations) {
-            switch (dataType) {
-                case INTEGER -> {
-                    text =  logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
+        for (OperandContainer operation : this.pendingLogicalOperations) {
+            if (!Objects.equals(operation.getOperator(), "IfZ")) {
+                switch (dataType) {
+                    case INTEGER -> {
+                        text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
+                    }
+                    case FLOAT -> {
+                        text += logicOperationFloat(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
+                    }
                 }
-                case FLOAT -> {
-                    text =  logicOperationFloat(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
-                }
+                break;
+            } else {
+                text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), null, operation.getOperator().toLowerCase(), label);
             }
+            
         }
 
-        this.pendingOperations.clear();
+        this.pendingLogicalOperations.clear();
 
         return text;
     }
@@ -277,33 +291,39 @@ public class AssignmentOperations extends MIPSOperations {
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorFloat.allocateRegister(operand1);
         text = saveVariableIntoMemory(regOp1, operand1, DataType.FLOAT);
+        Register regOp2;
+        if (operand2 != null) {
+            regOp2 = registerAllocatorFloat.allocateRegister(operand2);
+            text += saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT);
 
-        Register regOp2 = registerAllocatorFloat.allocateRegister(operand2);
-        text += saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT);
+            Register regDest = registerAllocatorFloat.allocateRegister(destination);
+            text += saveVariableIntoMemory(regDest, destination, DataType.FLOAT);
 
-        Register regDest = registerAllocatorFloat.allocateRegister(destination);
-        text += saveVariableIntoMemory(regDest, destination, DataType.FLOAT);
+            // Make a division or a general operation (sum, subtract or multiplication).
+            switch (operator) {
+                case "eq" ->
+                        text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
+                                + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
+                case "neq" ->
+                        text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
+                                + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
+                case "lt" ->
+                        text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
+                                + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
+                case "gt" ->
+                        text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
+                                + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
+            }
 
-        // Make a division or a general operation (sum, subtract or multiplication).
-        switch (operator) {
-            case "eq" -> text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
-                            + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
-            case "neq" -> text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
-                            + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
-            case "lt" -> text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
-                            + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
-            case "gt" -> text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
-                            + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
-        }
 
+            // Free temporary registers (temporal registers generated by TAC or literals).
+            if (operand2.isTemporal()) {
+                registerAllocatorFloat.freeRegister(operand2.getValue());
+            }
 
-        // Free temporary registers (temporal registers generated by TAC or literals).
-        if (operand2.isTemporal()) {
-            registerAllocatorFloat.freeRegister(operand2.getValue());
-        }
-
-        if (operand1.isTemporal()) {
-            registerAllocatorFloat.freeRegister(operand1.getValue());
+            if (operand1.isTemporal()) {
+                registerAllocatorFloat.freeRegister(operand1.getValue());
+            }
         }
 
         return text;
@@ -315,32 +335,51 @@ public class AssignmentOperations extends MIPSOperations {
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorInteger.allocateRegister(operand1);
         text = saveVariableIntoMemory(regOp1, operand1, DataType.INTEGER);
+        Register regOp2;
 
-        Register regOp2 = registerAllocatorInteger.allocateRegister(operand2);
-        text += saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER);
 
-        Register regDest = registerAllocatorInteger.allocateRegister(destination);
-        text += saveVariableIntoMemory(regDest, destination, DataType.INTEGER);
+        if (operand2 != null && !operator.equals("ifz")) {
 
-        // Make a division or a general operation (sum, subtract or multiplication).
-        switch (operator) {
-            case "eq" -> text += LINE_INDENTATION + ("bne " + regOp2.getNotNullRegister() +  ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
-            case "neq" -> text += LINE_INDENTATION + ("beq "+ regOp2.getNotNullRegister() +  ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
-            case "lt" -> text += LINE_INDENTATION + ("blt " + regOp2.getNotNullRegister() +  ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
-            case "gt" -> text += LINE_INDENTATION + ("bgt " + regOp2.getNotNullRegister() +  ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
-            case "or" -> text += LINE_INDENTATION + ("or "  + regDest.getRegisterName() +  ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
-            case "and" -> text += LINE_INDENTATION + ("and "+ regDest.getRegisterName() +  ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            regOp2 = registerAllocatorInteger.allocateRegister(operand2);
+            text += saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER);
+
+            Register regDest = registerAllocatorInteger.allocateRegister(destination);
+            text += saveVariableIntoMemory(regDest, destination, DataType.INTEGER);
+
+
+            // Make a division or a general operation (sum, subtract or multiplication).
+            switch (operator) {
+                case "eq" ->
+                        text += LINE_INDENTATION + ("bne " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                case "neq" ->
+                        text += LINE_INDENTATION + ("beq " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                case "lt" ->
+                        text += LINE_INDENTATION + ("blt " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                case "gt" ->
+                        text += LINE_INDENTATION + ("bgt " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                case "or" ->
+                        text += LINE_INDENTATION + ("or " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                case "and" ->
+                        text += LINE_INDENTATION + ("and " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+
+            }
+
+            // If the operator is "or" or "and" we have to save the result in the destination register and do a neq comparison with 0
+            if (operator.equals("or") || operator.equals("and")) {
+                text += LINE_INDENTATION + ("beq " + regDest.getRegisterName() + ", $zero, " + label) + LINE_SEPARATOR;
+            }
+
+            // Free temporary registers (temporal registers generated by TAC or literals).
+            if (operand2.isTemporal()) {
+                registerAllocatorInteger.freeRegister(operand2.getValue());
+            }
         }
 
-        // If the operator is "or" or "and" we have to save the result in the destination register and do a neq comparison with 0
-        if (operator.equals("or") || operator.equals("and")) {
-            text += LINE_INDENTATION + ("beq " + regDest.getRegisterName() + ", $zero, " + label) + LINE_SEPARATOR;
+        if (operator.equals("ifz")) {
+            text += LINE_INDENTATION + ("beq " + regOp1.getNotNullRegister() + ", $zero, " + label) + LINE_SEPARATOR;
+
         }
 
-        // Free temporary registers (temporal registers generated by TAC or literals).
-        if (operand2.isTemporal()) {
-            registerAllocatorInteger.freeRegister(operand2.getValue());
-        }
 
         if (operand1.isTemporal()) {
             registerAllocatorInteger.freeRegister(operand1.getValue());
@@ -368,7 +407,7 @@ public class AssignmentOperations extends MIPSOperations {
         switch (register.getRegisterEnum()) {
             case AVAILABLE_REGISTER -> {
 
-                    return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
+                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
 
             }
             case SWAP_REGISTERS -> {

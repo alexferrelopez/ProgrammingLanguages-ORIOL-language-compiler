@@ -79,9 +79,11 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getResult()));
 
 			// *** Binary Operations ***
-			case "GT", "LT", "EQ", "NEQ", "OR", "AND" -> showOperation(instruction, assignmentOperations.addPendingOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
+			case "GT", "LT", "EQ", "NEQ", "OR", "AND" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
 
 			// *** Conditional ***
+			case "IfZ" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), null, instruction.getResult(), instruction.getOperator()));
+
 			// When we arrive at a conditional, we have to store the result of the previous operation in a register.
 			case "Goto" ->  showOperation(instruction, assignmentOperations.conditionalJump(instruction.getResult(), instruction.getOperator()));
 
