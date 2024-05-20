@@ -189,7 +189,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
                     if (expectedParams.size() == receivedParams.size()) {
                         for (int i = 0; i < expectedParams.size(); i++) {
-                            if (expectedParams.get(i).getDataType() != receivedParams.get(i).getDataType()) {
+                            if (expectedParams.get(i) == null || receivedParams.get(i) == null || expectedParams.get(i).getDataType() != receivedParams.get(i).getDataType()) {
                                 errorHandler.reportError(SemanticErrorType.FUNCTION_PARAMETERS_DONT_MATCH, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected: " + expectedParams.get(i).getDataType() + " but received: " + receivedParams.get(i).getDataType());
                                 failed = true;
                             }
@@ -853,7 +853,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     break;
                 default:
                     if (startParams) {
-                        TokenType tt = token.getType();
                         if (token.getType() == ValueSymbol.VARIABLE) {
                             String name = token.getLexeme();
                             long lineDeclaration = token.getLine();
@@ -893,7 +892,6 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                     break;
                 default:
                     if (startParams) {
-                        TokenType tt = token.getType();
                         if (token.getType() == ValueSymbol.VARIABLE) {
                             String name = token.getLexeme();
                             long lineDeclaration = token.getLine();
@@ -905,8 +903,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                                 dt = getSymbolByLexeme(name).getDataType();
                             }
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
+                        } else {
+                            DataType dt = ((ValueSymbol) token.getType()).getDataType();
+                            parameters.add(new VariableSymbol<>(token.getLexeme(), dt, token.getLine(), true, null));
                         }
                     }
+                    break;
             }
         }
         return parameters;
