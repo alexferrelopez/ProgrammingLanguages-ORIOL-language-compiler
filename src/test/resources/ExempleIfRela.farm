@@ -1,11 +1,3 @@
-miau : f1 ( miau tio, miau tia ) {
-    poop 0 ;
-}
-
-miau : f2 ( miau tio, miau tia ) {
-    poop tio ;
-}
-
 miau : ranch ( ) {
     miau a is 2 ;
 

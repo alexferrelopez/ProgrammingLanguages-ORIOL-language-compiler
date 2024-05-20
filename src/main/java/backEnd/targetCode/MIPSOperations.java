@@ -1,5 +1,7 @@
 package backEnd.targetCode;
 
+import backEnd.targetCode.operations.AssignmentOperations;
+import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
 import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import frontEnd.exceptions.lexic.InvalidTokenException;
@@ -62,7 +64,20 @@ public class MIPSOperations {
         if (dataType == DataType.FLOAT) {
             // Also, we have to check if it's a literal or a variable because the instruction changes.
             if (isLiteral) {
-                return "li.s " + oldestRegister + ", " + oldestVariable;
+                String floatNumber = floatToHex(Float.parseFloat(oldestVariable));
+                Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
+                Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
+
+                String text = ("li " + tempFloatRegister.getNotNullRegister()+ ", " + floatNumber) + LINE_SEPARATOR;
+
+                // Pass from $tX to $fX
+                text += LINE_INDENTATION +
+                        ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + oldestRegister) + LINE_SEPARATOR;
+
+                // Free register
+                registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
+
+                return text;
             }
             else {
                 return "lwc1 " + oldestRegister + ", " + oldestVariable;
@@ -111,5 +126,16 @@ public class MIPSOperations {
             operandContainer.setOperand2(loadSingleOperand(operand2Str));
         }
         operandContainer.setOperator(operatorStr);
+    }
+
+
+    /**
+     * Convert a float value to a hexadecimal string.
+     * @param value The float value to convert.
+     * @return The hexadecimal string.
+     */
+    public static String floatToHex(float value) {
+        int intBits = Float.floatToIntBits(value);
+        return "0x" + Integer.toHexString(intBits);
     }
 }

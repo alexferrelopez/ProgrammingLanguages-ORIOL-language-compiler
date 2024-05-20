@@ -1,7 +1,5 @@
 package backEnd.targetCode;
 
-import frontEnd.lexic.dictionary.tokenEnums.DataType;
-
 public class OperandContainer {
 	private Operand destination;
 	private Operand operand1;
