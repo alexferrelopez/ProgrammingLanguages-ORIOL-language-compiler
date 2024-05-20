@@ -1,6 +1,7 @@
 package frontEnd.intermediateCode;
 
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.sintaxis.Tree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.NonTerminalSymbol;
@@ -129,7 +130,7 @@ public class TACGenerator {
         for (int i = 0; i < leafNodes.size() - 1; i++) {
             TerminalSymbol terminalSymbol = (TerminalSymbol) leafNodes.get(i).getNode();
             // The parameters are between 'PO' and 'PC'
-            if (terminalSymbol.getName().equals("PO") ) {
+            if (terminalSymbol.getName().equals("PO")) {
                 for (int j = i + 1; j < leafNodes.size(); j++) {
                     TerminalSymbol parameterSymbol = (TerminalSymbol) leafNodes.get(j).getNode();
                     if (parameterSymbol.getName().equals("PT")) {
@@ -362,17 +363,26 @@ public class TACGenerator {
             handleOperation(tree, containOperation(leafNodes));
         } else {
             // We have a function call
-            String functionName = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
-            handleFunctionCall(tree, functionName);
-            // Add the result of the function call to a temporary variable
-            // Modify the value of the left operand with a temporary variable
-            tacModule.addUnaryInstruction(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme(), "=", functionName);
+
+            // We have to know if the return value of the function is stored in a variable
+            Symbol<?> symbol = symbolTable.findSymbolGlobally(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme());
+            if (symbol != null) {
+                if (symbol.isFunction()) {
+                    handleFunctionCall(tree, ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme());
+                }
+            } else {
+                String functionName = ((TerminalSymbol) leafNodes.get(2).getNode()).getToken().getLexeme();
+                handleFunctionCall(tree, functionName);
+                // Add the result of the function call to a temporary variable
+                // Modify the value of the left operand with a temporary variable
+                tacModule.addUnaryInstruction(((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme(), "=", functionName);
+            }
         }
     }
 
     private String containOperation(List<Tree<AbstractSymbol>> leafNodes) {
         for (Tree<AbstractSymbol> leafNode : leafNodes) {
-            if (leafNode.getNode().getName().equals("SUM") || leafNode.getNode().getName().equals("SUB") || leafNode.getNode().getName().equals("MUL") || leafNode.getNode().getName().equals("DIV") || leafNode.getNode().getName().equals("MOD") || leafNode.getNode().getName().equals("POW") || leafNode.getNode().getName().equals("AND") || leafNode.getNode().getName().equals("OR") || leafNode.getNode().getName().equals("NOT") || leafNode.getNode().getName().equals("EQ") || leafNode.getNode().getName().equals("NEQ") || leafNode.getNode().getName().equals("GT") || leafNode.getNode().getName().equals("LT") || leafNode.getNode().getName().equals("GTE") || leafNode.getNode().getName().equals("LTE")){
+            if (leafNode.getNode().getName().equals("SUM") || leafNode.getNode().getName().equals("SUB") || leafNode.getNode().getName().equals("MUL") || leafNode.getNode().getName().equals("DIV") || leafNode.getNode().getName().equals("MOD") || leafNode.getNode().getName().equals("POW") || leafNode.getNode().getName().equals("AND") || leafNode.getNode().getName().equals("OR") || leafNode.getNode().getName().equals("NOT") || leafNode.getNode().getName().equals("EQ") || leafNode.getNode().getName().equals("NEQ") || leafNode.getNode().getName().equals("GT") || leafNode.getNode().getName().equals("LT") || leafNode.getNode().getName().equals("GTE") || leafNode.getNode().getName().equals("LTE")) {
                 return leafNode.getNode().getName();
             }
         }
