@@ -232,6 +232,9 @@ public class AssignmentOperations extends MIPSOperations {
             text += LINE_INDENTATION + (operator + " " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
             text += LINE_INDENTATION + ("mflo " + regDest.getRegisterName()) + LINE_SEPARATOR;
         } else {
+            if (operator.equals("sum") ){
+                operator = "add";
+            }
             text += LINE_INDENTATION + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
         }
 
@@ -354,9 +357,9 @@ public class AssignmentOperations extends MIPSOperations {
                 case "neq" ->
                         text += LINE_INDENTATION + ("beq " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
                 case "lt" ->
-                        text += LINE_INDENTATION + ("blt " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += LINE_INDENTATION + ("bge " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
                 case "gt" ->
-                        text += LINE_INDENTATION + ("bgt " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += LINE_INDENTATION + ("ble " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
                 case "or" ->
                         text += LINE_INDENTATION + ("or " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
                 case "and" ->

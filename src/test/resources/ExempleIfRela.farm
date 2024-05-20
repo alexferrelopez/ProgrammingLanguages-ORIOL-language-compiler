@@ -1,36 +1,8 @@
 miau : ranch ( ) {
     miau a is 1 ;
 
-
-    check (a eq 1) {
-        a is 2;
-    } else {
-        a is 3;
-    }
-    check (a eq 2) {
-        a is 4;
-    } else {
-        a is 5;
-    }
-    check (a eq 4) {
-        a is 6;
-    } else {
-        a is 7;
-    }
-    check (a eq 6) {
-        a is 8;
-    } else {
-        a is 9;
-    }
-    check (a eq 8) {
-        a is 10;
-    } else {
-        a is 11;
-    }
-    check (alive) {
-        a is 11;
-    } else {
-        a is 12;
+    breed ( a sm 10 ) {
+        a is a sum 1 ;
     }
     poop 0;
 }
