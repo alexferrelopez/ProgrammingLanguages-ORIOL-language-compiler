@@ -2,8 +2,10 @@ miau : ranch ( ) {
     miau a is 1 ;
     miau b is 2 ;
 
-    check ( a bg b ) {
-        status c is 4 ;
+    check ( a diff b ) {
+        miau c is 4 ;
+    } else {
+        miau c is 5 ;
     }
 
     poop 0;
