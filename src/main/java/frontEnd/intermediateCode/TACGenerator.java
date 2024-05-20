@@ -234,16 +234,27 @@ public class TACGenerator {
         // Initialization (get the loop variable, and it's value, normally "i")
         Tree<AbstractSymbol> initialization = getNodeBySymbolName(tree, "loop_variable");
 
-        Tree<AbstractSymbol> terminalFirstVar = getNodeBySymbolName(initialization, "VARIABLE");
-        String firstVar = ((TerminalSymbol) terminalFirstVar.getNode()).getToken().getLexeme();
+        // Get leaf nodes of the initialization node
+        assert initialization != null;
+        List<Tree<AbstractSymbol>> leafNodes = initialization.getLeafNodes(initialization);
+        // Remove "ε" nodes in leafNodes
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+
+        String firstVar;
+        if (leafNodes.get(0).getNode().getName().equals("VARIABLE")) {
+            firstVar = ((TerminalSymbol) leafNodes.get(0).getNode()).getToken().getLexeme();
+        } else {
+            firstVar = ((TerminalSymbol) leafNodes.get(1).getNode()).getToken().getLexeme();
+        }
+
         generateCode(initialization);
 
         // Condition
         Tree<AbstractSymbol> untilNumberNode = tree.getChildren().get(4);
 
         // Get the number to loop until
-        Tree<AbstractSymbol> terminal = getNodeBySymbolName(untilNumberNode, "VALUE_INT");
-
+        Tree<AbstractSymbol> terminal = untilNumberNode.getLeafNodes(untilNumberNode).get(0);
+        // Remove "ε" nodes in leafNodes
         String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
 
         Expression expr = new Expression(firstVar, ">", lastVar);
@@ -267,17 +278,17 @@ public class TACGenerator {
 
         Tree<AbstractSymbol> var_assignationTree = getNodeBySymbolName(tree.getChildren().get(6), "var_assignation");
         // Get all the leaf nodes of the var_assignation node
-        List<Tree<AbstractSymbol>> leafNodes = var_assignationTree.getLeafNodes(var_assignationTree);
+        List<Tree<AbstractSymbol>> leafNodes2 = var_assignationTree.getLeafNodes(var_assignationTree);
         // Remove "ε" nodes in leafNodes
-        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
+        leafNodes2.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
         // Get the last leaf node, which is the increment value
-        Tree<AbstractSymbol> incrementTree = leafNodes.get(leafNodes.size() - 1);
+        Tree<AbstractSymbol> incrementTree = leafNodes2.get(leafNodes2.size() - 1);
         String increment = ((TerminalSymbol) incrementTree.getNode()).getToken().getLexeme();
 
         // Get the assigment operation
 
-        String assigmentOperation = leafNodes.get(2).getNode().getName();
+        String assigmentOperation = leafNodes2.get(2).getNode().getName();
 
         // Modify the value of the loop variable with a temporary variable
         String tempVar2 = tacModule.addBinaryInstruction(assigmentOperation, firstVar, increment);
@@ -358,6 +369,7 @@ public class TACGenerator {
                 return;
             }
             tacModule.addUnaryInstruction(expr.getLeftOperand(), "=", expr.getRightOperand());
+
         } else if (containOperation(leafNodes) != null) {
             // We have an operation
             handleOperation(tree, containOperation(leafNodes));
@@ -423,6 +435,10 @@ public class TACGenerator {
             TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(4).getNode();
             rightOperand = rightOperandSymbol.getToken().getLexeme();
 
+            // Check if operands are logic operands
+            leftOperand = convertLogicOperand(leftOperand);
+            rightOperand = convertLogicOperand(rightOperand);
+
             // Create a temporary variable to store the result of the operation
             tempVar = tacModule.addBinaryInstruction(operation, leftOperand, rightOperand);
         }
@@ -452,9 +468,11 @@ public class TACGenerator {
 
         TerminalSymbol leftOperandSymbol = (TerminalSymbol) leafNodes.get(0).getNode();
         String leftOperand = leftOperandSymbol.getToken().getLexeme();
+        leftOperand = convertLogicOperand(leftOperand);
 
         TerminalSymbol rightOperandSymbol = (TerminalSymbol) leafNodes.get(2).getNode();
         String rightOperand = rightOperandSymbol.getToken().getLexeme();
+        rightOperand = convertLogicOperand(rightOperand);
 
         return new Expression(leftOperand, operator, rightOperand);
     }
