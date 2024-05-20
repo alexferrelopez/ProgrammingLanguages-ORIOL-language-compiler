@@ -45,9 +45,15 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	public void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException {
 		createAssemblyFile();
 
+		// Write the jump to the "main" function.
+		try {
+			targetCode.write("j ranch" + LINE_SEPARATOR + LINE_SEPARATOR);
+		} catch (IOException e) {
+			throw new FailedFileCreationException(e.getMessage());
+		}
+
 		for (TACInstruction instruction : instructions) {
 			try {
-				//targetCode.write(convertTACInstruction(instruction) ? "")
 				String instructionCode = convertTACInstruction(instruction);
 				if (instructionCode != null) {
 					targetCode.write(instructionCode);

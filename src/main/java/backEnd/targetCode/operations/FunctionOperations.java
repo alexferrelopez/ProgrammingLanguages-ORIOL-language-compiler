@@ -100,13 +100,12 @@ public class FunctionOperations extends MIPSOperations {
 	}
 
 	public String returnFunction(String returnValue) {
-		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR + LINE_INDENTATION;
+		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR;
 
 		// Check if the return value is a symbol in the scope.
 		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
 		Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
 
-		String destinationRegister = returnValue;
 		boolean isLiteral = true;
 		if (variableSymbol != null && variableSymbol.isVariable()) {
 			isLiteral = false;
@@ -120,11 +119,12 @@ public class FunctionOperations extends MIPSOperations {
 			}
 
 			Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FRAME_POINTER + ")", false);
-			Register variableRegister = registerAllocator.allocateRegister(operand);
-			destinationRegister = variableRegister.getNotNullRegister();
+			Operand destination = new Operand(true, functionSymbol.getDataType(), RETURN_VALUE_REGISTER, false);
+			Register destionationRegister = registerAllocator.allocateRegister(destination);
+			return text + assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType());
 		}
 
-		return text + loadVariableToRegister(destinationRegister, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
+		return text + LINE_INDENTATION + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
 	}
 
 	public String endFunction() {
