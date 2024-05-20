@@ -1,8 +1,8 @@
 miau : ranch ( ) {
-    miau a is 1 ;
-    miau b is 2 ;
+    oink a is 1.0 ;
+    oink b is 2.0 ;
 
-    check ( a diff b ) {
+    check ( a bg b ) {
         miau c is 4 ;
     } else {
         miau c is 5 ;
