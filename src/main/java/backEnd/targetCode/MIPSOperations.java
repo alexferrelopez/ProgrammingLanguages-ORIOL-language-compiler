@@ -8,6 +8,9 @@ import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class MIPSOperations {
 	protected static final String LINE_SEPARATOR = System.lineSeparator();
 	protected static final String LINE_INDENTATION = "\t";
@@ -23,6 +26,7 @@ public class MIPSOperations {
 	protected final static String MAIN_FUNCTION = "ranch";
 	protected static String currentFunctionName;
 	protected static RegisterAllocator registerAllocator;
+	protected List<OperandContainer> pendingOperations = new LinkedList<>();
 
 	public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
 		this.symbolTable = symbolTableInterface;
@@ -76,11 +80,12 @@ public class MIPSOperations {
 		return operand;
 	}
 
-	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str) {
+	protected void loadOperands(OperandContainer operandContainer, String destinationStr, String operand1Str, String operand2Str, String operatorStr) {
 		operandContainer.setDestination(loadSingleOperand(destinationStr));
 		operandContainer.setOperand1(loadSingleOperand(operand1Str));
 		if (operand2Str != null) {
 			operandContainer.setOperand2(loadSingleOperand(operand2Str));
 		}
+		operandContainer.setOperator(operatorStr);
 	}
 }

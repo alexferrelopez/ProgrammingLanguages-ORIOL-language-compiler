@@ -6,6 +6,7 @@ public class OperandContainer {
 	private Operand destination;
 	private Operand operand1;
 	private Operand operand2;
+	private String operator;
 	private DataType operandsType;	// If there is no type, it's an operation between registers (addresses).
 
 	public void setDestination(Operand destination) {
@@ -35,6 +36,10 @@ public class OperandContainer {
 		}
 	}
 
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
+
 	public DataType getOperandsType() {
 		return operandsType;
 	}
@@ -49,5 +54,9 @@ public class OperandContainer {
 
 	public Operand getOperand2() {
 		return operand2;
+	}
+
+	public String getOperator() {
+		return operator;
 	}
 }

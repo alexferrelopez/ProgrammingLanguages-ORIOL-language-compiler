@@ -5,7 +5,9 @@ import backEnd.targetCode.Operand;
 import backEnd.targetCode.OperandContainer;
 import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
+import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
+import frontEnd.semantics.symbolTable.symbol.Symbol;
 
 public class AssignmentOperations extends MIPSOperations {
     public AssignmentOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocator) {
@@ -35,23 +37,40 @@ public class AssignmentOperations extends MIPSOperations {
 
 
     public String assignValue(String operand1, String destination) {
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName);
+        DataType type = variable.getDataType(); // We have the datatype of the variable that is being assigned.
+        StringBuilder text = new StringBuilder();
+
+        // Do all the previous operations.
+        switch (type) {
+            case INTEGER -> {
+                for (OperandContainer operation : this.pendingOperations) {
+                    text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
+                }
+            }
+            case FLOAT -> {
+                //floatOperation();
+            }
+        }
+
+
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, null);
+        loadOperands(operandContainer, destination, operand1, null, "=");
 
         // Load the destination register into memory (in case it is not already).
         Register destionationRegister = registerAllocator.allocateRegister(operandContainer.getDestination());
-        String text = saveVariableIntoMemory(destionationRegister, operandContainer.getDestination());
+        text.append(saveVariableIntoMemory(destionationRegister, operandContainer.getDestination()));
 
         // Check if it's a register to register assignment (a = b) or a direct assignment (a = 2).
         // REGISTER ASSIGNMENT
         if (operandContainer.getOperand1().isRegister()) {
-            text += registerToRegisterAssignment(destionationRegister, operandContainer.getOperand1());
+            text.append(registerToRegisterAssignment(destionationRegister, operandContainer.getOperand1()));
         } else {
             // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
 
             return switch (operandContainer.getOperandsType()) {
                 case INTEGER ->
-                        text += integerLiteralAssignment(destionationRegister, operandContainer.getOperand1());
+                        text.append(integerLiteralAssignment(destionationRegister, operandContainer.getOperand1())).toString();
                 //case FLOAT -> floatAssignment(destinationVariable);
                 default -> null;
             };
@@ -59,7 +78,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         // Ask for registers and assign the new values.
 
-        return text;
+        return text.toString();
     }
 
     private String floatAssignment(String offset, String operand1, String operand2) {
@@ -67,56 +86,12 @@ public class AssignmentOperations extends MIPSOperations {
                 ("li.s " + offset + ", " + operand1) + LINE_SEPARATOR;
     }
 
-    public String sumAssignment(String operand1, String operand2, String destination) {
+    public String addPendingOperation(String operand1, String operand2, String destination, String operator) {
         OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2);
+        loadOperands(operandContainer, destination, operand1, operand2, operator);
+        this.pendingOperations.add(operandContainer);
 
-        // Check type of variable.
-        return switch (operandContainer.getOperandsType()) {
-            case INTEGER ->
-                    integerOperation(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "add");
-            //case FLOAT -> floatAssignment(destinationVariable);
-            default -> null;
-        };
-    }
-
-    public String subtractAssignment(String operand1, String operand2, String destination) {
-        OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2);
-
-        // Check type of variable.
-        return switch (operandContainer.getOperandsType()) {
-            case INTEGER ->
-                    integerOperation(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "sub");
-            //case FLOAT -> floatAssignment(destinationVariable);
-            default -> null;
-        };
-    }
-
-    public String multiplicationAssignment(String operand1, String operand2, String destination) {
-        OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2);
-
-        // Check type of variable.
-        return switch (operandContainer.getOperandsType()) {
-            case INTEGER ->
-                    integerOperation(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "mul");
-            //case FLOAT -> floatAssignment(destinationVariable);
-            default -> null;
-        };
-    }
-
-    public String divisionAssignment(String operand1, String operand2, String destination) {
-        OperandContainer operandContainer = new OperandContainer();
-        loadOperands(operandContainer, destination, operand1, operand2);
-
-        // Check type of variable.
-        return switch (operandContainer.getOperandsType()) {
-            case INTEGER ->
-                    integerOperation(operandContainer.getDestination(), operandContainer.getOperand1(), operandContainer.getOperand2(), "div");
-            //case FLOAT -> floatAssignment(destinationVariable);
-            default -> null;
-        };
+        return null;
     }
 
     private String saveVariableIntoMemory(Register register, Operand variableOffset) {
