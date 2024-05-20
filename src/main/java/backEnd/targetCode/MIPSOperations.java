@@ -63,14 +63,14 @@ public class MIPSOperations {
 			String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
 			operand = new Operand(true, variable.getDataType(), variableRegister, false);
 		}
-		// Check if it's a register
+		// Check if it's a register. It's treated as a temporal (it will be removed from the registers when operated).
 		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX_TEMP)) {
 			operand = new Operand(true, null, operandValue, true);
 		}
-		// Any other type of data (integer, float, boolean...)
+		// Any other type of data (integer, float, boolean...). It's treated as a temporal (it will be removed from the registers when operated).
 		else {
 			DataType operandType = operandValueSymbol.getDataType();
-			operand = new Operand(false, operandType, operandValue, false);
+			operand = new Operand(false, operandType, operandValue, true);
 		}
 
 		return operand;

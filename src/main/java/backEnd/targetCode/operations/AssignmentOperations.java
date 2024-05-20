@@ -20,7 +20,7 @@ public class AssignmentOperations extends MIPSOperations {
         String text = saveVariableIntoMemory(variableRegister, registerValue);
 
         return  text += LINE_INDENTATION +
-                ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister());
+                ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
     }
 
     public String integerLiteralAssignment(Register destination, Operand literal) {
@@ -54,85 +54,6 @@ public class AssignmentOperations extends MIPSOperations {
 
         // Ask for registers and assign the new values.
 
-        return text;
-    }
-
-
-	/*private String directAssignment(String operand, String destination) {
-		// Check if the destination is a variable (it should).
-		Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName);
-		if (variable != null && variable.isVariable()) {
-			long offset = variable.getOffset();
-			String variableOffset = offset + "(" + FRAME_POINTER + ")";
-
-			destinationOperand = new Operand(true, variable.getDataType(), variableOffset);
-			resultOperand = new Operand(false, variable.getDataType(), operand);
-
-			// Check type of variable.
-			return switch (variable.getDataType()) {
-				case INTEGER -> integerAssignment(destinationOperand, resultOperand, null );
-				//case FLOAT -> floatAssignment(destinationVariable);
-				default -> null;
-			};
-		}
-
-		return "";
-	}*/
-
-    private String assignIntegerValue(Operand destination, Operand operand1) {
-        String text;
-
-        // Load the variable into a register.
-        Register variableRegister = registerAllocator.allocateRegister(destination);
-        text = saveVariableIntoMemory(variableRegister, destination);
-
-        switch (variableRegister.getRegisterEnum()) {
-            case VARIABLE_ALREADY_IN_REGISTER -> {
-                if (destination.isRegister()) {
-                    text += LINE_INDENTATION +
-                            ("li " + variableRegister.getVariableName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
-                } else {
-                    text += LINE_INDENTATION +
-                            ("li " + variableRegister.getRegisterName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
-                }
-            }
-            default -> text += LINE_INDENTATION +
-                    ("li " + variableRegister.getRegisterName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
-        }
-
-        return text;
-    }
-
-    private String integerAssignment(Operand destination, Operand operand1, Operand operand2) {
-        String text = "";
-
-        // Check if it's a simple assignment.
-        if (operand2 == null) {
-            if (operand1.isRegister()) {
-                //String regOperand = registerAllocator.getRegister(operand1.getValue());
-
-                Register regOperand = registerAllocator.allocateRegister(destination);
-                text += saveVariableIntoMemory(regOperand, operand1);
-
-                Register regDestination = registerAllocator.allocateRegister(destination);
-                text += saveVariableIntoMemory(regDestination, operand1);
-                text += LINE_INDENTATION +
-                        ("lw " + regDestination.getRegisterName() + ", " + destination.getValue()) + LINE_SEPARATOR;
-                text += LINE_INDENTATION + ("move " + regDestination.getNotNullRegister() + ", " + regOperand.getNotNullRegister()) + LINE_SEPARATOR;
-
-                if (operand1.isTemporal()) {
-                    registerAllocator.freeRegister(operand1.getValue());
-                }
-            } else {
-                text += assignIntegerValue(destination, operand1);
-            }
-        } else {
-            // It's an assignment with a register (e.g. $t0 = a + 3).
-		/*
-		return 	LINE_INDENTATION +
-				("li " + destination.getValue() + ", " + operand1.getValue()) + LINE_SEPARATOR;*/
-            text = "working" + LINE_SEPARATOR;
-        }
         return text;
     }
 
@@ -180,33 +101,14 @@ public class AssignmentOperations extends MIPSOperations {
         };
     }
 
-    private String loadOperandIntoRegister(Operand operand, String destination, DataType dataType) {
-        String text;
-
-        // Load a value from a register into a register.
-        if (operand.isRegister()) {
-            text = "lw " + destination + ", " + operand.getValue();
-        } else {
-            // Load a floating point value (decimal).
-            if (dataType == DataType.FLOAT) {
-                text = "li.s " + destination + ", " + operand.getValue();
-            }
-
-            // Load any other type (integer).
-            else {
-                text = "li " + destination + ", " + operand.getValue();
-            }
-        }
-
-        return text + LINE_SEPARATOR + LINE_INDENTATION;
-    }
-
     private String saveVariableIntoMemory(Register register, Operand variableOffset) {
         String text = LINE_INDENTATION;
 
         switch (register.getRegisterEnum()) {
             case AVAILABLE_REGISTER -> {
-                if (!variableOffset.isTemporal()) {
+
+                // Only load variables or literals, not temporal registers.
+                if (!variableOffset.isTemporal() || !variableOffset.isRegister()) {
                     return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName()) + LINE_SEPARATOR;
                 }
                 return "";
@@ -223,11 +125,11 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String integerSumSub(Operand destination, Operand operand1, Operand operand2, String operator) {
-        String text = LINE_INDENTATION;
+        String text;
 
         // Allocate temporary registers.
         Register regOp1 = registerAllocator.allocateRegister(operand1);
-        text += saveVariableIntoMemory(regOp1, operand1);
+        text = saveVariableIntoMemory(regOp1, operand1);
 
         Register regOp2 = registerAllocator.allocateRegister(operand2);
         text += saveVariableIntoMemory(regOp2, operand2);
@@ -235,15 +137,17 @@ public class AssignmentOperations extends MIPSOperations {
         Register regDest = registerAllocator.allocateRegister(destination);
         text += saveVariableIntoMemory(regDest, destination);
 
-        //text += loadOperandIntoRegister(operand1, regOp1[0], DataType.INTEGER);
-        //text += loadOperandIntoRegister(operand2, regOp2[0], DataType.INTEGER);
-
         // Destination will always be a temporal register.
-        text += (operator + " " + regDest.getRegisterName() + ", " + regOp1.getVariableName() + ", " + regOp2.getVariableName()) + LINE_SEPARATOR;
+        text += LINE_INDENTATION + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
 
-        // Free temporary registers (destination will be freed in the assignment).
-        //registerAllocator.freeRegister(operand2.getValue());
-        //registerAllocator.freeRegister(operand1.getValue());
+        // Free temporary registers (temporal registers generated by TAC or literals).
+        if (operand2.isTemporal()) {
+            registerAllocator.freeRegister(operand2.getValue());
+        }
+
+        if (operand1.isTemporal()) {
+            registerAllocator.freeRegister(operand1.getValue());
+        }
 
         return text;
     }
