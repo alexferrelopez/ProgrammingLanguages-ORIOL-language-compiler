@@ -100,14 +100,14 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			case "SUB" -> showOperation(instruction, assignmentOperations.subtractAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			case "MUL" -> showOperation(instruction, assignmentOperations.multiplicationAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "DIV" -> null;
+			case "DIV" -> showOperation(instruction, assignmentOperations.divisionAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
 			default -> null;
 		};
 	}
 
 	private String showOperation(TACInstruction instruction, String codeMIPS) {
 		return 	LINE_SEPARATOR + LINE_INDENTATION +
-				assignmentOperations.writeComment(instruction.toString()) + LINE_SEPARATOR +
+				assignmentOperations.writeComment("TAC: " + instruction.toString()) + LINE_SEPARATOR +
 				codeMIPS;
 	}
 }
