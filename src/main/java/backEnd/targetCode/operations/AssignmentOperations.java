@@ -70,7 +70,10 @@ public class AssignmentOperations extends MIPSOperations {
 				text += LINE_INDENTATION +
 						("lw " + regDestination.getRegisterName() + ", " + destination.getValue()) + LINE_SEPARATOR;
 				text += LINE_INDENTATION + ("move " + regDestination.getRegisterName() + ", " + regOperand) + LINE_SEPARATOR;
-				registerAllocator.freeRegister(operand1.getValue());
+
+				if (operand1.isTemporal()) {
+					registerAllocator.freeRegister(operand1.getValue());
+				}
 			}
 			else {
 				// TODO: Test
@@ -78,8 +81,14 @@ public class AssignmentOperations extends MIPSOperations {
 				Register variableRegister = registerAllocator.allocateRegister(destination);
 				text = saveVariableIntoMemory(variableRegister, destination);
 
-				text += LINE_INDENTATION +
-						("li " + variableRegister.getRegisterName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+				switch (variableRegister.getRegisterEnum()) {
+					case VARIABLE_ALREADY_IN_REGISTER ->
+							text += LINE_INDENTATION +
+							("li " + variableRegister.getVariableName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+					default ->
+							text += LINE_INDENTATION +
+									("li " + variableRegister.getRegisterName() + ", " + operand1.getValue()) + LINE_SEPARATOR;
+				}
 			}
 		}
 		else {
@@ -155,7 +164,7 @@ public class AssignmentOperations extends MIPSOperations {
             }
             case SWAP_REGISTERS -> {
 				text += loadVariableToMemory(register.getVariableName(), register.getRegisterName())  + LINE_SEPARATOR; // Write the operation to save the variable into memory.
-				return text + LINE_INDENTATION + loadVariableToRegister(variableOffset.getValue(), register.getVariableName()) + LINE_SEPARATOR;
+				return text + LINE_INDENTATION + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName()) + LINE_SEPARATOR;
 			}
 			// The variable was already loaded into a register.
             default -> {

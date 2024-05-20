@@ -126,6 +126,8 @@ public class FunctionOperations extends MIPSOperations {
 			jr $ra              # Return from function
 		 */
 
+		registerAllocator.freeRegister("test");
+
 		String text = LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
 				("lw " + RETURN_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +

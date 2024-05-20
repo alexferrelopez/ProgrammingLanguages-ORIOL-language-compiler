@@ -41,7 +41,7 @@ public class MIPSOperations {
 	}
 
 	protected String loadVariableToMemory(String oldestVariable, String oldestRegister) {
-		return "sw " + oldestVariable + ", " + oldestRegister;
+		return "sw " + oldestRegister + ", " + oldestVariable;
 	}
 
 	protected String loadVariableToRegister(String oldestVariable, String oldestRegister) {
