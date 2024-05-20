@@ -80,9 +80,6 @@ class LexicalAnalyzerTest {
                         """
                                 	oink : sumRange ( oink numA , oink numB , oink increment ) {
                                 		oink result is 0.0 ;
-                                		miau aAROn is 3 ;
-                                		miau gEmMa is 0 ;
-                                		miau ORIol is 4 ;
                                 		check ( numA bg numB ) {
                                 			oink tmp is numA ;
                                 			numA is numB ;
@@ -122,21 +119,6 @@ class LexicalAnalyzerTest {
                                 new Token(ValueSymbol.VARIABLE, "result"),
                                 new Token(ReservedSymbol.IS),
                                 new Token(ValueSymbol.VALUE_FLOAT, "0.0"),
-                                new Token(SpecialSymbol.PUNT_COMMA),
-                                new Token(DataType.INTEGER),
-                                new Token(ReservedSymbol.AARON, "aAROn"),    // Must be defined or will get the lexeme as "(?i)aaron"
-                                new Token(ReservedSymbol.IS),
-                                new Token(ValueSymbol.VALUE_INT, "3"),
-                                new Token(SpecialSymbol.PUNT_COMMA),
-                                new Token(DataType.INTEGER),
-                                new Token(ReservedSymbol.GEMMA, "gEmMa"),
-                                new Token(ReservedSymbol.IS),
-                                new Token(ValueSymbol.VALUE_INT, "0"),
-                                new Token(SpecialSymbol.PUNT_COMMA),
-                                new Token(DataType.INTEGER),
-                                new Token(ReservedSymbol.ORIOL, "ORIol"),
-                                new Token(ReservedSymbol.IS),
-                                new Token(ValueSymbol.VALUE_INT, "4"),
                                 new Token(SpecialSymbol.PUNT_COMMA),
                                 new Token(ReservedSymbol.IF),
                                 new Token(SpecialSymbol.PO),

@@ -1,4 +1,6 @@
-import backEnd.targetCode.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocator;
+import backEnd.targetCode.registers.RegisterAllocatorFloat;
+import backEnd.targetCode.registers.RegisterAllocatorInteger;
 import backEnd.targetCode.TACToMIPSConverter;
 import backEnd.targetCode.TargetCodeGeneratorInterface;
 import backEnd.exceptions.TargetCodeException;
@@ -55,8 +57,9 @@ public class Compiler implements CompilerInterface {
         this.parser = new RecursiveDescentLLParser(scanner, syntacticErrorHandler, semanticAnalyzer);
 
         // ---- BACK END ---- //
-        RegisterAllocator registerAllocator = new RegisterAllocator();
-        this.mipsConverter = new TACToMIPSConverter(symbolTable, registerAllocator);
+        RegisterAllocator registerAllocatorInteger = new RegisterAllocatorInteger();
+        RegisterAllocator registerAllocatorFloat = new RegisterAllocatorFloat();
+        this.mipsConverter = new TACToMIPSConverter(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
     }
 
     /**
@@ -70,7 +73,7 @@ public class Compiler implements CompilerInterface {
         Tree<AbstractSymbol> tree = parser.getTree();    // Get tree from parser
 
         // Print the tree for debugging
-        parser.printTree(tree);
+        //parser.printTree(tree);
         if(hasErrors()) return;
         TACModule tacModule = new TACModule();
         tacGenerator = new TACGenerator(tacModule, symbolTable);
@@ -78,7 +81,7 @@ public class Compiler implements CompilerInterface {
         // Generate the intermediate code
         List<TACInstruction> TACinstructions = tacGenerator.generateTAC(tree);
 
-        tacGenerator.printTAC();
+        //tacGenerator.printTAC();
 
         // ---- BACK END ---- //
 		try {

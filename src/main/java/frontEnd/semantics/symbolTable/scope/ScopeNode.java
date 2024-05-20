@@ -4,10 +4,7 @@ import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.symbol.FunctionSymbol;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ScopeNode {
 	private final List<ScopeNode> children = new ArrayList<>();	// List of child scopes
@@ -18,7 +15,7 @@ public class ScopeNode {
 	private final DataType returnType;
 
 	public ScopeNode(int scopeLevel, ScopeType scopeType, ScopeNode parent) {
-		this.symbols = new HashMap<>();
+		this.symbols = new LinkedHashMap<>();
 		this.scopeLevel = scopeLevel;
 		this.parent = parent;
 		this.scopeType = scopeType;
@@ -26,7 +23,7 @@ public class ScopeNode {
 	}
 
 	public ScopeNode(int scopeLevel, ScopeType scopeType, ScopeNode parent, DataType returnType) {
-		this.symbols = new HashMap<>();
+		this.symbols = new LinkedHashMap<>();
 		this.scopeLevel = scopeLevel;
 		this.parent = parent;
 		this.scopeType = scopeType;
@@ -171,14 +168,14 @@ public class ScopeNode {
 	}
 
 	public int calculateNestedScopesSize() {
-
 		// Calculate the maximum size (to guarantee the worst case) of all the variables from the node's children.
-		List<Integer> childrenSizes = new ArrayList<>();
+		int currentScopeSize = 0;
+
 		for (ScopeNode child : this.children) {
-			childrenSizes.add(child.calculateScopeSize());
+			currentScopeSize += child.calculateScopeSize();
 		}
 
-		return childrenSizes.stream().max(Integer::compareTo).orElse(0);
+		return currentScopeSize;
 	}
 
 	public int calculateScopeSize() {

@@ -45,12 +45,12 @@
 <arit_1> ::= <arit_2> <arit_1'>
 <arit_1'> ::= SUM <arit_5> | SUB <arit_5> | ε
 <arit_2> ::= <arit_3> <arit_2'>
-<arit_2'> ::= DIV <arit_5> | MUL <arit_5> | MOD <arit_5> | ε
+<arit_2'> ::= DIV <arit_5> | MUL <arit_5> | ε
 <arit_3> ::= <arit_4> <arit_3'>
-<arit_3'> ::= POW <arit_5> | ε
-<arit_4> ::= PO <arit_1> PT | <arit_5>
+<arit_3'> ::= ε
+<arit_4> ::= <arit_5>
 <arit_5> ::= <rela_1>
 <rela_1> ::= <rela_2> <rela_1'>
 <rela_1'> ::= GT <rela_2> | LT <rela_2> | NEQ <rela_2> | EQ <rela_2> | ε
-<rela_2> ::= PO <rela_1> PT | <rela_3>
+<rela_2> ::= <rela_3>
 <rela_3> ::= <value>

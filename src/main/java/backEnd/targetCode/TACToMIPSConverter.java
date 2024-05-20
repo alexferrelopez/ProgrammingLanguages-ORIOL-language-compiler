@@ -4,6 +4,7 @@ import backEnd.exceptions.TargetCodeException;
 import backEnd.exceptions.targetCode.FailedFileCreationException;
 import backEnd.targetCode.operations.AssignmentOperations;
 import backEnd.targetCode.operations.FunctionOperations;
+import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.intermediateCode.TACInstruction;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 
@@ -22,9 +23,9 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	private final FunctionOperations functionOperations;
 	private final AssignmentOperations assignmentOperations;
 
-	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocator) {
-		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocator);
-		functionOperations = new FunctionOperations(symbolTable, registerAllocator, assignmentOperations);
+	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, assignmentOperations);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
@@ -44,9 +45,15 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 	public void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException {
 		createAssemblyFile();
 
+		// Write the jump to the "main" function.
+		try {
+			targetCode.write("j ranch" + LINE_SEPARATOR + LINE_SEPARATOR);
+		} catch (IOException e) {
+			throw new FailedFileCreationException(e.getMessage());
+		}
+
 		for (TACInstruction instruction : instructions) {
 			try {
-				//targetCode.write(convertTACInstruction(instruction) ? "")
 				String instructionCode = convertTACInstruction(instruction);
 				if (instructionCode != null) {
 					targetCode.write(instructionCode);
@@ -69,46 +76,45 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 			case "function" -> functionOperations.funcDeclaration(instruction.getResult());
 			case "Return" -> functionOperations.returnFunction(instruction.getOperand1());
 			case "BeginFunc" -> functionOperations.beginFunction(instruction.getOperand1());
-			case "PushParam" -> functionOperations.assignFunctionParameter(instruction.getOperand1());
+			case "PushParam" -> showOperation(instruction, functionOperations.assignFunctionParameter(instruction.getOperand1(), instruction.getOperator()));
 			case "EndFunc" -> functionOperations.endFunction();
-			case "LCall" -> functionOperations.callFunction(instruction.getOperand1());
+			case "LCall" -> functionOperations.callFunction(instruction.getResult());
 
 			// ** Assignments
-			case "=" -> showOperation(instruction, assignmentOperations.assignValue(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
+			case "=" -> showOperation(instruction, assignmentOperations.assignmentOperation(instruction.getOperand1(), instruction.getResult()));
 
 			// *** Binary Operations ***
-			case "GT" -> null;
-				// Greater than
-			case "LT" -> null;
-				// Less than
-			case "EQ" -> null;
-				// Equal
-			case "NEQ" -> null;
-				// Not equal
-			case "OR" -> null;
-				// Or
-			case "AND" -> null;
-				// And
+			case "GT", "LT", "EQ", "NEQ", "OR", "AND" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
 
 			// *** Conditional ***
-			case "IFz" -> null;
-				// If zero
+			case "IfZ" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), null, instruction.getResult(), instruction.getOperator()));
+
+			// When we arrive at a conditional, we have to store the result of the previous operation in a register.
+			case "Goto" ->  showOperation(instruction, assignmentOperations.conditionalJump(instruction.getResult(), instruction.getOperator()));
+
+			// *** Labels ***
+			case "label" -> showOperation(instruction, assignmentOperations.createLabel(instruction.getResult()));
 
 			// *** Arithmetic Operations ***
+			case "SUM", "SUB", "MUL", "DIV" -> showOperation(instruction, assignmentOperations.addPendingOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
 
-			case "SUM" -> showOperation(instruction, assignmentOperations.sumAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "SUB" -> showOperation(instruction, assignmentOperations.subtractAssignment(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult()));
-			case "MOD" -> null;
-			case "MUL" -> null;
-			case "POW" -> null;
-			case "DIV" -> null;
 			default -> null;
 		};
 	}
 
 	private String showOperation(TACInstruction instruction, String codeMIPS) {
+		String commentCode;
+
+		// Change the comment if there is no result value (it's not an assignment nor operation, it's a tag).
+		if (instruction.getResult() == null || instruction.getResult().isEmpty()) {
+			commentCode = instruction.getOperator() + " " + instruction.getOperand1();
+		}
+		else {
+			commentCode = instruction.toString();
+		}
+
 		return 	LINE_SEPARATOR + LINE_INDENTATION +
-				assignmentOperations.writeComment(instruction.toString()) + LINE_SEPARATOR +
-				codeMIPS;
+				assignmentOperations.writeComment("TAC: " + commentCode) +
+				((codeMIPS == null) ? "" : LINE_SEPARATOR + codeMIPS) + LINE_SEPARATOR;
 	}
 }

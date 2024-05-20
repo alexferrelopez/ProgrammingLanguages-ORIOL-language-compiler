@@ -8,9 +8,7 @@ public enum MathOperator implements TokenType {
     // Enum constants (mathematics operators)
     SUM("sum", List.of("sum")),
     SUB("minus", List.of("minus")),
-    MOD("mod|module", List.of("mod", "module")),
     MUL("times", List.of("times")),
-    POW("pow|power", List.of("pow", "power")),
     DIV("div", List.of("div"));
 
     // Instance field (regex pattern) for each enum constant
