@@ -9,7 +9,10 @@ miau : f2 ( miau tio, miau tia ) {
 miau : ranch ( ) {
     miau a is 2 ;
 
-    miau c is 3 sum 1 ;
+    oink prova is 1.0 ;
+    oink c is 1.1 sum prova;
+
+    c is 2.0 div 1.0 ;
 
     poop 0;
 }

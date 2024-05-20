@@ -26,7 +26,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 
 	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
 		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
-		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorInteger, assignmentOperations);
+		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, assignmentOperations);
 	}
 
 	private void createAssemblyFile() throws FailedFileCreationException {
