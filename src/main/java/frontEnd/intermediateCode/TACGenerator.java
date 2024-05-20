@@ -267,7 +267,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         String lastVar = ((TerminalSymbol) terminal.getNode()).getToken().getLexeme();
 
-        Expression expr = new Expression(firstVar, "GT", lastVar);
+        Expression expr = new Expression(firstVar, "LT", lastVar);
 
         // Create a label
         String labelStart = tacModule.createLabel();

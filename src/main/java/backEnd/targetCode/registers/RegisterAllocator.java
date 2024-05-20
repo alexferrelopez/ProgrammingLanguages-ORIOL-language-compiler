@@ -9,4 +9,6 @@ public interface RegisterAllocator {
     Register getRegister(String variable);
     void freeRegister(String variable);
     Map<String, String> getVariableToRegister();
+    Register customAllocateRegister(String variable, String destination);
+    Map<String, String> getVariableToCustomRegister();
 }

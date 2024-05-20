@@ -96,6 +96,22 @@ public class FunctionOperations extends MIPSOperations {
 		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName.peek());
 		assignOffset(function, currentOffset);
 
+		// Map the parameters passed
+		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
+		if (functionSymbol != null && functionSymbol.isFunction()) {
+			FunctionSymbol<?> declaredFunction = (FunctionSymbol<?>) functionSymbol;
+
+			int numParameter = 0;
+			for (VariableSymbol<?> parameter : declaredFunction.getParameters()) {
+				switch(parameter.getDataType()) {
+					case FLOAT -> registerAllocatorFloat.customAllocateRegister(parameter.getOffset() + "(" + FRAME_POINTER + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
+					case INTEGER -> registerAllocatorInteger.customAllocateRegister(parameter.getOffset() + "(" + FRAME_POINTER + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
+				}
+				numParameter++;
+			}
+
+		}
+
 		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
 				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR +
 				LINE_INDENTATION + writeComment("-- Variables code --") + LINE_SEPARATOR;
@@ -162,18 +178,17 @@ public class FunctionOperations extends MIPSOperations {
 
 	public String assignFunctionParameter(String parameterValue, String callOperator) {
 		String destinationRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
-		currentParameterNumber++;
 
-//		if (currentParameterNumber > MAX_FUNCTION_PARAMETERS) {
-//
-//		}
+		if (currentParameterNumber < MAX_FUNCTION_PARAMETERS) {
+			currentParameterNumber++;
 
-		// Save the parameter to see its type when the "call" instruction is received.
-		OperandContainer pushFunctionParameter = new OperandContainer();
-		loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator, false);
-		Operand parameter = new Operand(true, null, parameterValue, false);
-		pushFunctionParameter.setOperand1(parameter);
-		this.pendingOperations.add(pushFunctionParameter);
+			// Save the parameter to see its type when the "call" instruction is received.
+			OperandContainer pushFunctionParameter = new OperandContainer();
+			loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator, false);
+			Operand parameter = new Operand(true, null, parameterValue, false);
+			pushFunctionParameter.setOperand1(parameter);
+			this.pendingOperations.add(pushFunctionParameter);
+		}
 
 		// The assignment internally checks if it's a variable or a normal value.
 		return null;
@@ -200,7 +215,19 @@ public class FunctionOperations extends MIPSOperations {
 			}
 		}
 
+		// Clear all the variables mapped.
 		Iterator<Map.Entry<String, String>> iterator = registerAllocatorInteger.getVariableToRegister().entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, String> entry = iterator.next();
+			String key = entry.getKey();
+
+			// Load all variables into memory.
+			text.append(LINE_INDENTATION).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(LINE_SEPARATOR);
+			iterator.remove();
+		}
+
+		// Clear all the variables mapped.
+		iterator = registerAllocatorInteger.getVariableToCustomRegister().entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<String, String> entry = iterator.next();
 			String key = entry.getKey();
