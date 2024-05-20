@@ -106,7 +106,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
 		String commentCode;
 
 		// Change the comment if there is no result value (it's not an assignment nor operation, it's a tag).
-		if (instruction.getResult().isEmpty()) {
+		if (instruction.getResult() == null || instruction.getResult().isEmpty()) {
 			commentCode = instruction.getOperator() + " " + instruction.getOperand1();
 		}
 		else {

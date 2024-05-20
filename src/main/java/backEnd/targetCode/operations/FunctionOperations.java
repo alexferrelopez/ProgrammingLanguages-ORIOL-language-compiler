@@ -13,7 +13,9 @@ import frontEnd.semantics.symbolTable.symbol.Symbol;
 import frontEnd.semantics.symbolTable.symbol.VariableSymbol;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class FunctionOperations extends MIPSOperations {
 	private final AssignmentOperations assignmentOperations;
@@ -139,7 +141,7 @@ public class FunctionOperations extends MIPSOperations {
 
 		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
 				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + RETURN_VALUE_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
+				("lw " + RETURN_ADDRESS_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
 				("lw " + FRAME_POINTER + ", 0(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION;
 
 		// End the program if it's the main or add the return value if it's another function.
@@ -196,6 +198,16 @@ public class FunctionOperations extends MIPSOperations {
 				text.append(assignmentOperations.assignValueToRegister(operation.getOperand1().getValue(), operation.getDestination().getValue(), parameter.getDataType(), false));
 				numParameter++;
 			}
+		}
+
+		Iterator<Map.Entry<String, String>> iterator = registerAllocatorInteger.getVariableToRegister().entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, String> entry = iterator.next();
+			String key = entry.getKey();
+
+			// Load all variables into memory.
+			text.append(LINE_INDENTATION).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(LINE_SEPARATOR);
+			iterator.remove();
 		}
 
 		this.currentParameterNumber = 0;

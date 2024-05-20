@@ -80,4 +80,9 @@ public class RegisterAllocatorFloat implements RegisterAllocator {
 			variableToRegister.remove(variable);
 		}
 	}
+
+	@Override
+	public Map<String, String> getVariableToRegister() {
+		return variableToRegister;
+	}
 }

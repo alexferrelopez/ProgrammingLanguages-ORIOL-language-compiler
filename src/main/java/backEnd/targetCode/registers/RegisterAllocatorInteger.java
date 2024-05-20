@@ -77,6 +77,10 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
 		}
 	}
 
+	public Map<String, String> getVariableToRegister() {
+		return variableToRegister;
+	}
+
 	public Register getRegister(String variable) {
 		String variableRegister = variableToRegister.get(variable);
 		variableToRegister.remove(variable);

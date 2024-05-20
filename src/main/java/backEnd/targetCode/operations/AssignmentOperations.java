@@ -107,7 +107,7 @@ public class AssignmentOperations extends MIPSOperations {
         } else {
             // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
             return switch (destinationType) {
-                case INTEGER -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
+                case INTEGER, BOOLEAN -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
                 case FLOAT -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
                 default -> "";
             };
@@ -126,7 +126,7 @@ public class AssignmentOperations extends MIPSOperations {
         // Do all the previous operations.
         for (OperandContainer operation : this.pendingOperations) {
             switch (destinationType) {
-                case INTEGER -> {
+                case INTEGER, BOOLEAN -> {
                     text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
                 }
                 case FLOAT -> {
@@ -277,7 +277,7 @@ public class AssignmentOperations extends MIPSOperations {
         for (OperandContainer operation : this.pendingLogicalOperations) {
             if (!Objects.equals(operation.getOperator(), "IfZ")) {
                 switch (dataType) {
-                    case INTEGER -> {
+                    case INTEGER, BOOLEAN -> {
                         text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
                     }
                     case FLOAT -> {
