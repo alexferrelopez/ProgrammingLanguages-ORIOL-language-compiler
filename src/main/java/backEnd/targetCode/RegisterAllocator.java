@@ -30,15 +30,17 @@ public class RegisterAllocator {
 
 	// First position is the available register for the variable.
 	// Second position is the variable that was removed from the register (in case it was needed).
-	public String[] allocateRegister(String variable) {
+	public String[] allocateRegister(Operand variableOperand) {
+		String variable = variableOperand.getValue();
+
 		// Check if the variable already has a register assigned.
 		if (variableToRegister.containsKey(variable)) {
 			// If the variable is already in a register, move it to the top of the list.
 
 			// Do the swap between the register and the last element of the list.
 			String variableRegister = variableToRegister.get(variable);
-			availableRegisters.remove(variableRegister);
-			availableRegisters.add(variableRegister);	// Set the register to be the most recent one.
+			variableToRegister.remove(variable);
+			variableToRegister.put(variable, variableRegister);	// Set the register to be the most recent one.
 
 			return new String[] { variableRegister, null };
 		}
@@ -64,6 +66,7 @@ public class RegisterAllocator {
 			// Add the new variable to the register.
 			variableToRegister.put(variable, oldestRegister);
 
+			// Check if it's a variable (not a temporal).
 			return new String[] { oldestRegister, oldestVariable };
 		}
 	}

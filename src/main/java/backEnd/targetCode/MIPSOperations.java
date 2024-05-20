@@ -41,7 +41,7 @@ public class MIPSOperations {
 	}
 
 	protected String loadVariableToMemory(String oldestVariable, String oldestRegister) {
-		return "sw " + oldestRegister + ", " + oldestVariable;
+		return "sw " + oldestVariable + ", " + oldestRegister;
 	}
 
 	protected String loadVariableToRegister(String oldestVariable, String oldestRegister) {
@@ -60,16 +60,16 @@ public class MIPSOperations {
 		if (operandValueSymbol == ValueSymbol.VARIABLE) {
 			Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunctionName);
 			String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
-			operand = new Operand(true, variable.getDataType(), variableRegister);
+			operand = new Operand(true, variable.getDataType(), variableRegister, false);
 		}
 		// Check if it's a register
 		else if (operandValue.startsWith(RegisterAllocator.REGISTER_PREFIX_TEMP)) {
-			operand = new Operand(true, null, operandValue);
+			operand = new Operand(true, null, operandValue, true);
 		}
 		// Any other type of data (integer, float, boolean...)
 		else {
 			DataType operandType = operandValueSymbol.getDataType();
-			operand = new Operand(false, operandType, operandValue);
+			operand = new Operand(false, operandType, operandValue, false);
 		}
 
 		return operand;

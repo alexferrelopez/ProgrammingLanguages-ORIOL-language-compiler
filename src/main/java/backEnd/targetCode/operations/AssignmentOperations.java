@@ -66,14 +66,14 @@ public class AssignmentOperations extends MIPSOperations {
 			if (operand1.isRegister()) {
 				String regOperand = registerAllocator.getRegister(operand1.getValue());
 				text = 	LINE_INDENTATION +
-						("sw " + destination.getValue() + ", " + regOperand) + LINE_SEPARATOR;
-				registerAllocator.freeRegister(regOperand);
+						("sw " + regOperand + ", " + destination.getValue()) + LINE_SEPARATOR;
+				// registerAllocator.freeRegister(regOperand);
 			}
 			else {
 				// TODO: Test
 				// Load the variable into a register.
-				String[] variableRegister = registerAllocator.allocateRegister(destination.getValue());
-				text = saveVariableIntoMemory(variableRegister, destination.getValue());
+				String[] variableRegister = registerAllocator.allocateRegister(destination);
+				text = saveVariableIntoMemory(variableRegister, destination);
 
 				text += LINE_INDENTATION +
 						("li " + variableRegister[0] + ", " + operand1.getValue()) + LINE_SEPARATOR;
@@ -140,15 +140,19 @@ public class AssignmentOperations extends MIPSOperations {
 		return text + LINE_SEPARATOR + LINE_INDENTATION;
 	}
 
-	private String saveVariableIntoMemory(String[] register, String variableOffset) {
+	private String saveVariableIntoMemory(String[] register, Operand variableOffset) {
+		String text = LINE_INDENTATION;
 		// Check if it's null to load the variable from memory into a register.
-		if (register.length == 1) {
-			return loadVariableToRegister(variableOffset, register[0]) + LINE_SEPARATOR;
+		if (register.length == 1 && !variableOffset.isTemporal()) {
+			return text + loadVariableToRegister(variableOffset.getValue(), register[0]) + LINE_SEPARATOR;
 		}
 
 		// Check if the previous variable that was in the new register has to be loaded into memory.
 		else if (register.length > 1 && register[1] != null) {
-			return loadVariableToMemory(register[0], register[1])  + LINE_SEPARATOR; // Write the operation to save the variable into memory.
+			if (!variableOffset.isTemporal()) {
+				text += loadVariableToMemory(register[1], register[0])  + LINE_SEPARATOR; // Write the operation to save the variable into memory.
+			}
+			return text + LINE_INDENTATION + loadVariableToRegister(variableOffset.getValue(), register[0]) + LINE_SEPARATOR;
 		}
 
 		return "";
@@ -158,17 +162,17 @@ public class AssignmentOperations extends MIPSOperations {
 		String text = LINE_INDENTATION;
 
 		// Allocate temporary registers.
-		String[] regOp1 = registerAllocator.allocateRegister(operand1.getValue());
-		text += saveVariableIntoMemory(regOp1, operand1.getValue());
+		String[] regOp1 = registerAllocator.allocateRegister(operand1);
+		text += saveVariableIntoMemory(regOp1, operand1);
 
-		String[] regOp2 = registerAllocator.allocateRegister(operand2.getValue());
-		text += saveVariableIntoMemory(regOp2, operand2.getValue());
+		String[] regOp2 = registerAllocator.allocateRegister(operand2);
+		text += saveVariableIntoMemory(regOp2, operand2);
 
-		String[] regDest = registerAllocator.allocateRegister(destination.getValue());
-		text += saveVariableIntoMemory(regDest, destination.getValue());
+		String[] regDest = registerAllocator.allocateRegister(destination);
+		text += saveVariableIntoMemory(regDest, destination);
 
-		text += loadOperandIntoRegister(operand1, regOp1[0], DataType.INTEGER);
-		text += loadOperandIntoRegister(operand2, regOp2[0], DataType.INTEGER);
+		//text += loadOperandIntoRegister(operand1, regOp1[0], DataType.INTEGER);
+		//text += loadOperandIntoRegister(operand2, regOp2[0], DataType.INTEGER);
 
 		// Destination will always be a temporal register.
 		text += (operator + " " + regDest[0] + ", " + regOp1[0] + ", " + regOp2[0]) + LINE_SEPARATOR;
