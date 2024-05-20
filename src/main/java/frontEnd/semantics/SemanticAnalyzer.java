@@ -904,14 +904,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                             }
                             parameters.add(new VariableSymbol<>(name, dt, lineDeclaration, true, null));
                         } else {
-                            DataType dt = switch ((ValueSymbol) token.getType()) {
-                                case VALUE_INT -> DataType.INTEGER;
-                                case VALUE_FLOAT -> DataType.FLOAT;
-                                case VALUE_TRUE, VALUE_FALSE -> DataType.BOOLEAN;
-                                case VALUE_CHAR -> DataType.CHAR;
-                                case VALUE_STRING -> DataType.STRING;
-                                default -> null;
-                            };
+                            DataType dt = ((ValueSymbol) token.getType()).getDataType();
                             parameters.add(new VariableSymbol<>(token.getLexeme(), dt, token.getLine(), true, null));
                         }
                     }
