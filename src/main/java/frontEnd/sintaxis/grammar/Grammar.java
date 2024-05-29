@@ -11,12 +11,12 @@ public class Grammar {
     private final String GRAMMAR_PATH = "src/main/resources/gramatica.txt";
     /**
      * Our structure to store the whole grammar.
-     * It is a HashMap where its Key will be each non-terminal and the Value will be the different productions from that non-terminal.
+     * It is a LinkedHashMap where its Key will be each non-terminal and the Value will be the different productions from that non-terminal.
      * To store the different productions we are using a double LinkedList.
      * * The first one will store the different productions each non-terminal can lead to.
      * * And the second list will be each of the Terminals and Non-Terminals that each particular production can result in.
      */
-    private final Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar = new HashMap<>();
+    private final Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar = new LinkedHashMap<>();
     private final List<NonTerminalSymbol> noTerminalList = new LinkedList<>();
 
     public Grammar() {

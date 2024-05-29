@@ -4,20 +4,17 @@ import debug.PrettyPrintTree;
 import errorHandlers.SyntacticErrorHandler;
 import errorHandlers.errorTypes.SyntacticErrorType;
 import frontEnd.exceptions.SemanticException;
-import frontEnd.exceptions.semantics.InvalidAssignmentException;
 import frontEnd.exceptions.lexic.InvalidFileException;
 import frontEnd.exceptions.lexic.InvalidTokenException;
 import frontEnd.lexic.LexicalAnalyzerInterface;
 import frontEnd.lexic.dictionary.Token;
-import frontEnd.lexic.dictionary.tokenEnums.ReservedSymbol;
-import frontEnd.semantics.SemanticAnalyzer;
 import frontEnd.semantics.SemanticAnalyzerInterface;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.Grammar;
+import frontEnd.sintaxis.grammar.derivationRules.Follow;
 import frontEnd.sintaxis.grammar.derivationRules.NonTerminalSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.ParsingTable;
 import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
-import frontEnd.sintaxis.grammar.derivationRules.Follow;
 
 import java.util.*;
 
@@ -67,8 +64,8 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             while (!stack.empty()) {
                 AbstractSymbol symbol = stack.pop();
                 if (symbol.isTerminal()) { //If the symbol is a terminal we have to match it with the lookahead
-                    boolean ok =  match((TerminalSymbol) symbol);
-                    if(!ok)break;
+                    boolean ok = match((TerminalSymbol) symbol);
+                    if (!ok) break;
                     if (symbol.getName().equals("EOF") && lookahead.getLexeme().equals("EOF")) { //if both are EOF we have finished :D
 
                     }
@@ -164,6 +161,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
     /**
      * This method checks if the lookahead is the same as the terminal symbol
+     *
      * @param terminal the terminal symbol to compare
      */
     private boolean match(TerminalSymbol terminal) {
@@ -171,7 +169,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             terminal.setToken(lookahead);
             if (terminal.getName().equals("PUNT_COMMA") || terminal.getName().equals("CO") || terminal.getName().equals("CT")) {//If we ended a sentence or a block of code
                 Tree<AbstractSymbol> parent = tree.getParent();
-                if(Objects.isNull(parent))return false;
+                if (Objects.isNull(parent)) return false;
                 String nodeName = (parent.getNode()).getName();
                 AbstractSymbol symbolToSend = startTokensStack.peek();
                 if (symbolToSend.getName().equals("ELSE")) {
@@ -184,7 +182,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
                     while (!symbolToSend.getName().equals(nodeName) //Find the root of the tree to send it
                     ) {
                         parent = parent.getParent();
-                        if(Objects.isNull(parent))return false;
+                        if (Objects.isNull(parent)) return false;
                         nodeName = (parent.getNode()).getName();
                     }
                     if (terminal.getName().equals("CT")) {
@@ -203,14 +201,14 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             }
             boolean lookaheadrror = true;
             //do {
-                try {
-                    lookahead = lexicalAnalyzer.getNextToken();
-                    lookaheadrror = false;
-                } catch (InvalidTokenException e) {
-                    errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
-                    return false;
-                    //lookaheadrror = true;
-                }
+            try {
+                lookahead = lexicalAnalyzer.getNextToken();
+                lookaheadrror = false;
+            } catch (InvalidTokenException e) {
+                errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
+                return false;
+                //lookaheadrror = true;
+            }
             //} while (lookaheadrror);
         } else {
             errorHandler.reportError(SyntacticErrorType.MISSING_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), lookahead.getLexeme());
@@ -268,6 +266,7 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
             startTokensStack = (Stack<AbstractSymbol>) startTokensStackCopy.clone();
             stack = (Stack<AbstractSymbol>) stackCopy.clone();
             symbol = stack.pop();
+
             do {
                 boolean lookaheadrror;
                 do {
@@ -283,19 +282,19 @@ public class RecursiveDescentLLParser implements SyntacticAnalyzerInterface {
 
                 if (Objects.isNull(outputMap)) {
                     outputMap = errorRecovery(symbol, grammarMap, parsingTable, null);
-                }else{
-                    errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(),"before "+ lookahead.getLexeme());
+                } else {
+                    errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), "before " + lookahead.getLexeme());
                 }
                 stack = (Stack<AbstractSymbol>) stackCopy.clone();
                 stack.pop();
             } while (outputMap == null);
-        }else{
+        } else {
             Stack<AbstractSymbol> stackCopy2 = (Stack<AbstractSymbol>) stackCopy.clone();
             AbstractSymbol symbolCopy = stackCopy2.pop();
             while (!symbolCopy.isTerminal()) {
                 symbolCopy = stackCopy2.pop();
             }
-            errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn()," before "+ lookahead.getLexeme());
+            errorHandler.reportError(SyntacticErrorType.UNEXPECTED_TOKEN_ERROR, lookahead.getLine(), lookahead.getColumn(), " before " + lookahead.getLexeme());
         }
         return outputMap;
     }
