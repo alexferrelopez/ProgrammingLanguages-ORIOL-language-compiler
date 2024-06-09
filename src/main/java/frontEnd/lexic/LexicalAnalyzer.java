@@ -67,6 +67,9 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
      * @throws InvalidTokenException if the token is not valid.
      */
     public Token getNextToken() throws InvalidTokenException {
+        if (eof) {
+            return EOF;
+        }
         // Check if the previous character was a separator from the previous token. Usually happens with cases like:
         // "miau a;" -> "miau" is a token, "a" is a token, ";" is the separator and the token.
         if (separatorFound) {

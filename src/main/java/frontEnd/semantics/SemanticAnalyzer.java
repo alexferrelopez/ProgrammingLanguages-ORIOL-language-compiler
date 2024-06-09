@@ -60,6 +60,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 }
             }
         }
+
         return tokens;
     }
 
@@ -69,7 +70,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      * @param tree Parsing tree (syntactic) to analyze.
      */
     @Override
-    public void receiveSyntacticTree(Tree<AbstractSymbol> tree) {
+    public void checkSyntacticTree(Tree<AbstractSymbol> tree) {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
@@ -801,9 +802,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         int indexLastTokenUntilSeparator = getIndexOfFirstSeparator(forTokens, SpecialSymbol.PT);
         List<Token> assignationTokens = forTokens.subList(indexLastTokenInCondition + 3, indexLastTokenUntilSeparator);
         ResultContainer resultContainer = checkAssignationSemantics(assignationTokens, null);
-        if (resultContainer.isError()) {
-            errorHandler.reportError(resultContainer.errorType(), resultContainer.optionalLine(), resultContainer.optionalColumn(), resultContainer.word());
-        }
+        handleResultContainer(resultContainer);
     }
 
     /**

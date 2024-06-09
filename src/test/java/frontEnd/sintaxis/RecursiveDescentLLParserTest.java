@@ -10,7 +10,9 @@ import frontEnd.semantics.SemanticAnalyzerInterface;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
 import jdk.jfr.Description;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class RecursiveDescentLLParserTest {
 

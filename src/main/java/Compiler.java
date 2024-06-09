@@ -1,9 +1,9 @@
+import backEnd.exceptions.TargetCodeException;
+import backEnd.targetCode.TACToMIPSConverter;
+import backEnd.targetCode.TargetCodeGeneratorInterface;
 import backEnd.targetCode.registers.RegisterAllocator;
 import backEnd.targetCode.registers.RegisterAllocatorFloat;
 import backEnd.targetCode.registers.RegisterAllocatorInteger;
-import backEnd.targetCode.TACToMIPSConverter;
-import backEnd.targetCode.TargetCodeGeneratorInterface;
-import backEnd.exceptions.TargetCodeException;
 import errorHandlers.AbstractErrorHandler;
 import errorHandlers.LexicalErrorHandler;
 import errorHandlers.SemanticErrorHandler;
@@ -24,18 +24,17 @@ import frontEnd.sintaxis.SyntacticAnalyzerInterface;
 import frontEnd.sintaxis.Tree;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Compiler implements CompilerInterface {
     private final LexicalAnalyzerInterface scanner;
     private final SyntacticAnalyzerInterface parser;
-    private TACGenerator tacGenerator;
     private final TargetCodeGeneratorInterface mipsConverter;
     private final List<AbstractErrorHandler<? extends ErrorType, ? extends WarningType>> errorHandlerList;
     private final SymbolTableInterface symbolTable;
     private final SemanticAnalyzerInterface semanticAnalyzer;
+    private TACGenerator tacGenerator;
 
     public Compiler(String codeFilePath) {
         // ---- FRONT END ---- //
@@ -74,7 +73,7 @@ public class Compiler implements CompilerInterface {
 
         // Print the tree for debugging
         //parser.printTree(tree);
-        if(hasErrors()) return;
+        if (hasErrors()) return;
         TACModule tacModule = new TACModule();
         tacGenerator = new TACGenerator(tacModule, symbolTable);
 
@@ -84,12 +83,12 @@ public class Compiler implements CompilerInterface {
         //tacGenerator.printTAC();
 
         // ---- BACK END ---- //
-		try {
-			mipsConverter.generateMIPS(TACinstructions);
-		} catch (TargetCodeException e) {
+        try {
+            mipsConverter.generateMIPS(TACinstructions);
+        } catch (TargetCodeException e) {
             System.out.println(e.getMessage());
-		}
-	}
+        }
+    }
 
     /**
      * This method returns if the code has errors or not (checks the lexical, syntactic and semantic errors).

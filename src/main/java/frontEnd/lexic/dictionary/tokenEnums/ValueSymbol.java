@@ -26,14 +26,14 @@ public enum ValueSymbol implements TokenType {
     }
 
     public DataType getDataType() {
-		return switch (this) {
-			case VALUE_INT -> DataType.INTEGER;
-			case VALUE_FLOAT -> DataType.FLOAT;
-			case VALUE_TRUE, VALUE_FALSE -> DataType.BOOLEAN;
-			case VALUE_CHAR -> DataType.CHAR;
-			case VALUE_STRING -> DataType.STRING;
-			default -> DataType.VOID;
-		};
+        return switch (this) {
+            case VALUE_INT -> DataType.INTEGER;
+            case VALUE_FLOAT -> DataType.FLOAT;
+            case VALUE_TRUE, VALUE_FALSE -> DataType.BOOLEAN;
+            case VALUE_CHAR -> DataType.CHAR;
+            case VALUE_STRING -> DataType.STRING;
+            default -> DataType.VOID;
+        };
     }
 
     // Getter method for the pattern

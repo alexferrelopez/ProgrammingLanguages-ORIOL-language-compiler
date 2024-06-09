@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class TACGenerator {
-    private TACModule tacModule;
-    private List<Tree<AbstractSymbol>> funcTreeList;
     private final SymbolTableInterface symbolTable;
+    private final TACModule tacModule;
+    private List<Tree<AbstractSymbol>> funcTreeList;
 
     public TACGenerator(TACModule tacModule, SymbolTableInterface symbolTable) {
         this.tacModule = tacModule;
@@ -112,7 +112,6 @@ public class TACGenerator {
             }
         }
 
-
         for (Tree<AbstractSymbol> child : tree.getChildren()) {
             generateCode(child);
         }
@@ -124,7 +123,7 @@ public class TACGenerator {
         List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
 
         // Remove "ε" and "COMMA" nodes in leafNodes
-        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon() || ((TerminalSymbol) node.getNode()).getName().equals("COMMA"));
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon() || node.getNode().getName().equals("COMMA"));
 
         // Get the parameters
         List<String> parameters = new ArrayList<>();
@@ -196,8 +195,7 @@ public class TACGenerator {
             // Convert the operand to a number
             tempVar = convertLogicOperand(tempVar);
 
-        }
-        else {
+        } else {
             Expression expr = generateExpressionCode(condition_expr);
             tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
         }
@@ -356,8 +354,7 @@ public class TACGenerator {
 
             String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), leftOperand, rightOperand);
             tacModule.addConditionalJump(tempVar, labelEnd);
-        }
-        else {
+        } else {
             String operand = expr.getLeftOperand();
             operand = convertLogicOperand(operand);
             tacModule.addConditionalJump(operand, labelEnd);
@@ -443,7 +440,7 @@ public class TACGenerator {
             tempLeafNodes.remove(0);
 
             // Remove "is" and "NOT" nodes
-            tempLeafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).getName().equals("IS") || ((TerminalSymbol) node.getNode()).getName().equals("NOT"));
+            tempLeafNodes.removeIf(node -> node.getNode().getName().equals("IS") || node.getNode().getName().equals("NOT"));
 
 
             tempVar = handleNotAliveDead(tempLeafNodes);

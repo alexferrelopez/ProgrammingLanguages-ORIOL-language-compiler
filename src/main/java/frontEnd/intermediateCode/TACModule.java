@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TACModule {
-    private List<TACInstruction> instructions;
+    private final List<TACInstruction> instructions;
     private int labelCounter;
     private int tempVarCounter;
 
@@ -36,12 +36,12 @@ public class TACModule {
 
     public void addConditionalJump(String condition, String targetLabel) {
         this.instructions.add(new TACInstruction(null, "IfZ", condition, null));
-        this.instructions.add(new TACInstruction(targetLabel, "Goto", null , null));
+        this.instructions.add(new TACInstruction(targetLabel, "Goto", null, null));
     }
 
 
     public void addUnconditionalJump(String label) {
-        this.instructions.add(new TACInstruction( label,"Goto", null, null));
+        this.instructions.add(new TACInstruction(label, "Goto", null, null));
     }
 
     private String getNextTempVar() {
@@ -59,7 +59,7 @@ public class TACModule {
 
     public void printInstructions() {
         // Encabezados para las columnas
-        System.out.println(String.format("%-15s | %-10s | %-10s | %-10s", "Result", "Operator", "Operand1", "Operand2"));
+        System.out.printf("%-15s | %-10s | %-10s | %-10s%n", "Result", "Operator", "Operand1", "Operand2");
         System.out.println("------------------------------------------------------------");
 
         // Iterar sobre todas las instrucciones y formatearlas según el encabezado
@@ -69,7 +69,7 @@ public class TACModule {
             String operand1 = instruction.getOperand1() != null ? instruction.getOperand1() : "";
             String operand2 = instruction.getOperand2() != null ? instruction.getOperand2() : "";
 
-            System.out.println(String.format("%-15s | %-10s | %-10s | %-10s", result, operator, operand1, operand2));
+            System.out.printf("%-15s | %-10s | %-10s | %-10s%n", result, operator, operand1, operand2);
         }
     }
 

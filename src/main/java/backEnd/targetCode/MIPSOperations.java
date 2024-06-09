@@ -15,22 +15,21 @@ import java.util.List;
 import java.util.Stack;
 
 public class MIPSOperations {
-    protected static final String LINE_SEPARATOR = System.lineSeparator();
-    protected static final String LINE_INDENTATION = "\t";
+    protected static final String NL = System.lineSeparator(); // New line
+    protected static final String TAB = "\t";
     protected static final String COMMENT_WORD = "#";
 
-    protected static final String FRAME_POINTER = "$fp";
-    protected static final String STACK_POINTER = "$sp";
+    protected static final String FP = "$fp";   // Frame pointer
+    protected static final String SP = "$sp";    // Stack pointer
     protected static final String RETURN_ADDRESS_REGISTER = "$ra";
     protected static final String RETURN_VALUE_REGISTER = "$v0";
     protected static final String END_PROGRAM_INSTRUCTION = "syscall";
     protected static final String FUNCTION_RESULT_REGISTER = "$v0";
-
-    protected final SymbolTableInterface symbolTable;
     protected final static String MAIN_FUNCTION = "ranch";
     protected static Stack<String> currentFunctionName = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
+    protected final SymbolTableInterface symbolTable;
     protected List<OperandContainer> pendingOperations = new LinkedList<>();
     protected List<OperandContainer> pendingLogicalOperations = new LinkedList<>();
 
@@ -38,6 +37,17 @@ public class MIPSOperations {
         this.symbolTable = symbolTableInterface;
         MIPSOperations.registerAllocatorInteger = registerAllocatorInteger;
         MIPSOperations.registerAllocatorFloat = registerAllocatorFloat;
+    }
+
+    /**
+     * Convert a float value to a hexadecimal string.
+     *
+     * @param value The float value to convert.
+     * @return The hexadecimal string.
+     */
+    public static String floatToHex(float value) {
+        int intBits = Float.floatToIntBits(value);
+        return "0x" + Integer.toHexString(intBits);
     }
 
     protected String writeComment(String comment) {
@@ -70,25 +80,23 @@ public class MIPSOperations {
                 Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
                 Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
 
-                String text = ("li " + tempFloatRegister.getNotNullRegister()+ ", " + floatNumber) + LINE_SEPARATOR;
+                String text = ("li " + tempFloatRegister.getNotNullRegister() + ", " + floatNumber) + NL;
 
                 // Pass from $tX to $fX
-                text += LINE_INDENTATION +
-                        ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + oldestRegister) + LINE_SEPARATOR;
+                text += TAB +
+                        ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + oldestRegister) + NL;
 
                 // Free register
                 registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
 
                 return text;
-            }
-            else {
+            } else {
                 return "lwc1 " + oldestRegister + ", " + oldestVariable;
             }
         } else {
             if (isLiteral) {
                 return "li " + oldestRegister + ", " + oldestVariable;
-            }
-            else {
+            } else {
                 return "lw " + oldestRegister + ", " + oldestVariable;
             }
         }
@@ -115,11 +123,10 @@ public class MIPSOperations {
             Symbol<?> function = symbolTable.findSymbolGlobally(operandValue);
             if (function != null && function.isFunction()) {
                 operand = new Operand(true, function.getDataType(), RETURN_VALUE_REGISTER, false);
-            }
-            else {
+            } else {
                 // It's a variable.
                 Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunction);
-                String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
+                String variableRegister = variable.getOffset() + "(" + FP + ")";
                 operand = new Operand(true, variable.getDataType(), variableRegister, false);
             }
 
@@ -144,16 +151,5 @@ public class MIPSOperations {
             operandContainer.setOperand2(loadSingleOperand(operand2Str, returnValue));
         }
         operandContainer.setOperator(operatorStr);
-    }
-
-
-    /**
-     * Convert a float value to a hexadecimal string.
-     * @param value The float value to convert.
-     * @return The hexadecimal string.
-     */
-    public static String floatToHex(float value) {
-        int intBits = Float.floatToIntBits(value);
-        return "0x" + Integer.toHexString(intBits);
     }
 }

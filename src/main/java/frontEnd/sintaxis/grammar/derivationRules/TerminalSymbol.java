@@ -20,12 +20,12 @@ public class TerminalSymbol extends AbstractSymbol {
         super(name, true);
     }
 
-    public void setToken(Token token) {
-        this.token = token;
-    }
-
     public Token getToken() {
         return token;
+    }
+
+    public void setToken(Token token) {
+        this.token = token;
     }
 
     @JsonIgnore

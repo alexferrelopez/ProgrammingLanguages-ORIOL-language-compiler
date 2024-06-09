@@ -18,6 +18,15 @@ public class AssignmentOperations extends MIPSOperations {
         super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
     }
 
+    private static boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     // Destination must always be loaded into memory when calling this function.
     public String registerToRegisterAssignment(Register destination, Operand registerValue, DataType destinationType) {
         // Get the register from the variable that is being assigned.
@@ -26,8 +35,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         if (destinationType == DataType.INTEGER) {
             registerAllocator = registerAllocatorInteger;
-        }
-        else {
+        } else {
             registerAllocator = registerAllocatorFloat;
         }
 
@@ -38,17 +46,15 @@ public class AssignmentOperations extends MIPSOperations {
         if (destinationType == DataType.FLOAT) {
             // Check if the operand is $t or $f
             if (variableRegister.getNotNullRegister().startsWith("$t")) {
-                text += LINE_INDENTATION +
-                        ("mtc1 " + variableRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + LINE_SEPARATOR;
+                text += TAB +
+                        ("mtc1 " + variableRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + NL;
+            } else {
+                text += TAB +
+                        ("mov.s " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + NL;
             }
-            else {
-                text += LINE_INDENTATION +
-                        ("mov.s " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
-            }
-        }
-        else {
-            text += LINE_INDENTATION +
-                    ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + LINE_SEPARATOR;
+        } else {
+            text += TAB +
+                    ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + NL;
         }
 
         return text;
@@ -56,10 +62,9 @@ public class AssignmentOperations extends MIPSOperations {
 
     public String literalAssignment(Register destination, Operand literal, DataType dataType) {
         if (dataType == DataType.INTEGER) {
-            return  LINE_INDENTATION +
-                    ("li " + destination.getNotNullRegister() + ", " + literal.getValue()) + LINE_SEPARATOR;
-        }
-        else {
+            return TAB +
+                    ("li " + destination.getNotNullRegister() + ", " + literal.getValue()) + NL;
+        } else {
             String floatNumber = floatToHex(Float.parseFloat(literal.getValue()));
             Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
             Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
@@ -68,8 +73,8 @@ public class AssignmentOperations extends MIPSOperations {
 
             // String text = LINE_INDENTATION + "li" + tempFloatRegister.getNotNullRegister() + ", " + floatNumber + LINE_SEPARATOR;
 
-            text += LINE_INDENTATION +
-                    ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + LINE_SEPARATOR;
+            text += TAB +
+                    ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + NL;
 
             // Free register
             registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
@@ -87,8 +92,7 @@ public class AssignmentOperations extends MIPSOperations {
         // Load the destination register into memory (in case it is not already).
         if (destinationType == DataType.INTEGER) {
             registerAllocator = registerAllocatorInteger;
-        }
-        else {
+        } else {
             registerAllocator = registerAllocatorFloat;
         }
 
@@ -107,8 +111,10 @@ public class AssignmentOperations extends MIPSOperations {
         } else {
             // DIRECT ASSIGNMENT (check the type of the variable to know what operations do).
             return switch (destinationType) {
-                case INTEGER, BOOLEAN -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
-                case FLOAT -> text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
+                case INTEGER, BOOLEAN ->
+                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.INTEGER)).toString();
+                case FLOAT ->
+                        text.append(literalAssignment(destionationRegister, operandContainer.getOperand1(), DataType.FLOAT)).toString();
                 default -> "";
             };
         }
@@ -157,13 +163,13 @@ public class AssignmentOperations extends MIPSOperations {
         // Make a division or a general operation (sum, subtract or multiplication).
         switch (operator) {
             case "sum" ->
-                    text += LINE_INDENTATION + ("add.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                    text += TAB + ("add.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
             case "sub" ->
-                    text += LINE_INDENTATION + ("sub.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                    text += TAB + ("sub.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
             case "mul" ->
-                    text += LINE_INDENTATION + ("mul.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                    text += TAB + ("mul.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
             case "div" ->
-                    text += LINE_INDENTATION + ("div.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                    text += TAB + ("div.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
         }
 
         // Free temporary registers (temporal registers generated by TAC or literals).
@@ -179,8 +185,8 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String floatAssignment(String offset, String operand1, String operand2) {
-        return LINE_INDENTATION +
-                ("li.s " + offset + ", " + operand1) + LINE_SEPARATOR;
+        return TAB +
+                ("li.s " + offset + ", " + operand1) + NL;
     }
 
     public String addPendingOperation(String operand1, String operand2, String destination, String operator) {
@@ -200,20 +206,20 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String saveVariableIntoMemory(Register register, Operand variableOffset, DataType dataType) {
-        String text = LINE_INDENTATION;
+        String text = TAB;
 
         switch (register.getRegisterEnum()) {
             case AVAILABLE_REGISTER -> {
 
                 // Only load variables or literals, not temporal registers.
                 if (!variableOffset.isTemporal() || !variableOffset.isRegister()) {
-                    return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
+                    return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
                 }
                 return "";
             }
             case SWAP_REGISTERS -> {
-                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + LINE_SEPARATOR; // Write the operation to save the variable into memory.
-                return text + LINE_INDENTATION + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
+                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + NL; // Write the operation to save the variable into memory.
+                return text + TAB + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
             }
             // The variable was already loaded into a register.
             default -> {
@@ -237,13 +243,13 @@ public class AssignmentOperations extends MIPSOperations {
 
         // Make a division or a general operation (sum, subtract or multiplication).
         if (operator.equals("div")) {
-            text += LINE_INDENTATION + (operator + " " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
-            text += LINE_INDENTATION + ("mflo " + regDest.getRegisterName()) + LINE_SEPARATOR;
+            text += TAB + (operator + " " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
+            text += TAB + ("mflo " + regDest.getRegisterName()) + NL;
         } else {
-            if (operator.equals("sum") ){
+            if (operator.equals("sum")) {
                 operator = "add";
             }
-            text += LINE_INDENTATION + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+            text += TAB + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
         }
 
         // Free temporary registers (temporal registers generated by TAC or literals).
@@ -262,7 +268,7 @@ public class AssignmentOperations extends MIPSOperations {
         // When pendingOperations is empty and the last operation it wasn't "or" or "and" we can do a direct jump.
         if (this.pendingLogicalOperations.isEmpty()) {
             // Do a direct jump.
-            return LINE_INDENTATION + "j " + label + LINE_SEPARATOR;
+            return TAB + "j " + label + NL;
         }
 
         DataType dataType;
@@ -313,17 +319,17 @@ public class AssignmentOperations extends MIPSOperations {
             // Make a division or a general operation (sum, subtract or multiplication).
             switch (operator) {
                 case "eq" ->
-                        text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
-                                + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
+                        text += TAB + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL
+                                + TAB + ("bc1f " + label) + NL;
                 case "neq" ->
-                        text += LINE_INDENTATION + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR
-                                + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
+                        text += TAB + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL
+                                + TAB + ("bc1t " + label) + NL;
                 case "lt" ->
-                        text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
-                                + LINE_INDENTATION + ("bc1t " + label) + LINE_SEPARATOR;
+                        text += TAB + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + NL
+                                + TAB + ("bc1t " + label) + NL;
                 case "gt" ->
-                        text += LINE_INDENTATION + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + LINE_SEPARATOR
-                                + LINE_INDENTATION + ("bc1f " + label) + LINE_SEPARATOR;
+                        text += TAB + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + NL
+                                + TAB + ("bc1f " + label) + NL;
             }
 
 
@@ -361,23 +367,23 @@ public class AssignmentOperations extends MIPSOperations {
             // Make a division or a general operation (sum, subtract or multiplication).
             switch (operator) {
                 case "eq" ->
-                        text += LINE_INDENTATION + ("bne " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += TAB + ("bne " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + NL;
                 case "neq" ->
-                        text += LINE_INDENTATION + ("beq " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += TAB + ("beq " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + NL;
                 case "lt" ->
-                        text += LINE_INDENTATION + ("bge " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += TAB + ("bge " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + NL;
                 case "gt" ->
-                        text += LINE_INDENTATION + ("ble " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + LINE_SEPARATOR;
+                        text += TAB + ("ble " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + NL;
                 case "or" ->
-                        text += LINE_INDENTATION + ("or " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                        text += TAB + ("or " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
                 case "and" ->
-                        text += LINE_INDENTATION + ("and " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + LINE_SEPARATOR;
+                        text += TAB + ("and " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
 
             }
 
             // If the operator is "or" or "and" we have to save the result in the destination register and do a neq comparison with 0
             if (operator.equals("or") || operator.equals("and")) {
-                text += LINE_INDENTATION + ("beq " + regDest.getRegisterName() + ", $zero, " + label) + LINE_SEPARATOR;
+                text += TAB + ("beq " + regDest.getRegisterName() + ", $zero, " + label) + NL;
             }
 
             // Free temporary registers (temporal registers generated by TAC or literals).
@@ -387,7 +393,7 @@ public class AssignmentOperations extends MIPSOperations {
         }
 
         if (operator.equals("ifz")) {
-            text += LINE_INDENTATION + ("beq " + regOp1.getNotNullRegister() + ", $zero, " + label) + LINE_SEPARATOR;
+            text += TAB + ("beq " + regOp1.getNotNullRegister() + ", $zero, " + label) + NL;
 
         }
 
@@ -403,27 +409,18 @@ public class AssignmentOperations extends MIPSOperations {
         return isInteger(operand1) ? DataType.INTEGER : DataType.FLOAT;
     }
 
-    private static boolean isInteger(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
     private String saveTemporalVariableIntoMemory(Register register, Operand variableOffset, DataType dataType) {
-        String text = LINE_INDENTATION;
+        String text = TAB;
 
         switch (register.getRegisterEnum()) {
             case AVAILABLE_REGISTER -> {
 
-                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
+                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
 
             }
             case SWAP_REGISTERS -> {
-                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + LINE_SEPARATOR; // Write the operation to save the variable into memory.
-                return text + LINE_INDENTATION + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + LINE_SEPARATOR;
+                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + NL; // Write the operation to save the variable into memory.
+                return text + TAB + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
             }
             // The variable was already loaded into a register.
             default -> {
@@ -433,6 +430,6 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     public String createLabel(String labelName) {
-        return labelName + ":" + LINE_SEPARATOR;
+        return labelName + ":" + NL;
     }
 }

@@ -23,12 +23,11 @@ final class ParsingTableWrapper {
 }
 
 public class ParsingTable {
+    private static final String BASE_PATH = "src/main/resources/";
+    private static final String PARSE_TABLE_FILE = BASE_PATH + "parsingTable.json";
     private final Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammar;
     private final List<TerminalSymbol> uniqueTerminals;
     private final List<NonTerminalSymbol> uniqueNoTerminals;
-    private static final String BASE_PATH = "src/main/resources/";
-    private static final String PARSE_TABLE_FILE = BASE_PATH + "parsingTable.json";
-
     private final ParsingTableWrapper parsingTableWrapper;
 
     /**
@@ -184,17 +183,19 @@ public class ParsingTable {
         if (positionNonTerminal == -1) {
             return null;
         }
-        Map productionMap = parsingTableWrapper.parsingTable[positionNonTerminal][positionTerminal];
+        Map<NonTerminalSymbol, List<AbstractSymbol>> productionMap = parsingTableWrapper.parsingTable[positionNonTerminal][positionTerminal];
+
         if (Objects.isNull(productionMap)) {
             return null;
         }
-        List<AbstractSymbol> abstractSymbols = new LinkedList<AbstractSymbol>(productionMap.values());
+
+        List<List<AbstractSymbol>> abstractSymbols = productionMap.values().stream().toList();
 
 
-        return (List<AbstractSymbol>) abstractSymbols.get(0);
+        return abstractSymbols.stream().findFirst().orElse(null);
     }
 
-    public Map getProduction(NonTerminalSymbol nonTerminal, Token terminal) {
+    public Map<NonTerminalSymbol, List<AbstractSymbol>> getProduction(NonTerminalSymbol nonTerminal, Token terminal) {
         int positionTerminal = -1;
         int positionNonTerminal = -1;
         for (int i = 0; i < uniqueTerminals.size(); i++) {
@@ -217,8 +218,7 @@ public class ParsingTable {
         if (positionNonTerminal == -1) {
             return null;
         }
-        Map productionMap = parsingTableWrapper.parsingTable[positionNonTerminal][positionTerminal];
-        return productionMap;
+        return parsingTableWrapper.parsingTable[positionNonTerminal][positionTerminal];
     }
 
 
