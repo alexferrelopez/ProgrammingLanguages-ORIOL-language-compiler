@@ -55,6 +55,8 @@ public class TACGenerator {
         generateCode(program);
         tacModule.addUnaryInstruction(null, "EndFunc", null);
 
+        tacModule.printInstructions();
+
         return tacModule.getInstructions();
     }
 
@@ -181,7 +183,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-        String tempVar = "";
+        String tempVar;
 
         // Check if the condition is NOT alive or dead
         if (leafNodes.get(0).getNode().getName().equals("NOT")) {
@@ -203,7 +205,6 @@ public class TACGenerator {
 
         // Labels
         String labelFalse = tacModule.createLabel();
-        String labelTrue = tacModule.createLabel();
         String labelEnd = tacModule.createLabel();
 
         // Jump instructions
@@ -212,18 +213,21 @@ public class TACGenerator {
         // True block
         Tree<AbstractSymbol> func_body = tree.getChildren().get(1).getChildren().get(3);
         generateCode(func_body);
-        tacModule.addUnconditionalJump(labelEnd);
 
         // 'else' block
-        tacModule.addLabel(labelFalse);
         Tree<AbstractSymbol> elseBlock = tree.getChildren().get(2);
         // Check if there is an else block
-        if (elseBlock.getChildren().get(0).getNode().getName() != "ε") {
-            generateCode(elseBlock);
-        }
+        if (!Objects.equals(elseBlock.getChildren().get(0).getNode().getName(), "ε")) {
+            tacModule.addUnconditionalJump(labelEnd);
 
-        // End label for the if statement
-        tacModule.addLabel(labelEnd);
+            tacModule.addLabel(labelFalse);
+            generateCode(elseBlock);
+            // End label for the if statement
+            tacModule.addLabel(labelEnd);
+        }
+        else {
+            tacModule.addLabel(labelFalse);
+        }
     }
 
     private String handleNotAliveDead(List<Tree<AbstractSymbol>> leafNodes) {

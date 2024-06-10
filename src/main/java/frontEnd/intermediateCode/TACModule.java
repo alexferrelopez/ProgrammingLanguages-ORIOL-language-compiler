@@ -35,7 +35,8 @@ public class TACModule {
     }
 
     public void addConditionalJump(String condition, String targetLabel) {
-        this.instructions.add(new TACInstruction(null, "IfZ", condition, null));
+        String var = addBinaryInstruction("NOT", condition, "");
+        this.instructions.add(new TACInstruction(null, "IfZ", var, null));
         this.instructions.add(new TACInstruction(targetLabel, "Goto", null, null));
     }
 
