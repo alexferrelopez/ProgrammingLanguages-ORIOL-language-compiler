@@ -606,6 +606,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
                 if (Objects.isNull(symbol)) {
                     errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), null, "Variable " + token.getLexeme() + " not declared");
+                    return;
                 }
                 returnType = symbol.getDataType();
             } else {
