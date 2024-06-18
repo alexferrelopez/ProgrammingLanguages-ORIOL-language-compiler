@@ -133,28 +133,10 @@ public class FunctionOperations extends MIPSOperations {
 
 
     public String returnFunction(String returnValue) {
-        String text = "";
 
         // Check if the return value is a symbol in the scope.
         Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
         Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
-
-        boolean isLiteral = true;
-        if (variableSymbol != null && variableSymbol.isVariable()) {
-            isLiteral = false;
-
-            RegisterAllocator registerAllocator;
-            if (functionSymbol.getDataType() == DataType.FLOAT) {
-                registerAllocator = registerAllocatorFloat;
-            } else {
-                registerAllocator = registerAllocatorInteger;
-            }
-
-            Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FP + ")", false);
-            Operand destination = new Operand(true, functionSymbol.getDataType(), RETURN_VALUE_REGISTER, false);
-            Register destionationRegister = registerAllocator.allocateRegister(destination);
-            return text + assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType());
-        }
 
         // Determine if the current function is the main function
         String funcName = currentFunctionName.peek();
@@ -174,8 +156,26 @@ public class FunctionOperations extends MIPSOperations {
                 "stackAllocationSpace", String.valueOf(-offset),
                 "raOffset", String.valueOf(-offset - 4)));
 
+        boolean isLiteral = true;
+        if (variableSymbol != null && variableSymbol.isVariable()) {
 
-        return loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + renderedTemplate;
+            RegisterAllocator registerAllocator;
+            if (functionSymbol.getDataType() == DataType.FLOAT) {
+                registerAllocator = registerAllocatorFloat;
+            } else {
+                registerAllocator = registerAllocatorInteger;
+            }
+
+            Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FP + ")", false);
+            Operand destination = new Operand(true, functionSymbol.getDataType(), RETURN_VALUE_REGISTER, false);
+            Register destionationRegister = registerAllocator.allocateRegister(destination);
+
+            return assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType()) + renderedTemplate;
+        }
+
+        String loadVariableToRegisterMipsCode = loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral);
+
+        return loadVariableToRegisterMipsCode + renderedTemplate;
     }
 
     public String endFunction() {

@@ -10,12 +10,13 @@ miau: ignored2 () {
 }
 
 
-miau: ignored () {
-    miau b is ignored2();
+oink: ignored () {
+    oink b is 0.0;
+    b is b sum 4.0;
     poop b;
 }
 
 miau: ranch() {
-    miau e is ignored();
+    oink e is ignored();
     poop 0 ;
 }
