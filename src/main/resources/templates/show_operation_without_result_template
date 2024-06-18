@@ -1,0 +1,4 @@
+# show_operation_without_result_template.asm
+# Parameters: commentCode
+
+    # TAC: {{ commentCode }}

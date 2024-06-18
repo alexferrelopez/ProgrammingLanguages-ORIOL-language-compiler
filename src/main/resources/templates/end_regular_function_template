@@ -1,0 +1,7 @@
+# end_regular_function_template
+# MIPS end regular function template
+
+    lw $ra, {{ raOffset }}($fp)       # Restore the return address
+    lw $fp, {{ stackAllocationSpace }}($sp)       # Restore the old frame pointer
+    addi $sp, $sp, 8     # Deallocate stack space
+    jr $ra               # Return to the caller

@@ -22,7 +22,8 @@ public class TACModule {
 
     public String addBinaryInstruction(String operator, String operand1, String operand2) {
         String tempResult = getNextTempVar();
-        this.instructions.add(new TACInstruction(tempResult, operator, operand1, operand2));
+        TACInstruction tacInstruction = new TACInstruction(tempResult, operator, operand1, operand2);
+        this.instructions.add(tacInstruction);
         return tempResult;
     }
 
@@ -35,8 +36,7 @@ public class TACModule {
     }
 
     public void addConditionalJump(String condition, String targetLabel) {
-        String var = addBinaryInstruction("NOT", condition, "");
-        this.instructions.add(new TACInstruction(null, "IfZ", var, null));
+        this.instructions.add(new TACInstruction(null, "IfZ", condition, null));
         this.instructions.add(new TACInstruction(targetLabel, "Goto", null, null));
     }
 

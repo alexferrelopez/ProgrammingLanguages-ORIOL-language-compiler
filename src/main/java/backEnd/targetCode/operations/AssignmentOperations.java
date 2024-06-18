@@ -1,6 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
+import backEnd.targetCode.MIPSRenderer;
 import backEnd.targetCode.Operand;
 import backEnd.targetCode.OperandContainer;
 import backEnd.targetCode.registers.Register;
@@ -9,22 +10,14 @@ import frontEnd.lexic.dictionary.tokenEnums.DataType;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
+import java.util.Map;
 import java.util.Objects;
 
 
 public class AssignmentOperations extends MIPSOperations {
 
-    public AssignmentOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
-        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
-    }
-
-    private static boolean isInteger(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public AssignmentOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, MIPSRenderer mipsRenderer) {
+        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat, mipsRenderer);
     }
 
     // Destination must always be loaded into memory when calling this function.
@@ -40,48 +33,65 @@ public class AssignmentOperations extends MIPSOperations {
         }
 
         variableRegister = registerAllocator.allocateRegister(registerValue);
-        String text = saveVariableIntoMemory(variableRegister, registerValue, destinationType);
+        StringBuilder text = new StringBuilder(saveVariableIntoMemory(variableRegister, registerValue, destinationType));
 
-        // Assign the registers' values using different operations.
+        // Prepare placeholders for rendering
+        Map<String, String> placeholders = Map.of(
+                "destinationRegister", destination.getNotNullRegister(),
+                "sourceRegister", variableRegister.getNotNullRegister()
+        );
+
+        String templatePath;
         if (destinationType == DataType.FLOAT) {
-            // Check if the operand is $t or $f
             if (variableRegister.getNotNullRegister().startsWith("$t")) {
-                text += TAB +
-                        ("mtc1 " + variableRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + NL;
+                templatePath = "float_register_assignment_t_template";
             } else {
-                text += TAB +
-                        ("mov.s " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + NL;
+                templatePath = "float_register_assignment_f_template";
             }
         } else {
-            text += TAB +
-                    ("move " + destination.getNotNullRegister() + ", " + variableRegister.getNotNullRegister()) + NL;
+            templatePath = "integer_register_assignment_template";
         }
 
-        return text;
+        // Render the template and append to the text
+        text.append(renderer.render(templatePath, placeholders));
+
+        return text.toString();
     }
 
     public String literalAssignment(Register destination, Operand literal, DataType dataType) {
+        StringBuilder text = new StringBuilder();
+
         if (dataType == DataType.INTEGER) {
-            return TAB +
-                    ("li " + destination.getNotNullRegister() + ", " + literal.getValue()) + NL;
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "destinationRegister", destination.getNotNullRegister(),
+                    "literalValue", literal.getValue()
+            );
+
+            // Render the template and append to the text
+            text.append(renderer.render("integer_literal_assignment_template", placeholders));
         } else {
             String floatNumber = floatToHex(Float.parseFloat(literal.getValue()));
             Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
             Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
 
-            String text = literalAssignment(tempFloatRegister, tempFloatOperand, DataType.INTEGER);
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "tempFloatRegister", tempFloatRegister.getNotNullRegister(),
+                    "floatNumber", floatNumber,
+                    "destinationRegister", destination.getNotNullRegister()
+            );
 
-            // String text = LINE_INDENTATION + "li" + tempFloatRegister.getNotNullRegister() + ", " + floatNumber + LINE_SEPARATOR;
-
-            text += TAB +
-                    ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + destination.getNotNullRegister()) + NL;
+            // Render the template and append to the text
+            text.append(renderer.render("float_literal_assignment_template", placeholders));
 
             // Free register
             registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
-
-            return text;
         }
+
+        return text.toString();
     }
+
 
     public String assignValueToRegister(String operand1, String destination, DataType destinationType, boolean freeTemporalsUsed) {
         StringBuilder text = new StringBuilder();
@@ -148,29 +158,36 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String floatOperation(Operand destination, Operand operand1, Operand operand2, String operator) {
-        String text;
+        StringBuilder text = new StringBuilder();
 
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorFloat.allocateRegister(operand1);
-        text = saveVariableIntoMemory(regOp1, operand1, DataType.FLOAT);
+        text.append(saveVariableIntoMemory(regOp1, operand1, DataType.FLOAT));
 
         Register regOp2 = registerAllocatorFloat.allocateRegister(operand2);
-        text += saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT);
+        text.append(saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT));
 
         Register regDest = registerAllocatorFloat.allocateRegister(destination);
-        text += saveVariableIntoMemory(regDest, destination, DataType.FLOAT);
+        text.append(saveVariableIntoMemory(regDest, destination, DataType.FLOAT));
 
-        // Make a division or a general operation (sum, subtract or multiplication).
+        // Prepare placeholders for rendering
+        Map<String, String> placeholders = Map.of(
+                "destinationRegister", regDest.getRegisterName(),
+                "operand1Register", regOp1.getNotNullRegister(),
+                "operand2Register", regOp2.getNotNullRegister()
+        );
+
+        String templatePath;
         switch (operator) {
-            case "sum" ->
-                    text += TAB + ("add.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-            case "sub" ->
-                    text += TAB + ("sub.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-            case "mul" ->
-                    text += TAB + ("mul.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-            case "div" ->
-                    text += TAB + ("div.s " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
+            case "sum" -> templatePath = "float_operation_sum_template";
+            case "sub" -> templatePath = "float_operation_sub_template";
+            case "mul" -> templatePath = "float_operation_mul_template";
+            case "div" -> templatePath = "float_operation_div_template";
+            default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
         }
+
+        // Render the template and append to the text
+        text.append(renderer.render(templatePath, placeholders));
 
         // Free temporary registers (temporal registers generated by TAC or literals).
         if (operand2.isTemporal()) {
@@ -181,12 +198,8 @@ public class AssignmentOperations extends MIPSOperations {
             registerAllocatorFloat.freeRegister(operand1.getValue());
         }
 
-        return text;
-    }
-
-    private String floatAssignment(String offset, String operand1, String operand2) {
-        return TAB +
-                ("li.s " + offset + ", " + operand1) + NL;
+        // Compare the new result with the old result
+        return text.toString();
     }
 
     public String addPendingOperation(String operand1, String operand2, String destination, String operator) {
@@ -206,20 +219,20 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String saveVariableIntoMemory(Register register, Operand variableOffset, DataType dataType) {
-        String text = TAB;
+        String text = "";
 
         switch (register.getRegisterEnum()) {
             case AVAILABLE_REGISTER -> {
 
                 // Only load variables or literals, not temporal registers.
                 if (!variableOffset.isTemporal() || !variableOffset.isRegister()) {
-                    return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
+                    return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister());
                 }
                 return "";
             }
             case SWAP_REGISTERS -> {
-                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + NL; // Write the operation to save the variable into memory.
-                return text + TAB + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
+                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType); // Write the operation to save the variable into memory.
+                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister());
             }
             // The variable was already loaded into a register.
             default -> {
@@ -229,28 +242,36 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     private String integerOperation(Operand destination, Operand operand1, Operand operand2, String operator) {
-        String text;
+        StringBuilder text = new StringBuilder();
 
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorInteger.allocateRegister(operand1);
-        text = saveVariableIntoMemory(regOp1, operand1, DataType.INTEGER);
+        text.append(saveVariableIntoMemory(regOp1, operand1, DataType.INTEGER));
 
         Register regOp2 = registerAllocatorInteger.allocateRegister(operand2);
-        text += saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER);
+        text.append(saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER));
 
         Register regDest = registerAllocatorInteger.allocateRegister(destination);
-        text += saveVariableIntoMemory(regDest, destination, DataType.INTEGER);
+        text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
 
-        // Make a division or a general operation (sum, subtract or multiplication).
-        if (operator.equals("div")) {
-            text += TAB + (operator + " " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-            text += TAB + ("mflo " + regDest.getRegisterName()) + NL;
-        } else {
-            if (operator.equals("sum")) {
-                operator = "add";
-            }
-            text += TAB + (operator + " " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
+        // Prepare placeholders for rendering
+        Map<String, String> placeholders = Map.of(
+                "destinationRegister", regDest.getRegisterName(),
+                "operand1Register", regOp1.getNotNullRegister(),
+                "operand2Register", regOp2.getNotNullRegister()
+        );
+
+        String templatePath;
+        switch (operator) {
+            case "sum" -> templatePath = "integer_operation_sum_template";
+            case "sub" -> templatePath = "integer_operation_sub_template";
+            case "mul" -> templatePath = "integer_operation_mul_template";
+            case "div" -> templatePath = "integer_operation_div_template";
+            default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
         }
+
+        // Render the template and append to the text
+        text.append(renderer.render(templatePath, placeholders));
 
         // Free temporary registers (temporal registers generated by TAC or literals).
         if (operand2.isTemporal()) {
@@ -261,14 +282,19 @@ public class AssignmentOperations extends MIPSOperations {
             registerAllocatorInteger.freeRegister(operand1.getValue());
         }
 
-        return text;
+        // Compare the new result with the old result
+        return text.toString();
     }
 
     public String conditionalJump(String label, String operator) {
         // When pendingOperations is empty and the last operation it wasn't "or" or "and" we can do a direct jump.
         if (this.pendingLogicalOperations.isEmpty()) {
-            // Do a direct jump.
-            return TAB + "j " + label + NL;
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of("label", label);
+
+            // Render the direct jump template
+            return renderer.render("direct_jump_template", placeholders);
+
         }
 
         DataType dataType;
@@ -279,59 +305,61 @@ public class AssignmentOperations extends MIPSOperations {
         } else {
             dataType = variable.getDataType();
         }
-        String text = "";
+        StringBuilder text = new StringBuilder();
+
         for (OperandContainer operation : this.pendingLogicalOperations) {
             if (!Objects.equals(operation.getOperator(), "IfZ")) {
                 switch (dataType) {
-                    case INTEGER, BOOLEAN -> {
-                        text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
-                    }
-                    case FLOAT -> {
-                        text += logicOperationFloat(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label);
-                    }
+                    case INTEGER, BOOLEAN ->
+                            text.append(logicOperationInteger(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label));
+                    case FLOAT ->
+                            text.append(logicOperationFloat(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase(), label));
                 }
                 break;
             } else {
-                text += logicOperationInteger(operation.getDestination(), operation.getOperand1(), null, operation.getOperator().toLowerCase(), label);
+                text.append(logicOperationInteger(operation.getDestination(), operation.getOperand1(), null, operation.getOperator().toLowerCase(), label));
             }
 
         }
 
         this.pendingLogicalOperations.clear();
 
-        return text;
+        // Compare the new result with the old result
+        return text.toString();
     }
 
     private String logicOperationFloat(Operand destination, Operand operand1, Operand operand2, String operator, String label) {
-        String text;
+        StringBuilder text = new StringBuilder();
 
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorFloat.allocateRegister(operand1);
-        text = saveVariableIntoMemory(regOp1, operand1, DataType.FLOAT);
+        text.append(saveVariableIntoMemory(regOp1, operand1, DataType.FLOAT));
         Register regOp2;
         if (operand2 != null) {
             regOp2 = registerAllocatorFloat.allocateRegister(operand2);
-            text += saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT);
+            text.append(saveVariableIntoMemory(regOp2, operand2, DataType.FLOAT));
 
             Register regDest = registerAllocatorFloat.allocateRegister(destination);
-            text += saveVariableIntoMemory(regDest, destination, DataType.FLOAT);
+            text.append(saveVariableIntoMemory(regDest, destination, DataType.FLOAT));
 
-            // Make a division or a general operation (sum, subtract or multiplication).
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "operand1Register", regOp1.getNotNullRegister(),
+                    "operand2Register", regOp2.getNotNullRegister(),
+                    "label", label
+            );
+
+            String templatePath;
             switch (operator) {
-                case "eq" ->
-                        text += TAB + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL
-                                + TAB + ("bc1f " + label) + NL;
-                case "neq" ->
-                        text += TAB + ("c.eq.s " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL
-                                + TAB + ("bc1t " + label) + NL;
-                case "lt" ->
-                        text += TAB + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + NL
-                                + TAB + ("bc1t " + label) + NL;
-                case "gt" ->
-                        text += TAB + ("c.lt.s " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister()) + NL
-                                + TAB + ("bc1f " + label) + NL;
+                case "eq" -> templatePath = "logic_operation_float_eq_template";
+                case "neq" -> templatePath = "logic_operation_float_neq_template";
+                case "lt" -> templatePath = "logic_operation_float_lt_template";
+                case "gt" -> templatePath = "logic_operation_float_gt_template";
+                default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
             }
 
+            // Render the template and append to the text
+            text.append(renderer.render(templatePath, placeholders));
 
             // Free temporary registers (temporal registers generated by TAC or literals).
             if (operand2.isTemporal()) {
@@ -343,48 +371,46 @@ public class AssignmentOperations extends MIPSOperations {
             }
         }
 
-        return text;
+        return text.toString();
     }
 
+
     private String logicOperationInteger(Operand destination, Operand operand1, Operand operand2, String operator, String label) {
-        String text;
+        StringBuilder text = new StringBuilder();
 
         // Allocate temporary registers.
         Register regOp1 = registerAllocatorInteger.allocateRegister(operand1);
-        text = saveVariableIntoMemory(regOp1, operand1, DataType.INTEGER);
+        text.append(saveVariableIntoMemory(regOp1, operand1, DataType.INTEGER));
         Register regOp2;
 
-
         if (operand2 != null && !operator.equals("ifz")) {
-
             regOp2 = registerAllocatorInteger.allocateRegister(operand2);
-            text += saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER);
+            text.append(saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER));
 
             Register regDest = registerAllocatorInteger.allocateRegister(destination);
-            text += saveVariableIntoMemory(regDest, destination, DataType.INTEGER);
+            text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
 
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "destinationRegister", regDest.getRegisterName(),
+                    "operand1Register", regOp1.getNotNullRegister(),
+                    "operand2Register", regOp2.getNotNullRegister(),
+                    "label", label
+            );
 
-            // Make a division or a general operation (sum, subtract or multiplication).
+            String templatePath;
             switch (operator) {
-                case "eq" ->
-                        text += TAB + ("bne " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + NL;
-                case "neq" ->
-                        text += TAB + ("beq " + regOp2.getNotNullRegister() + ", " + regOp1.getNotNullRegister() + ", " + label) + NL;
-                case "lt" ->
-                        text += TAB + ("bge " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + NL;
-                case "gt" ->
-                        text += TAB + ("ble " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister() + ", " + label) + NL;
-                case "or" ->
-                        text += TAB + ("or " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-                case "and" ->
-                        text += TAB + ("and " + regDest.getRegisterName() + ", " + regOp1.getNotNullRegister() + ", " + regOp2.getNotNullRegister()) + NL;
-
+                case "eq" -> templatePath = "logic_operation_integer_eq_template";
+                case "neq" -> templatePath = "logic_operation_integer_neq_template";
+                case "lt" -> templatePath = "logic_operation_integer_lt_template";
+                case "gt" -> templatePath = "logic_operation_integer_gt_template";
+                case "or" -> templatePath = "logic_operation_integer_or_template";
+                case "and" -> templatePath = "logic_operation_integer_and_template";
+                default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
             }
 
-            // If the operator is "or" or "and" we have to save the result in the destination register and do a neq comparison with 0
-            if (operator.equals("or") || operator.equals("and")) {
-                text += TAB + ("beq " + regDest.getRegisterName() + ", $zero, " + label) + NL;
-            }
+            // Render the template and append to the text
+            text.append(renderer.render(templatePath, placeholders));
 
             // Free temporary registers (temporal registers generated by TAC or literals).
             if (operand2.isTemporal()) {
@@ -393,43 +419,32 @@ public class AssignmentOperations extends MIPSOperations {
         }
 
         if (operator.equals("ifz")) {
-            text += TAB + ("beq " + regOp1.getNotNullRegister() + ", $zero, " + label) + NL;
+            // Prepare placeholders for rendering
+            Map<String, String> ifzPlaceholders = Map.of(
+                    "operand1Register", regOp1.getNotNullRegister(),
+                    "label", label
+            );
 
+            // Render the ifz template and append to the text
+            text.append(renderer.render("logic_operation_integer_ifz_template", ifzPlaceholders));
         }
-
 
         if (operand1.isTemporal()) {
             registerAllocatorInteger.freeRegister(operand1.getValue());
         }
 
-        return text;
-    }
-
-    private DataType getDataType(String operand1) {
-        return isInteger(operand1) ? DataType.INTEGER : DataType.FLOAT;
-    }
-
-    private String saveTemporalVariableIntoMemory(Register register, Operand variableOffset, DataType dataType) {
-        String text = TAB;
-
-        switch (register.getRegisterEnum()) {
-            case AVAILABLE_REGISTER -> {
-
-                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
-
-            }
-            case SWAP_REGISTERS -> {
-                text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType) + NL; // Write the operation to save the variable into memory.
-                return text + TAB + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister()) + NL;
-            }
-            // The variable was already loaded into a register.
-            default -> {
-                return "";
-            }
-        }
+        return text.toString();
     }
 
     public String createLabel(String labelName) {
         return labelName + ":" + NL;
+    }
+
+    public String notOperation(String operand1, String result) {
+        OperandContainer operandContainer = new OperandContainer();
+        loadOperands(operandContainer, result, operand1, null, "not", false);
+        this.pendingLogicalOperations.add(operandContainer);
+
+        return null;
     }
 }

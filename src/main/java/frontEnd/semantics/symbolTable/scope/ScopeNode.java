@@ -179,13 +179,14 @@ public class ScopeNode {
 
     public int calculateNestedScopesSize() {
         // Calculate the maximum size (to guarantee the worst case) of all the variables from the node's children.
-        int currentScopeSize = 0;
+        int childScopeSize = 0;
 
         for (ScopeNode child : this.children) {
-            currentScopeSize += child.calculateScopeSize();
+            childScopeSize += child.calculateScopeSize();
+            childScopeSize += child.calculateNestedScopesSize();
         }
 
-        return currentScopeSize;
+        return childScopeSize;
     }
 
     public int calculateScopeSize() {

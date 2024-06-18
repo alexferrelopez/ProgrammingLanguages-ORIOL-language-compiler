@@ -1,0 +1,5 @@
+# float_literal_assignment_template.asm
+# Parameters: tempFloatRegister, floatNumber, destinationRegister
+
+    li {{ tempFloatRegister }}, {{ floatNumber }}
+    mtc1 {{ tempFloatRegister }}, {{ destinationRegister }}

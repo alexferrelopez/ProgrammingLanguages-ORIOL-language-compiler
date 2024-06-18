@@ -10,9 +10,7 @@ import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class MIPSOperations {
     protected static final String NL = System.lineSeparator(); // New line
@@ -30,13 +28,15 @@ public class MIPSOperations {
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
     protected final SymbolTableInterface symbolTable;
+    protected final MIPSRenderer renderer;
     protected List<OperandContainer> pendingOperations = new LinkedList<>();
     protected List<OperandContainer> pendingLogicalOperations = new LinkedList<>();
 
-    public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+    public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, MIPSRenderer mipsRenderer) {
         this.symbolTable = symbolTableInterface;
         MIPSOperations.registerAllocatorInteger = registerAllocatorInteger;
         MIPSOperations.registerAllocatorFloat = registerAllocatorFloat;
+        this.renderer = mipsRenderer;
     }
 
     /**
@@ -69,37 +69,46 @@ public class MIPSOperations {
             return "sw " + oldestRegister + ", " + oldestVariable;
         }
     }
-
     protected String loadVariableToRegister(String oldestVariable, String oldestRegister, DataType dataType, boolean isLiteral) {
+        Map<String, String> placeholders = new HashMap<>();
+        String templatePath;
 
-        // We have to check if the variable is a float or an integer due to the different instructions.
-        if (dataType == DataType.FLOAT) {
-            // Also, we have to check if it's a literal or a variable because the instruction changes.
-            if (isLiteral) {
-                String floatNumber = floatToHex(Float.parseFloat(oldestVariable));
-                Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
-                Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
+        return switch (dataType) {
+            case FLOAT -> {
+                if (isLiteral) {
+                    String floatNumber = floatToHex(Float.parseFloat(oldestVariable));
+                    Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
+                    Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
 
-                String text = ("li " + tempFloatRegister.getNotNullRegister() + ", " + floatNumber) + NL;
+                    placeholders.put("tempFloatRegister", tempFloatRegister.getNotNullRegister());
+                    placeholders.put("floatNumber", floatNumber);
+                    placeholders.put("oldestRegister", oldestRegister);
 
-                // Pass from $tX to $fX
-                text += TAB +
-                        ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + oldestRegister) + NL;
-
-                // Free register
-                registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
-
-                return text;
-            } else {
-                return "lwc1 " + oldestRegister + ", " + oldestVariable;
+                    templatePath = "load_float_literal_template";
+                    String renderedTemplate = renderer.render(templatePath, placeholders);
+                    registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
+                    yield renderedTemplate;
+                } else {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_float_variable_template";
+                    yield renderer.render(templatePath, placeholders);
+                }
             }
-        } else {
-            if (isLiteral) {
-                return "li " + oldestRegister + ", " + oldestVariable;
-            } else {
-                return "lw " + oldestRegister + ", " + oldestVariable;
+            case INTEGER -> {
+                if (isLiteral) {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_integer_literal_template";
+                } else {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_integer_variable_template";
+                }
+                yield renderer.render(templatePath, placeholders);
             }
-        }
+            default -> "";
+        };
     }
 
     protected Operand loadSingleOperand(String operandValue, boolean mainReturn) {

@@ -1,0 +1,8 @@
+miau: ignored () {
+    poop 0;
+}
+
+miau: ranch() {
+    miau b is ignored();
+    poop 0 ;
+}

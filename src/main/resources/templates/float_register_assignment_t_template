@@ -1,0 +1,4 @@
+# float_register_assignment_t_template.asm
+# Parameters: destinationRegister, sourceRegister
+
+    mtc1 {{ sourceRegister }}, {{ destinationRegister }}

@@ -26,7 +26,7 @@ public class TACGenerator {
         Tree<AbstractSymbol> program = getProgramNode(tree);
         this.funcTreeList = getFunctionNodes(tree);
         // Remove the last element of the list, which is the program node
-        this.funcTreeList.remove(this.funcTreeList.size() - 1);
+        //this.funcTreeList.remove(this.funcTreeList.size() - 1);
 
         // Generate TAC code for each function
         for (Tree<AbstractSymbol> funcTree : this.funcTreeList) {
@@ -47,15 +47,15 @@ public class TACGenerator {
             tacModule.addUnaryInstruction(null, "EndFunc", null);
         }
 
-        String mainFunction = "ranch";
-        tacModule.addFunctionLabel(mainFunction);
-        int bytesNeeded = symbolTable.calculateFunctionSize(mainFunction);
-        tacModule.addUnaryInstruction(null, "BeginFunc", String.valueOf(bytesNeeded));
-        // Generate TAC code for main program
-        generateCode(program);
-        tacModule.addUnaryInstruction(null, "EndFunc", null);
+//        String mainFunction = "ranch";
+//        tacModule.addFunctionLabel(mainFunction);
+//        int bytesNeeded = symbolTable.calculateFunctionSize(mainFunction);
+//        tacModule.addUnaryInstruction(null, "BeginFunc", String.valueOf(bytesNeeded));
+//        // Generate TAC code for main program
+//        generateCode(program);
+//        tacModule.addUnaryInstruction(null, "EndFunc", null);
 
-        tacModule.printInstructions();
+        printTAC();
 
         return tacModule.getInstructions();
     }
@@ -224,8 +224,7 @@ public class TACGenerator {
             generateCode(elseBlock);
             // End label for the if statement
             tacModule.addLabel(labelEnd);
-        }
-        else {
+        } else {
             tacModule.addLabel(labelFalse);
         }
     }
@@ -379,7 +378,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-        if (leafNodes.size() == 3) {
+        if (leafNodes.get(1).getNode().getName().equals("IS") && leafNodes.size() == 3) {
             // We have a simple assignment
             Expression expr = generateExpressionCode(tree);
 
@@ -445,7 +444,6 @@ public class TACGenerator {
 
             // Remove "is" and "NOT" nodes
             tempLeafNodes.removeIf(node -> node.getNode().getName().equals("IS") || node.getNode().getName().equals("NOT"));
-
 
             tempVar = handleNotAliveDead(tempLeafNodes);
         } else {

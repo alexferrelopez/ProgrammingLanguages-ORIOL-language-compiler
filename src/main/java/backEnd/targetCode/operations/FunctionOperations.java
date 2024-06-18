@@ -1,6 +1,7 @@
 package backEnd.targetCode.operations;
 
 import backEnd.targetCode.MIPSOperations;
+import backEnd.targetCode.MIPSRenderer;
 import backEnd.targetCode.Operand;
 import backEnd.targetCode.OperandContainer;
 import backEnd.targetCode.registers.Register;
@@ -23,32 +24,44 @@ public class FunctionOperations extends MIPSOperations {
     private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
     private final AssignmentOperations assignmentOperations;
     private int currentParameterNumber = 0;
+    private final MIPSRenderer renderer;
 
-    public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations) {
-        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
+    public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations, MIPSRenderer renderer) {
+        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat, renderer);
         this.assignmentOperations = assignmentOperations;
+        this.renderer = renderer;
     }
 
     public String funcDeclaration(String functionLabel) {
         currentFunctionName.push(functionLabel);
 
-        String text = writeComment("Start of function " + functionLabel) + NL +
-                (functionLabel + ":") + NL;
-		/*
-			sw $fp, 0($sp)      # Save previous (called function) frame pointer
-			move $fp, $sp       # Set frame pointer ($fp = $sp)
-			sw $ra, -4($fp)     # Save return address
-			subi $sp, $sp, 8   	# Allocate stack frame
-		 */
+        // Set the offset for each variable in the function (in all the nested scopes).
+        long currentOffset = -8;
+        String funcName = currentFunctionName.peek();
+        currentOffset = assignParametersOffset(currentOffset, funcName);
+        ScopeNode functionScope = symbolTable.getFunctionScope(funcName);
+        currentOffset = assignOffset(functionScope, currentOffset);
 
-        // Save stack
-        text += TAB + writeComment("Save stack, return and frame pointer (from previous call).") + NL +
-                TAB + ("sw " + FP + ", 0(" + SP + ")") + NL +
-                TAB + ("move " + FP + ", " + SP) + NL +
-                TAB + ("sw " + RETURN_VALUE_REGISTER + ", -4(" + FP + ")") + NL +
-                TAB + ("subi " + SP + ", " + SP + ", 8") + NL + TAB;
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(funcName);
+        if (functionSymbol != null && !functionSymbol.isVariable()) {
+            FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+            function.setOffset(currentOffset);
+        }
 
-        return text + NL;
+        if (functionLabel.equals(MAIN_FUNCTION)) {
+            return renderer.render("main_declaration_template",
+                    Map.of(
+                    "stackAllocationSpace", String.valueOf(-currentOffset)
+                    )
+            );
+        }
+
+        return renderer.render("func_declaration_template", Map.of(
+                "functionLabel", functionLabel,
+                "stackAllocationSpace", String.valueOf(-currentOffset),
+                "raOffset", String.valueOf(-currentOffset - 4)
+                )
+        );
     }
 
     private long assignOffset(ScopeNode scope, long currentOffset) {
@@ -92,13 +105,6 @@ public class FunctionOperations extends MIPSOperations {
     }
 
     public String beginFunction(String functionSize) {
-
-        // Set the offset for each variable in the function (in all the nested scopes).
-        long currentOffset = 0;
-        currentOffset = assignParametersOffset(currentOffset, currentFunctionName.peek());
-        ScopeNode function = symbolTable.getFunctionScope(currentFunctionName.peek());
-        assignOffset(function, currentOffset);
-
         // Map the parameters passed
         Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
         if (functionSymbol != null && functionSymbol.isFunction()) {
@@ -117,13 +123,17 @@ public class FunctionOperations extends MIPSOperations {
 
         }
 
-        return TAB + writeComment("Allocate function's memory (in Bytes)") + NL + TAB +
-                ("sub " + SP + ", " + SP + ", -" + functionSize) + " " + NL + NL +
-                TAB + writeComment("-- Variables code --") + NL;
+        Map<String, String> placeholders = Map.of(
+                "functionSize", functionSize
+        );
+
+        // Render the template
+        return renderer.render("begin_function_template", placeholders);
     }
 
+
     public String returnFunction(String returnValue) {
-        String text = NL + TAB + writeComment("Function return's value") + NL;
+        String text = "";
 
         // Check if the return value is a symbol in the scope.
         Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
@@ -146,37 +156,32 @@ public class FunctionOperations extends MIPSOperations {
             return text + assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType());
         }
 
-        return text + TAB + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + NL;
+        // Determine if the current function is the main function
+        String funcName = currentFunctionName.peek();
+        boolean isMainFunction = funcName.equals(MAIN_FUNCTION);
+
+        long offset = 0;
+        if (functionSymbol != null && !functionSymbol.isVariable()) {
+            FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+            offset = function.getOffset();
+        }
+
+        // Select the appropriate template based on the condition
+        String templatePath = isMainFunction ? "end_main_function_template" : "end_regular_function_template";
+
+        // Render the template
+        String renderedTemplate = renderer.render(templatePath, Map.of(
+                "stackAllocationSpace", String.valueOf(-offset),
+                "raOffset", String.valueOf(-offset - 4)));
+
+
+        return loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + renderedTemplate;
     }
 
     public String endFunction() {
-		/*
-			move $sp, $fp       # Restore stack pointer ($sp = $fp) - All current function's memory is overwritten
-			lw $ra, -4($fp)     # Restore return address ($ra = -4($fp))
-			lw $fp, 0($fp)      # Restore frame pointer ($fp = previos $fp).
-			jr $ra              # Return from function
-		 */
-
-        registerAllocatorInteger.freeRegister("test");
-
-        String text = NL + TAB + writeComment("End of function - Restore stack, return and frame pointer") + NL + TAB +
-                ("move " + SP + ", " + FP) + NL + TAB +
-                ("lw " + RETURN_ADDRESS_REGISTER + ", -4(" + FP + ")") + NL + TAB +
-                ("lw " + FP + ", 0(" + FP + ")") + NL + TAB;
-
-        // End the program if it's the main or add the return value if it's another function.
-        if (currentFunctionName.peek().equals(MAIN_FUNCTION)) {
-            text += writeComment("End of the main") + NL + TAB +
-                    ("li " + FUNCTION_RESULT_REGISTER + ", 10") + NL + TAB +
-                    (END_PROGRAM_INSTRUCTION);
-        } else {
-            text += ("jr " + RETURN_ADDRESS_REGISTER);
-        }
-
-        // Leave the current function.
+        // Leave the current function
         currentFunctionName.pop();
-
-        return text + NL + NL;
+        return "";
     }
 
     public String assignFunctionParameter(String parameterValue, String callOperator) {
@@ -199,51 +204,69 @@ public class FunctionOperations extends MIPSOperations {
 
     public String callFunction(String functionName) {
         StringBuilder text = new StringBuilder();
-        currentFunctionName.push(functionName);    // Update the new current function.
+        currentFunctionName.push(functionName); // Update the new current function.
 
-        int numParameter = 0;
         // Do all the previous operations.
-        for (OperandContainer operation : this.pendingOperations) {
-
+        List<OperandContainer> operations = this.pendingOperations;
+        for (int i = 0; i < operations.size(); i++) {
+            OperandContainer operation = operations.get(i);
             // Make an assignment for the operators to be pushed into the function called.
             if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
-
                 // Get the current parameter to see the expected type.
                 Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName.peek());
-                VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(numParameter);
+                VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(i);
 
+                // Prepare placeholders for rendering
                 // Assign the value to an arguments' register.
                 text.append(assignmentOperations.assignValueToRegister(operation.getOperand1().getValue(), operation.getDestination().getValue(), parameter.getDataType(), false));
-                numParameter++;
             }
         }
 
-        // Clear all the variables mapped.
+        // Clear all the variables mapped and load into memory
         Iterator<Map.Entry<String, String>> iterator = registerAllocatorInteger.getVariableToRegister().entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, String> entry = iterator.next();
             String key = entry.getKey();
 
-            // Load all variables into memory.
-            text.append(TAB).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(NL);
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "variableName", key,
+                    "register", entry.getValue()
+            );
+
+            // Render the load variable template
+            text.append(renderer.render("load_variable_to_memory_template", placeholders));
             iterator.remove();
         }
 
-        // Clear all the variables mapped.
+        // Clear all the variables mapped for custom registers and load into memory
         iterator = registerAllocatorInteger.getVariableToCustomRegister().entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, String> entry = iterator.next();
             String key = entry.getKey();
 
-            // Load all variables into memory.
-            text.append(TAB).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(NL);
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "variableName", key,
+                    "register", entry.getValue()
+            );
+
+            // Render the load variable template
+            text.append(renderer.render("load_variable_to_memory_template", placeholders));
             iterator.remove();
         }
 
         this.currentParameterNumber = 0;
-        currentFunctionName.pop();    // Leave the new current function.
+        currentFunctionName.pop(); // Leave the new current function.
         this.pendingOperations.clear();
 
-        return text.append(TAB).append("jal ").append(functionName).append(NL).toString();
+        // Prepare placeholders for rendering the function call
+        Map<String, String> functionCallPlaceholders = Map.of(
+                "functionName", functionName
+        );
+
+        // Render the function call template and return the final text
+        return text.append(renderer.render("function_call_template", functionCallPlaceholders)).toString();
     }
+
 }

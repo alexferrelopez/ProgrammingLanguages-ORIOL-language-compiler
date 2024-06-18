@@ -186,6 +186,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
                 if (functionSymbol.getDataType() == variableDataType) {
                     List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+
+                    if (expectedParams.size() > 4) {
+                        errorHandler.reportError(SemanticErrorType.MAXIMUM_PARAMETERS_EXCEEDED, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected a maximum of 4 but received: " + expectedParams.size());
+                        failed = true;
+                    }
+
                     List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
 
                     if (expectedParams.size() == receivedParams.size()) {
@@ -250,6 +256,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
 
             List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+
+            if (expectedParams.size() > 4) {
+                errorHandler.reportError(SemanticErrorType.MAXIMUM_PARAMETERS_EXCEEDED, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected a maximum of 4 but received: " + expectedParams.size());
+                failed = true;
+            }
+
             List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
 
             if (expectedParams.size() == receivedParams.size()) {
