@@ -24,7 +24,7 @@ public class MIPSOperations {
     protected static final String END_PROGRAM_INSTRUCTION = "syscall";
     protected static final String FUNCTION_RESULT_REGISTER = "$v0";
     protected final static String MAIN_FUNCTION = "ranch";
-    protected static Stack<String> currentFunctionName = new Stack<>();
+    protected static Stack<String> functionStack = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
     protected final SymbolTableInterface symbolTable;
@@ -69,9 +69,11 @@ public class MIPSOperations {
             return "sw " + oldestRegister + ", " + oldestVariable;
         }
     }
+
     protected String loadVariableToRegister(String oldestVariable, String oldestRegister, DataType dataType, boolean isLiteral) {
         Map<String, String> placeholders = new HashMap<>();
         String templatePath;
+        String strippedRelativeOffset = oldestVariable.startsWith("-") ? oldestVariable.replaceFirst("-", "") : oldestVariable;
 
         return switch (dataType) {
             case FLOAT -> {
@@ -90,7 +92,8 @@ public class MIPSOperations {
                     yield renderedTemplate;
                 } else {
                     placeholders.put("oldestRegister", oldestRegister);
-                    placeholders.put("oldestVariable", oldestVariable);
+                    placeholders.put("oldestVariable", strippedRelativeOffset);
+                    //placeholders.put("oldestVariable", oldestVariable);
                     templatePath = "load_float_variable_template";
                     yield renderer.render(templatePath, placeholders);
                 }
@@ -102,7 +105,8 @@ public class MIPSOperations {
                     templatePath = "load_integer_literal_template";
                 } else {
                     placeholders.put("oldestRegister", oldestRegister);
-                    placeholders.put("oldestVariable", oldestVariable);
+                    placeholders.put("oldestVariable", strippedRelativeOffset);
+                    //placeholders.put("oldestVariable", oldestVariable);
                     templatePath = "load_integer_variable_template";
                 }
                 yield renderer.render(templatePath, placeholders);
@@ -121,11 +125,11 @@ public class MIPSOperations {
 
         // Check if it's a variable (check its type in the symbols table).
         if (operandValueSymbol == ValueSymbol.VARIABLE) {
-            String currentFunction = currentFunctionName.peek();
+            String currentFunction = functionStack.peek();
 
             // Get the previous function name if trying to return value from main.
-            if (mainReturn && currentFunctionName.size() > 1) {
-                currentFunction = currentFunctionName.get(currentFunctionName.size() - 2);
+            if (mainReturn && functionStack.size() > 1) {
+                currentFunction = functionStack.get(functionStack.size() - 2);
             }
 
             // Check if it's a function (assign the value to the return register).

@@ -1,0 +1,16 @@
+miau: fibonacci(miau n) {
+    check (n equals 0) {
+      poop 1;
+    }
+    else {
+        miau param is n minus 1;
+        miau a is fibonacci(param);
+        miau result is n times a;
+        poop result;
+    }
+}
+
+miau: ranch() {
+    fibonacci(2);
+    poop 0 ;
+}

@@ -20,8 +20,8 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
     private static final String TARGET_FILE = "target/farm.asm";
     private final FunctionOperations functionOperations;
     private final AssignmentOperations assignmentOperations;
-    private BufferedWriter targetCode;
     private final MIPSRenderer renderer;
+    private BufferedWriter targetCode;
 
 
     public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, MIPSRenderer mipsRenderer) {
@@ -88,8 +88,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
             case "LCall" -> functionOperations.callFunction(result);
 
             // ** Assignments
-            case "=" ->
-                    showOperation(instruction, assignmentOperations.assignmentOperation(operand1, result));
+            case "=" -> showOperation(instruction, assignmentOperations.assignmentOperation(operand1, result));
 
             // *** Binary Operations ***
             case "GT", "LT", "EQ", "NEQ", "OR", "AND" ->
@@ -100,8 +99,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
                     showOperation(instruction, assignmentOperations.addPendingLogicalOperation(operand1, null, result, operator));
 
             // When we arrive at a conditional, we have to store the result of the previous operation in a register.
-            case "Goto" ->
-                    showOperation(instruction, assignmentOperations.conditionalJump(result, operator));
+            case "Goto" -> showOperation(instruction, assignmentOperations.conditionalJump(result, operator));
 
             // *** Labels ***
             case "label" -> showOperation(instruction, assignmentOperations.createLabel(result));
@@ -110,7 +108,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
             case "SUM", "SUB", "MUL", "DIV" ->
                     showOperation(instruction, assignmentOperations.addPendingOperation(operand1, instruction.getOperand2(), result, operator));
 
-
+            //case "PopParams" ->
 
             default -> null;
         };

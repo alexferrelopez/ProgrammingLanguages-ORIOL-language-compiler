@@ -7,7 +7,7 @@ public class MipsTemplateRenderer implements MIPSRenderer {
 
     private static final String TEMPLATES_DIR = "templates/";
     private Boolean debug = false;
-    private Map<String,String> templateCache = new java.util.HashMap<>();
+    private final Map<String, String> templateCache = new java.util.HashMap<>();
 
     public MipsTemplateRenderer(Boolean debug) {
         this.debug = debug;
@@ -29,7 +29,7 @@ public class MipsTemplateRenderer implements MIPSRenderer {
     }
 
     private String loadTemplate(String templatePath) throws IOException {
-        return templateCache.compute(templatePath, (k,v) -> {
+        return templateCache.compute(templatePath, (k, v) -> {
             try {
                 return loadTemplateFromFile(templatePath);
             } catch (IOException e) {
@@ -42,7 +42,7 @@ public class MipsTemplateRenderer implements MIPSRenderer {
     private String loadTemplateFromFile(String templatePath) throws IOException {
         //read from classpath, so the templates are in the resources folder
         var resource = this.getClass().getClassLoader().getResourceAsStream(TEMPLATES_DIR + templatePath);
-        if(resource == null) {
+        if (resource == null) {
             throw new IOException("Template not found: " + templatePath);
         }
         return new String(resource.readAllBytes());
@@ -60,17 +60,16 @@ public class MipsTemplateRenderer implements MIPSRenderer {
         //trim template
         templateContent = templateContent.trim();
         //check it it ends with a newline
-        if(!templateContent.endsWith("\n")) {
+        if (!templateContent.endsWith("\n")) {
             templateContent += "\n";
         }
 
-        if(!debug) {
+        if (!debug) {
             //replace all comments
             templateContent = templateContent.replaceAll("#.*", "");
             //remove all empty lines
-            templateContent = templateContent.replaceAll("(?m)^[ \t]*\r?\n",    "");
-        }
-        else{
+            templateContent = templateContent.replaceAll("(?m)^[ \t]*\r?\n", "");
+        } else {
             //print all to console
             System.out.println(templateContent);
         }

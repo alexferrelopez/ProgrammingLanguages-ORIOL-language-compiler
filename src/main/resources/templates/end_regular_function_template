@@ -3,5 +3,5 @@
 
     lw $ra, {{ raOffset }}($fp)       # Restore the return address
     lw $fp, {{ stackAllocationSpace }}($sp)       # Restore the old frame pointer
-    addi $sp, $sp, 8     # Deallocate stack space
+    addi $sp, $sp, {{ stackAllocationSpace }}     # Deallocate stack space
     jr $ra               # Return to the caller

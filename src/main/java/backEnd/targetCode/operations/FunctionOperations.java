@@ -23,8 +23,8 @@ public class FunctionOperations extends MIPSOperations {
     private final static String PARAMETERS_REGISTER_PREFIX = "$a";    // Only $a0 to $3 parameters are available.
     private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
     private final AssignmentOperations assignmentOperations;
-    private int currentParameterNumber = 0;
     private final MIPSRenderer renderer;
+    private int currentParameterNumber = 0;
 
     public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations, MIPSRenderer renderer) {
         super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat, renderer);
@@ -33,11 +33,14 @@ public class FunctionOperations extends MIPSOperations {
     }
 
     public String funcDeclaration(String functionLabel) {
-        currentFunctionName.push(functionLabel);
+        functionStack.push(functionLabel);
 
         // Set the offset for each variable in the function (in all the nested scopes).
         long currentOffset = -8;
-        String funcName = currentFunctionName.peek();
+        if (functionLabel.equals(MAIN_FUNCTION)) {
+            currentOffset = -4;
+        }
+        String funcName = functionStack.peek();
         currentOffset = assignParametersOffset(currentOffset, funcName);
         ScopeNode functionScope = symbolTable.getFunctionScope(funcName);
         currentOffset = assignOffset(functionScope, currentOffset);
@@ -48,18 +51,20 @@ public class FunctionOperations extends MIPSOperations {
             function.setOffset(currentOffset);
         }
 
+        beginFunction();
+
         if (functionLabel.equals(MAIN_FUNCTION)) {
             return renderer.render("main_declaration_template",
                     Map.of(
-                    "stackAllocationSpace", String.valueOf(-currentOffset)
+                            "stackAllocationSpace", String.valueOf(-currentOffset)
                     )
             );
         }
 
         return renderer.render("func_declaration_template", Map.of(
-                "functionLabel", functionLabel,
-                "stackAllocationSpace", String.valueOf(-currentOffset),
-                "raOffset", String.valueOf(-currentOffset - 4)
+                        "functionLabel", functionLabel,
+                        "stackAllocationSpace", String.valueOf(-currentOffset),
+                        "raOffset", String.valueOf(4)
                 )
         );
     }
@@ -104,9 +109,9 @@ public class FunctionOperations extends MIPSOperations {
         return currentOffset;
     }
 
-    public String beginFunction(String functionSize) {
+    public void beginFunction() {
         // Map the parameters passed
-        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek());
         if (functionSymbol != null && functionSymbol.isFunction()) {
             FunctionSymbol<?> declaredFunction = (FunctionSymbol<?>) functionSymbol;
 
@@ -122,24 +127,17 @@ public class FunctionOperations extends MIPSOperations {
             }
 
         }
-
-        Map<String, String> placeholders = Map.of(
-                "functionSize", functionSize
-        );
-
-        // Render the template
-        return renderer.render("begin_function_template", placeholders);
     }
 
 
     public String returnFunction(String returnValue) {
 
         // Check if the return value is a symbol in the scope.
-        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
-        Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek());
+        Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, functionStack.peek());
 
         // Determine if the current function is the main function
-        String funcName = currentFunctionName.peek();
+        String funcName = functionStack.peek();
         boolean isMainFunction = funcName.equals(MAIN_FUNCTION);
 
         long offset = 0;
@@ -153,8 +151,10 @@ public class FunctionOperations extends MIPSOperations {
 
         // Render the template
         String renderedTemplate = renderer.render(templatePath, Map.of(
-                "stackAllocationSpace", String.valueOf(-offset),
-                "raOffset", String.valueOf(-offset - 4)));
+                        "stackAllocationSpace", String.valueOf(-offset),
+                        "raOffset", String.valueOf(4)
+                )
+        );
 
         boolean isLiteral = true;
         if (variableSymbol != null && variableSymbol.isVariable()) {
@@ -180,7 +180,7 @@ public class FunctionOperations extends MIPSOperations {
 
     public String endFunction() {
         // Leave the current function
-        currentFunctionName.pop();
+        functionStack.pop();
         return "";
     }
 
@@ -204,7 +204,7 @@ public class FunctionOperations extends MIPSOperations {
 
     public String callFunction(String functionName) {
         StringBuilder text = new StringBuilder();
-        currentFunctionName.push(functionName); // Update the new current function.
+        functionStack.push(functionName); // Update the new current function.
 
         // Do all the previous operations.
         List<OperandContainer> operations = this.pendingOperations;
@@ -213,7 +213,7 @@ public class FunctionOperations extends MIPSOperations {
             // Make an assignment for the operators to be pushed into the function called.
             if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
                 // Get the current parameter to see the expected type.
-                Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName.peek());
+                Symbol<?> function = symbolTable.findSymbolGlobally(functionName);
                 VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(i);
 
                 // Prepare placeholders for rendering
@@ -230,7 +230,7 @@ public class FunctionOperations extends MIPSOperations {
 
             // Prepare placeholders for rendering
             Map<String, String> placeholders = Map.of(
-                    "variableName", key,
+                    "variableName", key.startsWith("-") ? key.replaceFirst("-", "") : key,
                     "register", entry.getValue()
             );
 
@@ -247,7 +247,7 @@ public class FunctionOperations extends MIPSOperations {
 
             // Prepare placeholders for rendering
             Map<String, String> placeholders = Map.of(
-                    "variableName", key,
+                    "variableName", key.startsWith("-") ? key.replaceFirst("-", "") : key,
                     "register", entry.getValue()
             );
 
@@ -257,7 +257,7 @@ public class FunctionOperations extends MIPSOperations {
         }
 
         this.currentParameterNumber = 0;
-        currentFunctionName.pop(); // Leave the new current function.
+        functionStack.pop(); // Leave the new current function.
         this.pendingOperations.clear();
 
         // Prepare placeholders for rendering the function call

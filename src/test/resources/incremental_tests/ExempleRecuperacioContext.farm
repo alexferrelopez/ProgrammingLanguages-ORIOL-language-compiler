@@ -1,0 +1,17 @@
+miau:a2() {
+    poop 1;
+}
+
+miau: fibonacci(miau n) {
+    miau a is a2();
+    poop a;
+}
+
+miau: ranch() {
+    miau i is 2;
+    miau b is 4;
+    miau c is 5;
+    miau a is fibonacci(i);
+    i is b sum c;
+    poop 0 ;
+}

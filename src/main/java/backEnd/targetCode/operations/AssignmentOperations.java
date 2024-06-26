@@ -135,19 +135,17 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     public String assignmentOperation(String operand1, String destination) {
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, currentFunctionName.peek());
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, functionStack.peek());
         DataType destinationType = variable.getDataType(); // We have the datatype of the variable that is being assigned.
         StringBuilder text = new StringBuilder();
 
         // Do all the previous operations.
         for (OperandContainer operation : this.pendingOperations) {
             switch (destinationType) {
-                case INTEGER, BOOLEAN -> {
-                    text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
-                }
-                case FLOAT -> {
-                    text.append(floatOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
-                }
+                case INTEGER, BOOLEAN ->
+                        text.append(integerOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
+                case FLOAT ->
+                        text.append(floatOperation(operation.getDestination(), operation.getOperand1(), operation.getOperand2(), operation.getOperator().toLowerCase()));
             }
         }
 
@@ -299,7 +297,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         DataType dataType;
 
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), currentFunctionName.peek());
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), functionStack.peek());
         if (variable == null) {
             dataType = this.pendingLogicalOperations.get(0).getOperand1().getType();
         } else {

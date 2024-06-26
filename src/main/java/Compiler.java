@@ -59,7 +59,7 @@ public class Compiler implements CompilerInterface {
         // ---- BACK END ---- //
         RegisterAllocator registerAllocatorInteger = new RegisterAllocatorInteger();
         RegisterAllocator registerAllocatorFloat = new RegisterAllocatorFloat();
-        this.mipsConverter = new TACToMIPSConverter(symbolTable, registerAllocatorInteger, registerAllocatorFloat, new MipsTemplateRenderer( false));
+        this.mipsConverter = new TACToMIPSConverter(symbolTable, registerAllocatorInteger, registerAllocatorFloat, new MipsTemplateRenderer(false));
     }
 
     /**
