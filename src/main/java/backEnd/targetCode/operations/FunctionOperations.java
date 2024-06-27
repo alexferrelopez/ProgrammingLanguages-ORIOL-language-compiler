@@ -1,9 +1,6 @@
 package backEnd.targetCode.operations;
 
-import backEnd.targetCode.MIPSOperations;
-import backEnd.targetCode.MIPSRenderer;
-import backEnd.targetCode.Operand;
-import backEnd.targetCode.OperandContainer;
+import backEnd.targetCode.*;
 import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -33,14 +30,14 @@ public class FunctionOperations extends MIPSOperations {
     }
 
     public String funcDeclaration(String functionLabel) {
-        functionStack.push(functionLabel);
+        functionStack.push(new FunctionContext(functionLabel));
 
         // Set the offset for each variable in the function (in all the nested scopes).
         long currentOffset = -8;
         if (functionLabel.equals(MAIN_FUNCTION)) {
             currentOffset = -4;
         }
-        String funcName = functionStack.peek();
+        String funcName = functionStack.peek().getFunctionName();
         currentOffset = assignParametersOffset(currentOffset, funcName);
         ScopeNode functionScope = symbolTable.getFunctionScope(funcName);
         currentOffset = assignOffset(functionScope, currentOffset);
@@ -111,7 +108,7 @@ public class FunctionOperations extends MIPSOperations {
 
     public void beginFunction() {
         // Map the parameters passed
-        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek());
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek().getFunctionName());
         if (functionSymbol != null && functionSymbol.isFunction()) {
             FunctionSymbol<?> declaredFunction = (FunctionSymbol<?>) functionSymbol;
 
@@ -133,11 +130,11 @@ public class FunctionOperations extends MIPSOperations {
     public String returnFunction(String returnValue) {
 
         // Check if the return value is a symbol in the scope.
-        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek());
-        Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, functionStack.peek());
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek().getFunctionName());
+        Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, functionStack.peek().getFunctionName());
 
         // Determine if the current function is the main function
-        String funcName = functionStack.peek();
+        String funcName = functionStack.peek().getFunctionName();
         boolean isMainFunction = funcName.equals(MAIN_FUNCTION);
 
         long offset = 0;
@@ -180,7 +177,11 @@ public class FunctionOperations extends MIPSOperations {
 
     public String endFunction() {
         // Leave the current function
+
         functionStack.pop();
+        pendingOperations.clear();
+        registerAllocatorInteger.getVariableToRegister().clear();
+        registerAllocatorFloat.getVariableToRegister().clear();
         return "";
     }
 
@@ -204,7 +205,7 @@ public class FunctionOperations extends MIPSOperations {
 
     public String callFunction(String functionName) {
         StringBuilder text = new StringBuilder();
-        functionStack.push(functionName); // Update the new current function.
+        functionStack.push(new FunctionContext(functionName)); // Update the new current function.
 
         // Do all the previous operations.
         List<OperandContainer> operations = this.pendingOperations;
@@ -228,15 +229,22 @@ public class FunctionOperations extends MIPSOperations {
             Map.Entry<String, String> entry = iterator.next();
             String key = entry.getKey();
 
+            String variableName = key.startsWith("-") ? key.replaceFirst("-", "") : key;
             // Prepare placeholders for rendering
             Map<String, String> placeholders = Map.of(
-                    "variableName", key.startsWith("-") ? key.replaceFirst("-", "") : key,
+                    "variableName", variableName,
                     "register", entry.getValue()
             );
 
-            // Render the load variable template
-            text.append(renderer.render("load_variable_to_memory_template", placeholders));
-            iterator.remove();
+            if (!key.startsWith("$")) {
+                functionStack.get(functionStack.size() - 2).addRegisterAddressPair(variableName, entry.getValue());
+                // Render the load variable template
+                text.append(renderer.render("load_variable_to_memory_template", placeholders));
+                iterator.remove();
+            }
+//            // Render the load variable template
+//            text.append(renderer.render("load_variable_to_memory_template", placeholders));
+//            iterator.remove();
         }
 
         // Clear all the variables mapped for custom registers and load into memory
@@ -245,15 +253,24 @@ public class FunctionOperations extends MIPSOperations {
             Map.Entry<String, String> entry = iterator.next();
             String key = entry.getKey();
 
+            String variableName = key.startsWith("-") ? key.replaceFirst("-", "") : key;
             // Prepare placeholders for rendering
             Map<String, String> placeholders = Map.of(
-                    "variableName", key.startsWith("-") ? key.replaceFirst("-", "") : key,
+                    "variableName", variableName,
                     "register", entry.getValue()
             );
 
-            // Render the load variable template
-            text.append(renderer.render("load_variable_to_memory_template", placeholders));
-            iterator.remove();
+            if (!key.startsWith("$")) {
+                functionStack.get(functionStack.size() - 2).addRegisterAddressPair(variableName, entry.getValue());
+                // Render the load variable template
+                text.append(renderer.render("load_variable_to_memory_template", placeholders));
+                iterator.remove();
+
+            }
+
+//            // Render the load variable template
+//            text.append(renderer.render("load_variable_to_memory_template", placeholders));
+//            iterator.remove();
         }
 
         this.currentParameterNumber = 0;
@@ -269,4 +286,30 @@ public class FunctionOperations extends MIPSOperations {
         return text.append(renderer.render("function_call_template", functionCallPlaceholders)).toString();
     }
 
+    public String popFunctionParameters() {
+        FunctionContext functionContext = functionStack.peek();
+
+        List<Pair<String, String>> registerAddressPairList = functionContext.getRegisterAddressPairList();
+        StringBuilder targetCode = new StringBuilder();
+        for (Pair<String, String> RegisterAdressPair : registerAddressPairList) {
+            String register = RegisterAdressPair.right();
+            String address = RegisterAdressPair.left();
+
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "oldestRegister", register,
+                    "oldestVariable", address
+            );
+
+            // Render the store variable template
+            String storeVariableTemplate = renderer.render("load_integer_variable_template", placeholders);
+
+            // Write the store variable template to the target code
+            targetCode.append(storeVariableTemplate);
+        }
+
+        functionContext.clearRegisterAddressPairList();
+
+        return targetCode.toString();
+    }
 }

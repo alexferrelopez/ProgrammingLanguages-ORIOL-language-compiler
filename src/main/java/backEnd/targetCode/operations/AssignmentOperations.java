@@ -135,7 +135,7 @@ public class AssignmentOperations extends MIPSOperations {
     }
 
     public String assignmentOperation(String operand1, String destination) {
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, functionStack.peek());
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(destination, functionStack.peek().getFunctionName());
         DataType destinationType = variable.getDataType(); // We have the datatype of the variable that is being assigned.
         StringBuilder text = new StringBuilder();
 
@@ -250,7 +250,7 @@ public class AssignmentOperations extends MIPSOperations {
         text.append(saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER));
 
         Register regDest = registerAllocatorInteger.allocateRegister(destination);
-        text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
+        //text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
 
         // Prepare placeholders for rendering
         Map<String, String> placeholders = Map.of(
@@ -297,7 +297,7 @@ public class AssignmentOperations extends MIPSOperations {
 
         DataType dataType;
 
-        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), functionStack.peek());
+        Symbol<?> variable = symbolTable.findSymbolInsideFunction(this.pendingLogicalOperations.get(0).getOperand1().getValue(), functionStack.peek().getFunctionName());
         if (variable == null) {
             dataType = this.pendingLogicalOperations.get(0).getOperand1().getType();
         } else {

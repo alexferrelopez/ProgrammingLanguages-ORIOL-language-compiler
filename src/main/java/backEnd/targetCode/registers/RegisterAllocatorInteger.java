@@ -49,7 +49,7 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
         String variable = variableOperand.getValue();
 
         // Accept any register passed (starting with $) that is not $t.
-        if (variable.startsWith(REGISTER_PREFIX)) {
+        if (variable.startsWith(REGISTER_PREFIX) && !variable.startsWith(REGISTER_PREFIX_TEMP)){
             return new Register(VARIABLE_ALREADY_IN_REGISTER, variable, null);
         }
 

@@ -24,7 +24,7 @@ public class MIPSOperations {
     protected static final String END_PROGRAM_INSTRUCTION = "syscall";
     protected static final String FUNCTION_RESULT_REGISTER = "$v0";
     protected final static String MAIN_FUNCTION = "ranch";
-    protected static Stack<String> functionStack = new Stack<>();
+    protected static Stack<FunctionContext> functionStack = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
     protected final SymbolTableInterface symbolTable;
@@ -125,11 +125,11 @@ public class MIPSOperations {
 
         // Check if it's a variable (check its type in the symbols table).
         if (operandValueSymbol == ValueSymbol.VARIABLE) {
-            String currentFunction = functionStack.peek();
+            String currentFunction = functionStack.peek().getFunctionName();
 
             // Get the previous function name if trying to return value from main.
             if (mainReturn && functionStack.size() > 1) {
-                currentFunction = functionStack.get(functionStack.size() - 2);
+                currentFunction = functionStack.get(functionStack.size() - 2).getFunctionName();
             }
 
             // Check if it's a function (assign the value to the return register).

@@ -108,7 +108,7 @@ public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
             case "SUM", "SUB", "MUL", "DIV" ->
                     showOperation(instruction, assignmentOperations.addPendingOperation(operand1, instruction.getOperand2(), result, operator));
 
-            //case "PopParams" ->
+            case "PopParams" ->  functionOperations.popFunctionParameters();
 
             default -> null;
         };
