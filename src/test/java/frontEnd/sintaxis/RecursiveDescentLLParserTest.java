@@ -153,4 +153,41 @@ class RecursiveDescentLLParserTest {
         setupCompiler(TEST_FILE_FOLDER + "ExempleFibonacci.farm");
         compileCode();
     }
+    // ** Declaracions amb moltes sumes  ** //
+    @Test
+    @DisplayName("Check sumDecl code.")
+    @Description("Test that checks if the declaracins amb moltes sumes is accepted syntactically.")
+    public void test_sumesDecl() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "TestSumesDeclaraio.farm");
+        compileCode();
+    }
+
+    // ** ran ** //
+    @Test
+    @DisplayName("Check rand code.")
+    @Description("Test that checks if the random is accepted syntactically.")
+    public void randomParser() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER+ TEST_FILE_FOLDER+DECLARATIONS_FILE_FOLDER+"RandomParser.farm");
+        compileCode();
+    }
+
+    // ** Fact facilet ** //
+    @Test
+    @DisplayName("Check factorial facilet code.")
+    @Description("Test that checks if the fact facilet is accepted syntactically.")
+    public void factFacilet() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER+ TEST_FILE_FOLDER+DECLARATIONS_FILE_FOLDER + "FactFacilet.farm");
+        compileCode();
+    }
+
+    // ** Iffor ** //
+    @Test
+    @DisplayName("Check ifyfor facilet code.")
+    @Description("Test that checks if the fact ifyfor is accepted syntactically.")
+    public void IFyFor() {
+        setupCompiler( FOR_LOOPS_FILE_FOLDER+ TEST_FILE_FOLDER+DECLARATIONS_FILE_FOLDER+"IfYFor.farm");
+        compileCode();
+    }
+
+
 }
