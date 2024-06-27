@@ -188,6 +188,13 @@ class RecursiveDescentLLParserTest {
         setupCompiler( FOR_LOOPS_FILE_FOLDER+ TEST_FILE_FOLDER+DECLARATIONS_FILE_FOLDER+"IfYFor.farm");
         compileCode();
     }
-
+    // ** Factorial ** //
+    @Test
+    @DisplayName("Check Factorial facilet code.")
+    @Description("Test that checks if the fact Factorial is accepted syntactically.")
+    public void Facts() {
+        setupCompiler(  TEST_FILE_FOLDER+"Factorial.farm");
+        compileCode();
+    }
 
 }
