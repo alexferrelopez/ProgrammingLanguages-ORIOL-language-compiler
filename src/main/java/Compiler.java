@@ -73,7 +73,7 @@ public class Compiler implements CompilerInterface {
         Tree<AbstractSymbol> tree = parser.getTree();    // Get tree from parser
 
         // Print the tree for debugging
-        parser.printTree(tree);
+        //parser.printTree(tree);
         if (hasErrors()) return;
         TACModule tacModule = new TACModule();
         tacGenerator = new TACGenerator(tacModule, symbolTable);
@@ -81,7 +81,7 @@ public class Compiler implements CompilerInterface {
         // Generate the intermediate code
         List<TACInstruction> TACinstructions = tacGenerator.generateTAC(tree);
 
-        tacGenerator.printTAC();
+        //tacGenerator.printTAC();
 
         // ---- BACK END ---- //
         try {

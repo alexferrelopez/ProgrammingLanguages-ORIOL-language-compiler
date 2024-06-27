@@ -55,7 +55,7 @@ public class TACGenerator {
 //        generateCode(program);
 //        tacModule.addUnaryInstruction(null, "EndFunc", null);
 
-        printTAC();
+        //printTAC();
 
         return tacModule.getInstructions();
     }

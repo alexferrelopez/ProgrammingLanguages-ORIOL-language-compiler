@@ -28,7 +28,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
     private boolean returnFound = false;
     private boolean mainFound = false;
 
-    public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableInterface symbolTable) {
+        public SemanticAnalyzer(SemanticErrorHandler semanticErrorHandler, SymbolTableInterface symbolTable) {
         this.errorHandler = semanticErrorHandler;
         this.symbolTable = symbolTable;
     }
@@ -529,7 +529,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      * @param logicalTokens A list of tokens representing the logical expression to be validated.
      * @return A list of ResultContainer objects containing the validation results for the logical expression.
      */
-    private List<ResultContainer> checkLogicalExpression(List<Token> logicalTokens) {
+        private List<ResultContainer> checkLogicalExpression(List<Token> logicalTokens) {
         // Check all the tokens are valid for a boolean expression (e.g. AND, OR, NOT, etc.)
         List<TokenType> validLogicalTokens = List.of(ValueSymbol.VALUE_TRUE, ValueSymbol.VALUE_FALSE, ValueSymbol.VARIABLE, BinaryOperator.OR, BinaryOperator.AND, BinaryOperator.NOT);
         return validateLogicalRelationalTokens(logicalTokens, validLogicalTokens, List.of(DataType.BOOLEAN));

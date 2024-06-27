@@ -135,7 +135,6 @@ class TACGeneratorTest {
 
             // *** Intermediate Code *** //
             Tree<AbstractSymbol> tree = parser.getTree();
-            parser.printTree(tree);
             List<TACInstruction> myList =  tacGenerator.generateTAC(tree);
             int i = 0;
             while(i < myList.size()) {
@@ -149,7 +148,7 @@ class TACGeneratorTest {
 
             Assertions.assertEquals(i,myList.size());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Assertions.assertNull(-1,"Error during reading input files");
         }
     }
 
