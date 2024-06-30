@@ -123,7 +123,7 @@ class RecursiveDescentLLParserTest {
     @DisplayName("Check conditionals.")
     @Description("Test that checks if the for loops are accepted syntactically.")
     public void test_conditionals() {
-        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "loops/ExempleFor.farm");
         compileCode();
     }
 
@@ -132,7 +132,7 @@ class RecursiveDescentLLParserTest {
     @DisplayName("Check for loops.")
     @Description("Test that checks if the for loops are accepted syntactically.")
     public void test_forLoops() {
-        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "loops/ExempleFor.farm");
         compileCode();
     }
 

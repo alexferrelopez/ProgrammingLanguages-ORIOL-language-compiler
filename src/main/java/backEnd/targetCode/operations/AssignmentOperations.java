@@ -247,7 +247,10 @@ public class AssignmentOperations extends MIPSOperations {
             }
             case SWAP_REGISTERS -> {
                 text += loadVariableToMemory(register.getVariableName(), register.getRegisterName(), dataType); // Write the operation to save the variable into memory.
-                return text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister());
+                if (!variableOffset.isTemporal()) {
+                    text = text + loadVariableToRegister(variableOffset.getValue(), register.getRegisterName(), dataType, !variableOffset.isRegister());
+                }
+                return text;
             }
             // The variable was already loaded into a register.
             default -> {
@@ -267,7 +270,7 @@ public class AssignmentOperations extends MIPSOperations {
         text.append(saveVariableIntoMemory(regOp2, operand2, DataType.INTEGER));
 
         Register regDest = registerAllocatorInteger.allocateRegister(destination);
-        //text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
+        text.append(saveVariableIntoMemory(regDest, destination, DataType.INTEGER));
 
         // Prepare placeholders for rendering
         Map<String, String> placeholders = Map.of(

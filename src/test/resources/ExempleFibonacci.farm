@@ -21,7 +21,7 @@ miau: fibonacci(miau n) {
 miau: ranch() {
     miau n is 10;
     n is n minus 1;
-    miau i is 7;
+    miau i is 10;
     i is fibonacci(i);
     poop 0 ;
 }

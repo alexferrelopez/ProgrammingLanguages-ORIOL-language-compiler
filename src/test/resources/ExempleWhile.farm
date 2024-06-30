@@ -1,8 +1,8 @@
 miau : ranch ( ) {
     miau c is 1 ;
-    miau b is 2 ;
+    miau b is 10 ;
     breed ( c smaller b ) {
-        miau a is 2 ;
+        c is c sum c ;
     }
     poop 0 ;
 }

@@ -56,7 +56,15 @@ public class MIPSOperations {
         if (dataType == DataType.FLOAT) {
             return "swc1 " + oldestRegister + ", " + oldestVariable;
         } else {
-            return "sw " + oldestRegister + ", " + oldestVariable;
+            Map<String, String> placeholders = new HashMap<>();
+
+            placeholders.put("register", oldestRegister);
+            placeholders.put("variableName", oldestVariable.startsWith("-") ? oldestVariable.replaceFirst("-", "") : oldestVariable);
+
+            String templatePath = "load_variable_to_memory_template";
+
+            return renderer.render(templatePath, placeholders);
+
         }
     }
 

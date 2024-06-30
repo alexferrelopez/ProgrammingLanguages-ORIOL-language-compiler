@@ -4,7 +4,7 @@ miau:a2() {
 
 miau: fibonacci(miau n) {
     miau a is a2();
-    poop a;
+    poop n;
 }
 
 miau: ranch() {
