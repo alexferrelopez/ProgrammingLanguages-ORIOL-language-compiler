@@ -36,19 +36,36 @@ public class AssignmentOperations extends MIPSOperations {
         StringBuilder text = new StringBuilder(saveVariableIntoMemory(variableRegister, registerValue, destinationType));
 
         // Prepare placeholders for rendering
+        String registerName = variableRegister.getNotNullRegister();
         Map<String, String> placeholders = Map.of(
                 "destinationRegister", destination.getNotNullRegister(),
-                "sourceRegister", variableRegister.getNotNullRegister()
+                "sourceRegister", registerName
         );
 
         String templatePath;
         if (destinationType == DataType.FLOAT) {
-            if (variableRegister.getNotNullRegister().startsWith("$t")) {
+            if (registerName.startsWith("$t")) {
                 templatePath = "float_register_assignment_t_template";
             } else {
                 templatePath = "float_register_assignment_f_template";
             }
         } else {
+            String destinationRegisterName = destination.getNotNullRegister();
+            if (destinationRegisterName.startsWith(PARAM_PREFIX)) {
+                String registerMemoryAddress = registerAllocator.getRegisterMemoryAddress(destinationRegisterName);
+                if (!registerMemoryAddress.isEmpty()) {
+
+                    String nonNegativeMemoryAddress = registerMemoryAddress.startsWith("-") ? registerMemoryAddress.replaceFirst("-", "") : registerMemoryAddress;
+                    Map<String, String> load_var_placeholders = Map.of(
+                            "variableName", nonNegativeMemoryAddress,
+                            "register", destinationRegisterName
+                    );
+
+                    text.append(renderer.render("load_variable_to_memory_template", load_var_placeholders));
+
+                    addPairIfNotPresent(nonNegativeMemoryAddress, destinationRegisterName);
+                }
+            }
             templatePath = "integer_register_assignment_template";
         }
 

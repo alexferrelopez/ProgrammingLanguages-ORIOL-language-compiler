@@ -17,7 +17,6 @@ import java.util.Map;
 
 public class FunctionOperations extends MIPSOperations {
     private final static int MAX_FUNCTION_PARAMETERS = 4;    // Only $a0 to $3 parameters are available.
-    private final static String PARAMETERS_REGISTER_PREFIX = "$a";    // Only $a0 to $3 parameters are available.
     private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
     private final AssignmentOperations assignmentOperations;
     private final MIPSRenderer renderer;
@@ -116,9 +115,9 @@ public class FunctionOperations extends MIPSOperations {
             for (VariableSymbol<?> parameter : declaredFunction.getParameters()) {
                 switch (parameter.getDataType()) {
                     case FLOAT ->
-                            registerAllocatorFloat.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
+                            registerAllocatorFloat.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAM_PREFIX + numParameter);
                     case INTEGER ->
-                            registerAllocatorInteger.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
+                            registerAllocatorInteger.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAM_PREFIX + numParameter);
                 }
                 numParameter++;
             }
@@ -180,13 +179,13 @@ public class FunctionOperations extends MIPSOperations {
 
         functionStack.pop();
         pendingOperations.clear();
-        registerAllocatorInteger.getVariableToRegister().clear();
-        registerAllocatorFloat.getVariableToRegister().clear();
+        registerAllocatorInteger.freeAllRegisters();
+        registerAllocatorFloat.freeAllRegisters();
         return "";
     }
 
     public String assignFunctionParameter(String parameterValue, String callOperator) {
-        String destinationRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
+        String destinationRegister = PARAM_PREFIX + currentParameterNumber;
 
         if (currentParameterNumber < MAX_FUNCTION_PARAMETERS) {
             currentParameterNumber++;
@@ -237,37 +236,13 @@ public class FunctionOperations extends MIPSOperations {
             );
 
             if (!key.startsWith("$")) {
-                functionStack.get(functionStack.size() - 2).addRegisterAddressPair(variableName, entry.getValue());
+                boolean pairPreviouslyAdded = addPairIfNotPresent(variableName, entry.getValue());
                 // Render the load variable template
-                text.append(renderer.render("load_variable_to_memory_template", placeholders));
+                if (!pairPreviouslyAdded) {
+                    text.append(renderer.render("load_variable_to_memory_template", placeholders));
+                }
                 iterator.remove();
             }
-//            // Render the load variable template
-//            text.append(renderer.render("load_variable_to_memory_template", placeholders));
-//            iterator.remove();
-        }
-
-        // Clear all the variables mapped for custom registers and load into memory
-        iterator = registerAllocatorInteger.getVariableToCustomRegister().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, String> entry = iterator.next();
-            String key = entry.getKey();
-
-            String variableName = key.startsWith("-") ? key.replaceFirst("-", "") : key;
-            // Prepare placeholders for rendering
-            Map<String, String> placeholders = Map.of(
-                    "variableName", variableName,
-                    "register", entry.getValue()
-            );
-
-            if (!key.startsWith("$")) {
-                functionStack.get(functionStack.size() - 2).addRegisterAddressPair(variableName, entry.getValue());
-                // Render the load variable template
-                text.append(renderer.render("load_variable_to_memory_template", placeholders));
-                iterator.remove();
-
-            }
-
 //            // Render the load variable template
 //            text.append(renderer.render("load_variable_to_memory_template", placeholders));
 //            iterator.remove();

@@ -111,7 +111,36 @@ public class RegisterAllocatorInteger implements RegisterAllocator {
     }
 
     @Override
-    public Map<String, String> getVariableToCustomRegister() {
-        return this.variableToCustomRegister;
+    public String getRegisterMemoryAddress(String register) {
+        for (Map.Entry<String, String> stringStringEntry : variableToRegister.entrySet()) {
+            if (stringStringEntry.getValue().equals(register)) {
+                return stringStringEntry.getKey();
+            }
+        }
+        for (Map.Entry<String, String> stringStringEntry : variableToCustomRegister.entrySet()) {
+            if (stringStringEntry.getValue().equals(register)) {
+                return stringStringEntry.getKey();
+            }
+        }
+        return "";
+    }
+
+    @Override
+    public void freeAllRegisters() {
+        availableRegisters.clear();
+        // Add the temporary registers to the list.
+
+        // For $s registers
+        for (int i = NUM_SAVE_REGISTERS - 1; i >= 0; i--) {
+            availableRegisters.add(REGISTER_PREFIX_SAVE + i);
+        }
+
+        // For $t registers
+        for (int i = NUM_TEMP_REGISTERS - 1; i >= 0; i--) {
+            availableRegisters.add(REGISTER_PREFIX_TEMP + i);
+        }
+
+        variableToRegister.clear();
+        variableToCustomRegister.clear();
     }
 }

@@ -14,15 +14,9 @@ import java.util.*;
 
 public class MIPSOperations {
     protected static final String NL = System.lineSeparator(); // New line
-    protected static final String TAB = "\t";
-    protected static final String COMMENT_WORD = "#";
-
     protected static final String FP = "$fp";   // Frame pointer
-    protected static final String SP = "$sp";    // Stack pointer
-    protected static final String RETURN_ADDRESS_REGISTER = "$ra";
+    protected static final String PARAM_PREFIX = "$a";   // Stack pointer
     protected static final String RETURN_VALUE_REGISTER = "$v0";
-    protected static final String END_PROGRAM_INSTRUCTION = "syscall";
-    protected static final String FUNCTION_RESULT_REGISTER = "$v0";
     protected final static String MAIN_FUNCTION = "ranch";
     protected static Stack<FunctionContext> functionStack = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
@@ -48,10 +42,6 @@ public class MIPSOperations {
     public static String floatToHex(float value) {
         int intBits = Float.floatToIntBits(value);
         return "0x" + Integer.toHexString(intBits);
-    }
-
-    protected String writeComment(String comment) {
-        return (COMMENT_WORD + " " + comment);
     }
 
     protected ValueSymbol getOperandType(String operandValue) {
@@ -164,5 +154,19 @@ public class MIPSOperations {
             operandContainer.setOperand2(loadSingleOperand(operand2Str, returnValue));
         }
         operandContainer.setOperator(operatorStr);
+    }
+
+    public boolean addPairIfNotPresent(String memoryAddress, String value) {
+        int max = Math.max(functionStack.size() - 2, 0);
+        FunctionContext functionContext = functionStack.get(max);
+
+        for (Pair<String, String> stringStringPair : functionContext.getRegisterAddressPairList()) {
+            if (stringStringPair.left().equals(memoryAddress)) {
+                return true;
+            }
+        }
+
+        functionContext.getRegisterAddressPairList().add(new Pair<>(memoryAddress, value));
+        return false;
     }
 }

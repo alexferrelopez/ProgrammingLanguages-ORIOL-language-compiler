@@ -15,5 +15,7 @@ public interface RegisterAllocator {
 
     Register customAllocateRegister(String variable, String destination);
 
-    Map<String, String> getVariableToCustomRegister();
+    String getRegisterMemoryAddress(String register);
+
+    void freeAllRegisters();
 }
