@@ -1,12 +1,11 @@
 miau: fibonacci(miau n) {
-    miau param is n;
     check (n equals 1) {
       poop 1;
     }
     else {
         miau nou_param is n minus 1;
         miau a is fibonacci(nou_param);
-        miau result is param times a;
+        miau result is n times a;
         poop result;
     }
 }
