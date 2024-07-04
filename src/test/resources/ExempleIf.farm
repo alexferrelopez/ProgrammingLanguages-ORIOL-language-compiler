@@ -1,8 +1,7 @@
 miau : ranch ( ) {
     miau a is 2;
     miau b is 3;
-    status c is alive;
-    check ( a bigger b ) {
+    check ( a smaller b ) {
         miau e is 4;
     }
     poop 0 ;

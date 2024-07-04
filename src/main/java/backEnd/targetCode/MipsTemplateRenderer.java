@@ -6,8 +6,8 @@ import java.util.Map;
 public class MipsTemplateRenderer implements MIPSRenderer {
 
     private static final String TEMPLATES_DIR = "templates/";
-    private Boolean debug = false;
     private final Map<String, String> templateCache = new java.util.HashMap<>();
+    private final Boolean debug;
 
     public MipsTemplateRenderer(Boolean debug) {
         this.debug = debug;
