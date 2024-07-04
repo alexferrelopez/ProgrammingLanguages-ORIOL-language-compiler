@@ -172,6 +172,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         // Check what type of assignation this is (depending on the type of the variable being assigned).
         int indexOfFirstSeparator = getIndexOfFirstSeparator(assignationTokens, SpecialSymbol.PUNT_COMMA);
 
+        if (2 > Math.max(indexOfFirstSeparator, assignationTokens.size() - 1)) return new ResultContainer(true, true, null, null, null, "");
         List<Token> expressionTokens = assignationTokens.subList(2, Math.max(indexOfFirstSeparator, assignationTokens.size() - 1));  // Do not take into account PUNT_COMMA token.
 
         // Check if the statement is a valid expression (only one function allowed).
