@@ -63,7 +63,7 @@ class LexicalAnalyzerTest {
                                 new Token(ReservedSymbol.IF),
                                 new Token(SpecialSymbol.PO),
                                 new Token(ValueSymbol.VARIABLE, "num"),
-                                new Token(MathOperator.MUL, "module"),
+                                new Token(MathOperator.MUL, "times"),
                                 new Token(ValueSymbol.VALUE_INT, "2"),
                                 new Token(BinaryOperator.EQ, "eq"),
                                 new Token(ValueSymbol.VALUE_INT, "0"),

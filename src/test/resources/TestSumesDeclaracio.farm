@@ -1,0 +1,24 @@
+miau: ranch() {
+    miau num1 is 1;
+    miau num2 is 2;
+    miau num3 is 3;
+    miau num4 is 4;
+    miau num5 is 5;
+    miau num6 is 6;
+    miau num7 is 7;
+    miau num8 is 8;
+    miau num9 is 9;
+    miau num10 is 10;
+
+    miau sum1 is num1 sum num2;
+    miau sum2 is sum1 sum num3;
+    miau sum3 is sum2 sum num4;
+    miau sum4 is sum3 sum num5;
+    miau sum5 is sum4 sum num6;
+    miau sum6 is sum5 sum num7;
+    miau sum7 is sum6 sum num8;
+    miau sum8 is sum7 sum num9;
+    miau sum9 is sum8 sum num10;
+
+    poop sum9;
+}

@@ -1,0 +1,22 @@
+miau: factorial(miau n) {
+    miau result is 1;
+
+    feed (miau i is 1 to n, i is i sum 1) {
+        result is result times i;
+    }
+
+    poop result;
+}
+
+miau: ranch() {
+    miau num is 5;  // es pot canviar aquest nunero per comprovar altres resultts del factorial
+    miau result;
+
+    check (num eq 0) {
+        result is 1;  // el factorial de 0 ES 1
+    } else {
+        result is factorial(num);
+    }
+
+    poop result;
+}

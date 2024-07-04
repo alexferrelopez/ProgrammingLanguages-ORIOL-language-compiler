@@ -1,0 +1,5 @@
+operator;operand1;operand2;result
+function;;;ranch
+BeginFunc;0;;
+=;3,32;;a
+=;4,5;;b
