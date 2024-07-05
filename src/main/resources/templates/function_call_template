@@ -1,0 +1,4 @@
+# function_call_template.asm
+# Parameters: functionName
+
+    jal {{ functionName }} # Jump to the function

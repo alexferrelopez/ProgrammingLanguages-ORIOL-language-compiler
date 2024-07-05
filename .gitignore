@@ -47,3 +47,4 @@ nbdist/
 
 # XML files
 *.xml
+/src/main/resources/parsingTable.json

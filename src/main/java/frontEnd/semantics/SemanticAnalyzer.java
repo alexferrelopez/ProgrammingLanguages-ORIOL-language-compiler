@@ -60,6 +60,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 }
             }
         }
+
         return tokens;
     }
 
@@ -69,7 +70,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
      * @param tree Parsing tree (syntactic) to analyze.
      */
     @Override
-    public void receiveSyntacticTree(Tree<AbstractSymbol> tree) {
+    public void checkSyntacticTree(Tree<AbstractSymbol> tree) {
         // We receive a tree that each node is the type AbstractSymbol
 
         // We can use a switch statement to check the type of each node
@@ -171,6 +172,8 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         // Check what type of assignation this is (depending on the type of the variable being assigned).
         int indexOfFirstSeparator = getIndexOfFirstSeparator(assignationTokens, SpecialSymbol.PUNT_COMMA);
 
+        if (2 > Math.max(indexOfFirstSeparator, assignationTokens.size() - 1))
+            return new ResultContainer(true, true, null, null, null, "");
         List<Token> expressionTokens = assignationTokens.subList(2, Math.max(indexOfFirstSeparator, assignationTokens.size() - 1));  // Do not take into account PUNT_COMMA token.
 
         // Check if the statement is a valid expression (only one function allowed).
@@ -185,6 +188,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
                 if (functionSymbol.getDataType() == variableDataType) {
                     List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+
+                    if (expectedParams.size() > 4) {
+                        errorHandler.reportError(SemanticErrorType.MAXIMUM_PARAMETERS_EXCEEDED, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected a maximum of 4 but received: " + expectedParams.size());
+                        failed = true;
+                    }
+
                     List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
 
                     if (expectedParams.size() == receivedParams.size()) {
@@ -249,6 +258,12 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
 
 
             List<VariableSymbol<?>> expectedParams = functionSymbol.getParameters();
+
+            if (expectedParams.size() > 4) {
+                errorHandler.reportError(SemanticErrorType.MAXIMUM_PARAMETERS_EXCEEDED, expressionTokens.get(0).getLine(), expressionTokens.get(0).getColumn(), "expected a maximum of 4 but received: " + expectedParams.size());
+                failed = true;
+            }
+
             List<VariableSymbol<?>> receivedParams = getFunctionCallParameters(expressionTokens);
 
             if (expectedParams.size() == receivedParams.size()) {
@@ -605,6 +620,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
                 Symbol<?> symbol = symbolTable.findSymbol(token.getLexeme());
                 if (Objects.isNull(symbol)) {
                     errorHandler.reportError(SemanticErrorType.VARIABLE_NOT_DECLARED, token.getLine(), null, "Variable " + token.getLexeme() + " not declared");
+                    return;
                 }
                 returnType = symbol.getDataType();
             } else {
@@ -801,9 +817,7 @@ public class SemanticAnalyzer implements SemanticAnalyzerInterface {
         int indexLastTokenUntilSeparator = getIndexOfFirstSeparator(forTokens, SpecialSymbol.PT);
         List<Token> assignationTokens = forTokens.subList(indexLastTokenInCondition + 3, indexLastTokenUntilSeparator);
         ResultContainer resultContainer = checkAssignationSemantics(assignationTokens, null);
-        if (resultContainer.isError()) {
-            errorHandler.reportError(resultContainer.errorType(), resultContainer.optionalLine(), resultContainer.optionalColumn(), resultContainer.word());
-        }
+        handleResultContainer(resultContainer);
     }
 
     /**

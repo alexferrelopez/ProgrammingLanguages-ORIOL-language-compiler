@@ -11,20 +11,21 @@ import java.util.List;
 
 /**
  * Represents a symbol in the symbol table. A symbol has a name, a type, a value, and a scopeType.
+ *
  * @param <Type> the type of the value of the symbol.
  */
 
 public abstract class Symbol<Type> {
     private final String name;          // The name (lexeme) of the symbol.
     private final DataType dataType;    // The type of the symbol (if it's a function, it's the return type).
-    private long memoryAddress;
     private final long lineDeclaration;
     private final List<Long> lineUsage;
-    private Type value;                 // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
-    private long offset;                // Used in code generation to calculate the offset of the symbol in the stack (its value is usually negative).
     // Offset for a variable is the distance from the base pointer to the variable.
     // Offset for a function is the label in the assembler code.
     private final Class<Type> typeClass; // Class token to maintain type safety
+    private long memoryAddress;
+    private Type value;                 // The value of the symbol (Wrapper classes = Integer, Long, String, Character...).
+    private long offset;                // Used in code generation to calculate the offset of the symbol in the stack (its value is usually negative).
 
     public Symbol(String name, DataType dataType, long lineDeclaration, Class<Type> typeClass) {
         this.name = name;

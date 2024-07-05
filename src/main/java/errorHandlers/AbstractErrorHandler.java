@@ -45,11 +45,11 @@ public abstract class AbstractErrorHandler<T extends ErrorType, K extends Warnin
     /**
      * Abstract method to report a warning, must be implemented by subclasses
      *
-     * @param warningType The warning type to report, the type must be of the same type as the subclass,
-     *                    meaning it must be of type K, which is a class that implements WarningType
+     * @param warningType    The warning type to report, the type must be of the same type as the subclass,
+     *                       meaning it must be of type K, which is a class that implements WarningType
      * @param optionalLine   The line number of the warning, can be null, should be handled by the subclass
      * @param optionalColumn The column number of the warning, can be null, should be handled by the subclass
-     * @param word        The word that caused the warning
+     * @param word           The word that caused the warning
      * @return A string representation of the warning
      */
     abstract public String reportWarning(K warningType, @Nullable Integer optionalLine, @Nullable Integer optionalColumn, String word);

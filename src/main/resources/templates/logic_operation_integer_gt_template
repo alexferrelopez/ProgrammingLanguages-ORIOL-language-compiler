@@ -1,0 +1,4 @@
+# logic_operation_integer_gt_template.asm
+# Parameters: operand1Register, operand2Register, label
+
+    ble {{ operand1Register }}, {{ operand2Register }}, {{ label }}

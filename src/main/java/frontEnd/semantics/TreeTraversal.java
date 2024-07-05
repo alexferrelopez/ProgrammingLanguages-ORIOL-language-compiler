@@ -8,24 +8,24 @@ import java.util.List;
 import java.util.Stack;
 
 public class TreeTraversal {
-	// Utility function to check if a node has a specific child type
-	public static boolean hasSpecificChildType(Tree<AbstractSymbol> node, String childType) {
-		if (node.getNode().getName().equals(childType)) {
-			return true;
-		}
-		for (Tree<AbstractSymbol> child : node.getChildren()) {
-			if (hasSpecificChildType(child, childType)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    // Utility function to check if a node has a specific child type
+    public static boolean hasSpecificChildType(Tree<AbstractSymbol> node, String childType) {
+        if (node.getNode().getName().equals(childType)) {
+            return true;
+        }
+        for (Tree<AbstractSymbol> child : node.getChildren()) {
+            if (hasSpecificChildType(child, childType)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	// Function used to navigate through the whole tree using DFS approach and get only the leaf nodes (which are the tokens).
-	public static <T> List<T> getLeafNodesIterative(Tree<T> root) {
-		List<T> leaves = new ArrayList<>();
-		Stack<Tree<T>> stack = new Stack<>();
-		stack.push(root);
+    // Function used to navigate through the whole tree using DFS approach and get only the leaf nodes (which are the tokens).
+    public static <T> List<T> getLeafNodesIterative(Tree<T> root) {
+        List<T> leaves = new ArrayList<>();
+        Stack<Tree<T>> stack = new Stack<>();
+        stack.push(root);
 
         // Continue until all nodes have been processed
         while (!stack.isEmpty()) {

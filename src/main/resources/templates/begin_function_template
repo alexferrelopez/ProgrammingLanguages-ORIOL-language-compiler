@@ -1,0 +1,7 @@
+# begin_function_template.asm
+# MIPS begin function template
+
+    # Allocate function's memory (in Bytes)
+    sub $sp, $sp, {{ functionSize }}
+
+    # -- Variables code --

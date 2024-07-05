@@ -1,0 +1,4 @@
+# float_register_assignment_f_template.asm
+# Parameters: destinationRegister, sourceRegister
+
+    mov.s {{ destinationRegister }}, {{ sourceRegister }}

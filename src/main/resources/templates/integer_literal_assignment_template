@@ -1,0 +1,4 @@
+# integer_literal_assignment_template.asm
+# Parameters: destinationRegister, literalValue
+
+    li {{ destinationRegister }}, {{ literalValue }}

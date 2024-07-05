@@ -1,0 +1,4 @@
+# load_variable_to_memory_template.asm
+# Parameters: variableName, register
+
+    sw {{ register }}, {{ variableName }} # Store the variable from register to memory

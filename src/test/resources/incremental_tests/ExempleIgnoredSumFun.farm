@@ -1,0 +1,16 @@
+miau: ignored (miau un, miau dos, miau tres, miau quatre) {
+    un is dos;
+    poop un;
+}
+
+
+
+miau: ranch() {
+    miau a is 1;
+    miau b is 2;
+    miau c is 3;
+    miau d is 4;
+    miau e is ignored(a,b,c,d);
+
+    poop 0 ;
+}

@@ -1,6 +1,3 @@
 miau : ranch ( ) {
-    breed ( alive ) {
-        miau a is 2 ;
-    }
     poop 0 ;
 }

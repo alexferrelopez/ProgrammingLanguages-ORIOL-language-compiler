@@ -1,0 +1,4 @@
+# float_operation_div_template.asm
+# Parameters: destinationRegister, operand1Register, operand2Register
+
+    div.s {{ destinationRegister }}, {{ operand1Register }}, {{ operand2Register }}

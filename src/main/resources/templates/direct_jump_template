@@ -1,0 +1,4 @@
+# direct_jump_template.asm
+# Parameters: label
+
+    j {{ label }}

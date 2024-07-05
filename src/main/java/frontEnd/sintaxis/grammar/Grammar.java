@@ -23,6 +23,15 @@ public class Grammar {
         this.readGrammar();
     }
 
+    public static NonTerminalSymbol getNoTerminal(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, NonTerminalSymbol nonTerminal) {
+        for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> set : grammarMap.entrySet()) {
+            if (set.getKey().getName().equals(nonTerminal.getName())) {
+                return set.getKey();
+            }
+        }
+        return null;
+    }
+
     public Map<NonTerminalSymbol, List<List<AbstractSymbol>>> getGrammar() {
         return this.grammar;
     }
@@ -125,7 +134,6 @@ public class Grammar {
         }
     }
 
-
     public void readGrammar() {
         try {
             File file = new File(GRAMMAR_PATH);
@@ -154,14 +162,5 @@ public class Grammar {
         }
         return null;
     }
-
-public static NonTerminalSymbol getNoTerminal(Map<NonTerminalSymbol, List<List<AbstractSymbol>>> grammarMap, NonTerminalSymbol nonTerminal){
-    for (Map.Entry<NonTerminalSymbol, List<List<AbstractSymbol>>> set : grammarMap.entrySet()) {
-        if(set.getKey().getName().equals(nonTerminal.getName())){
-            return set.getKey();
-        }
-    }
-    return null;
-}
 
 }

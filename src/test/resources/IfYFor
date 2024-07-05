@@ -1,0 +1,16 @@
+miau: ranch() {
+    miau n is 10;
+    miau sum is 0;
+    miau count is 0;
+    miau current is 0;
+
+    feed (miau i is 0 to n, i is i sum 1) {
+        check (current mod 2 eq 0) {
+            sum is sum sum current;
+            count is count sum 1;
+        }
+        current is current sum 1;
+    }
+
+    poop sum;
+}

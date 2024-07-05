@@ -1,10 +1,11 @@
 package debug;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.*;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 import frontEnd.sintaxis.grammar.derivationRules.TerminalSymbol;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * Code to display a tree in the console in a pretty way.
@@ -36,6 +37,7 @@ public final class PrettyPrintTree<Node> {
     private int maxDepth = -1, trim = -1;
     private Color color = Color.GRAY;
     private boolean border = false, escapeNewline = false;
+
     public PrettyPrintTree(
             Function<Node, List<Node>> getChildren,
             Function<Node, AbstractSymbol> getVal
@@ -58,21 +60,63 @@ public final class PrettyPrintTree<Node> {
         };
     }
 
-    public PrettyPrintTree<Node> setBorder(boolean border) { this.border = border;  return this; }
-    public PrettyPrintTree<Node> setColor(Color color) { this.color = color;    return this; }
-    public PrettyPrintTree<Node> setEscapeNewline(boolean escapeNewline) {   this.escapeNewline = escapeNewline;    return this; }
-    public PrettyPrintTree<Node> setMaxDepth(int maxDepth) { this.maxDepth = maxDepth;  return this; }
-    public PrettyPrintTree<Node> setTrim(int trim) { this.trim = trim;  return this; }
+    private static boolean isNode(String x) {
+        if (x == null || x.equals("")) {
+            return false;
+        }
+        char xat0 = x.charAt(0);
+        if (xat0 == '[' || xat0 == '|' || (xat0 == '│' && x.trim().length() > 1)) {
+            return true;
+        }
+        if (x.length() < 2) {
+            return false;
+        }
+        var middle = "─".repeat(x.length() - 2);
+        return x.equals("┌" + middle + "┐") || x.equals("└" + middle + "┘");
+    }
 
-    public void display(Node node, int depth) { System.out.println(toStr(node, depth)); }
-    public void display(Node node) {    System.out.println(toStr(node)); }
-    public String toStr(Node node) {    return toStr(node, 0); }
+    public PrettyPrintTree<Node> setBorder(boolean border) {
+        this.border = border;
+        return this;
+    }
+
+    public PrettyPrintTree<Node> setColor(Color color) {
+        this.color = color;
+        return this;
+    }
+
+    public PrettyPrintTree<Node> setEscapeNewline(boolean escapeNewline) {
+        this.escapeNewline = escapeNewline;
+        return this;
+    }
+
+    public PrettyPrintTree<Node> setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+        return this;
+    }
+
+    public PrettyPrintTree<Node> setTrim(int trim) {
+        this.trim = trim;
+        return this;
+    }
+
+    public void display(Node node, int depth) {
+        System.out.println(toStr(node, depth));
+    }
+
+    public void display(Node node) {
+        System.out.println(toStr(node));
+    }
+
+    public String toStr(Node node) {
+        return toStr(node, 0);
+    }
 
     public String toStr(Node node, int depth) {
         String[][] res = treeToStr(node, depth);
         var str = new StringBuilder();
-        for (var line: res) {
-            for (var x: line) {
+        for (var line : res) {
+            for (var x : line) {
                 str.append(isNode(x) ? colorTxt(x) : x);
             }
             str.append("\n");
@@ -91,28 +135,32 @@ public final class PrettyPrintTree<Node> {
         }
         if (!stVal.contains("\n")) {
             return new String[][]{
-                    new String[]{ stVal }
+                    new String[]{stVal}
             };
         }
         var lstVal = stVal.split("\n");
         var longest = 0;
-        for (var item: lstVal) {
+        for (var item : lstVal) {
             longest = Math.max(item.length(), longest);
         }
         var res = new String[lstVal.length][];
         for (int i = 0; i < lstVal.length; i++) {
-            res[i] = new String[] { lstVal[i] + " ".repeat(longest - lstVal[i].length()) };
+            res[i] = new String[]{lstVal[i] + " ".repeat(longest - lstVal[i].length())};
         }
         return res;
     }
-    private LinkedList<Node> removeNull(List<Node> list){
+
+    private LinkedList<Node> removeNull(List<Node> list) {
         var res = new LinkedList<Node>();
-        for (var node : list){
-            if(node == null){   continue; }
+        for (var node : list) {
+            if (node == null) {
+                continue;
+            }
             res.addLast(node);
         }
         return res;
     }
+
     private String[][] treeToStr(Node node, int depth) {
         var val = getVal(node);
         var children = this.getChildren.apply(node);
@@ -131,7 +179,7 @@ public final class PrettyPrintTree<Node> {
         var spacing_count = 0;
         var spacing = "";
         if (depth + 1 != this.maxDepth) {
-            for (var child: children) {
+            for (var child : children) {
                 var childPrint = treeToStr(child, depth + 1);
                 for (int l = 0; l < childPrint.length; l++) {
                     var line = childPrint[l];
@@ -140,7 +188,7 @@ public final class PrettyPrintTree<Node> {
                     }
                     if (l == 0) {
                         var lineLen = lenJoin(List.of(line));
-                        var middleOfChild = lineLen - (int)Math.ceil(line[line.length-1].length() / 2d);
+                        var middleOfChild = lineLen - (int) Math.ceil(line[line.length - 1].length() / 2d);
                         var toPrint0Len = lenJoin(toPrint.get(0));
                         toPrint.get(0).add(" ".repeat(spacing_count - toPrint0Len + middleOfChild) + "┬");
                     }
@@ -149,7 +197,7 @@ public final class PrettyPrintTree<Node> {
                     toPrint.get(l + 1).addAll(List.of(line));
                 }
                 spacing_count = 0;
-                for (var item: toPrint) {
+                for (var item : toPrint) {
                     var itemLen = lenJoin(item);
                     spacing_count = Math.max(itemLen, spacing_count);
                 }
@@ -162,7 +210,7 @@ public final class PrettyPrintTree<Node> {
                 int lenOfTrimmed = newLines.length();
                 newLines = " ".repeat(spaceBefore) +
                         "┌" + newLines.substring(1, newLines.length() - 1).replace(' ', '─') + "┐";
-                var middle = newLines.length() - (int)Math.ceil(lenOfTrimmed / 2d);
+                var middle = newLines.length() - (int) Math.ceil(lenOfTrimmed / 2d);
                 pipePos = middle;
 
                 var newCh = addBranch.get(newLines.charAt(middle));
@@ -175,26 +223,26 @@ public final class PrettyPrintTree<Node> {
                 pipePos = toPrint.get(0).get(0).length() - 1;
             }
             if (val[0][0].length() < pipePos * 2) {
-                spacing = " ".repeat(pipePos - (int)Math.ceil(val[0][0].length() / 2d));
+                spacing = " ".repeat(pipePos - (int) Math.ceil(val[0][0].length() / 2d));
             }
         }
         if (val.length == 1) {
-            val = new String[][] { new String[] { spacing, "[" + val[0][0] + "]" } };
+            val = new String[][]{new String[]{spacing, "[" + val[0][0] + "]"}};
         } else {
             val = formatBox(spacing, val);
         }
 
         var asArr = new String[val.length + toPrint.size()][];
         int row = 0;
-        for (var item: val) {
+        for (var item : val) {
             asArr[row] = new String[item.length];
             System.arraycopy(item, 0, asArr[row], 0, item.length);
             row++;
         }
-        for (var item: toPrint) {
+        for (var item : toPrint) {
             asArr[row] = new String[item.size()];
             int i = 0;
-            for (var x: item) {
+            for (var x : item) {
                 asArr[row][i] = x;
                 i++;
             }
@@ -203,20 +251,11 @@ public final class PrettyPrintTree<Node> {
 
         return asArr;
     }
-    private static boolean isNode(String x) {
-        if (x == null || x.equals("")) { return false; }
-        char xat0 = x.charAt(0);
-        if (xat0 == '[' || xat0 == '|' || (xat0 == '│' && x.trim().length() > 1)) {
-            return true;
-        }
-        if (x.length() < 2) { return false; }
-        var middle = "─".repeat(x.length() - 2);
-        return x.equals("┌" + middle + "┐") || x.equals("└" + middle + "┘");
-    }
+
     private String colorTxt(String txt) {
         var spaces = " ".repeat(txt.length() - (txt = txt.trim()).length());
         txt = this.border ? txt : " " + txt.substring(1, txt.length() - 1) + " ";
-        txt = this.color == Color.NONE ? txt : "\u001b[" +  colorToNum.get(this.color) + "m" + txt + "\u001b[0m";
+        txt = this.color == Color.NONE ? txt : "\u001b[" + colorToNum.get(this.color) + "m" + txt + "\u001b[0m";
         return spaces + txt;
     }
 
@@ -231,13 +270,13 @@ public final class PrettyPrintTree<Node> {
             res = new String[val.length + 2][];
             start = 1;
             var middle = "─".repeat(val[0][0].length());
-            res[0] = new String[] { spacing, '┌' + middle + '┐' };
-            res[res.length - 1] = new String[] { spacing, '└' + middle + '┘' };
+            res[0] = new String[]{spacing, '┌' + middle + '┐'};
+            res[res.length - 1] = new String[]{spacing, '└' + middle + '┘'};
         } else {
             res = new String[val.length][];
         }
         for (int r = 0; r < val.length; r++) {
-            res[r + start] = new String[] { spacing, "│" + val[r][0] + "│" };
+            res[r + start] = new String[]{spacing, "│" + val[r][0] + "│"};
         }
         return res;
     }

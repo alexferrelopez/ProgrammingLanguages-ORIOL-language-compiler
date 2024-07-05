@@ -1,0 +1,13 @@
+miau: verify_if () {
+    miau a is 1;
+    miau b is 7;
+    check ( b bigger a ) {
+        a is 7;
+    }
+    poop a;
+}
+
+miau: ranch() {
+    miau a is verify_if();
+    poop 0 ;
+}

@@ -1,0 +1,5 @@
+# integer_operation_div_template.asm
+# Parameters: operand1Register, operand2Register, destinationRegister
+
+    div {{ operand1Register }}, {{ operand2Register }}
+    mflo {{ destinationRegister }}

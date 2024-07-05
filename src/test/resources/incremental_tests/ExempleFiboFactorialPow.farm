@@ -1,0 +1,55 @@
+miau: factorial(miau n) {
+    check (n equals 1) {
+      poop 1;
+    }
+    else {
+        miau nou_param is n minus 1;
+        miau a is factorial(nou_param);
+        miau result is n times a;
+        poop result;
+    }
+}
+
+miau: fibonacci(miau n) {
+    check (n equals 0) {
+      poop 0;
+    }
+    else {
+        check (n equals 1) {
+            poop 1;
+        }
+        else {
+            n is n minus 1;
+            miau a is fibonacci(n);
+            n is n minus 1;
+            miau b is fibonacci(n);
+
+            miau result is a sum b;
+            poop result;
+        }
+    }
+}
+
+miau: pow(miau base, miau exponent) {
+    check (exponent equals 0) {
+        poop 1;
+    }
+    else {
+        miau lower_exponent is exponent minus 1;
+        miau power is pow(base, lower_exponent);
+        miau result is base times power;
+        poop result;
+    }
+}
+
+miau: ranch() {
+    miau a is 4;
+    miau b is fibonacci(a);
+    miau c is factorial(a);
+    miau d is pow(a, 2);
+
+    miau z is b sum c;
+    z is z sum d;
+
+    poop z;
+}

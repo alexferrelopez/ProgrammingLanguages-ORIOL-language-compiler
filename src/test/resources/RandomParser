@@ -1,0 +1,12 @@
+miau: ranch() {
+    miau x is 10;
+    miau y is 20;
+
+    check (x bigger y) {
+        max_value is x;
+    } else {
+        max_value is y;
+    }
+
+    poop max_value;
+}
