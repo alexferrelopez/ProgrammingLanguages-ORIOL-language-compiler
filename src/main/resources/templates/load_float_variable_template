@@ -1,0 +1,5 @@
+# load_float_variable_template
+# MIPS load float variable template
+# Parameters: oldestRegister, oldestVariable
+
+    lwc1 {{ oldestRegister }}, {{ oldestVariable }}

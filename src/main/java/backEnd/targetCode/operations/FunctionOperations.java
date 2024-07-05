@@ -1,8 +1,6 @@
 package backEnd.targetCode.operations;
 
-import backEnd.targetCode.MIPSOperations;
-import backEnd.targetCode.Operand;
-import backEnd.targetCode.OperandContainer;
+import backEnd.targetCode.*;
 import backEnd.targetCode.registers.Register;
 import backEnd.targetCode.registers.RegisterAllocator;
 import frontEnd.lexic.dictionary.tokenEnums.DataType;
@@ -18,229 +16,275 @@ import java.util.List;
 import java.util.Map;
 
 public class FunctionOperations extends MIPSOperations {
-	private final AssignmentOperations assignmentOperations;
+    private final static int MAX_FUNCTION_PARAMETERS = 4;    // Only $a0 to $3 parameters are available.
+    private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
+    private final AssignmentOperations assignmentOperations;
+    private final MIPSRenderer renderer;
+    private int currentParameterNumber = 0;
 
-	private final static int MAX_FUNCTION_PARAMETERS = 4;	// Only $a0 to $3 parameters are available.
-	private final static String PARAMETERS_REGISTER_PREFIX = "$a";	// Only $a0 to $3 parameters are available.
-	private int currentParameterNumber = 0;
-	private final static String FUNCTION_PUSH_PARAMETER_OPERATOR = "PushParam";
+    public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations, MIPSRenderer renderer) {
+        super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat, renderer);
+        this.assignmentOperations = assignmentOperations;
+        this.renderer = renderer;
+    }
 
-	public FunctionOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, AssignmentOperations assignmentOperations) {
-		super(symbolTableInterface, registerAllocatorInteger, registerAllocatorFloat);
-		this.assignmentOperations = assignmentOperations;
-	}
+    public String funcDeclaration(String functionLabel) {
+        functionStack.push(new FunctionContext(functionLabel));
 
-	public String funcDeclaration(String functionLabel) {
-		currentFunctionName.push(functionLabel);
+        // Set the offset for each variable in the function (in all the nested scopes).
+        long currentOffset = -8;
+        if (functionLabel.equals(MAIN_FUNCTION)) {
+            currentOffset = -4;
+        }
+        String funcName = functionStack.peek().getFunctionName();
+        currentOffset = assignParametersOffset(currentOffset, funcName);
+        ScopeNode functionScope = symbolTable.getFunctionScope(funcName);
+        currentOffset = assignOffset(functionScope, currentOffset);
 
-		String text = writeComment("Start of function " + functionLabel) + LINE_SEPARATOR +
-				(functionLabel + ":") + LINE_SEPARATOR;
-		/*
-			sw $fp, 0($sp)      # Save previous (called function) frame pointer
-			move $fp, $sp       # Set frame pointer ($fp = $sp)
-			sw $ra, -4($fp)     # Save return address
-			subi $sp, $sp, 8   	# Allocate stack frame
-		 */
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(funcName);
+        if (functionSymbol != null && !functionSymbol.isVariable()) {
+            FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+            function.setOffset(currentOffset);
+        }
 
-		// Save stack
-		text += LINE_INDENTATION + writeComment("Save stack, return and frame pointer (from previous call).") + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + FRAME_POINTER + ", 0(" + STACK_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("move " + FRAME_POINTER + ", " + STACK_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("sw " + RETURN_VALUE_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("subi " + STACK_POINTER + ", " + STACK_POINTER + ", 8") + LINE_SEPARATOR + LINE_INDENTATION;
+        beginFunction();
 
-		return text + LINE_SEPARATOR;
-	}
+        if (functionLabel.equals(MAIN_FUNCTION)) {
+            return renderer.render("main_declaration_template",
+                    Map.of(
+                            "stackAllocationSpace", String.valueOf(-currentOffset)
+                    )
+            );
+        }
 
-	private long assignOffset(ScopeNode scope, long currentOffset) {
-		// Search all the variables in the current scope.
-		List<Symbol<?>> variables = new ArrayList<>(scope.getSymbols().values());
-		for (Symbol<?> variable : variables) {
-			VariableSymbol<?> variableSymbol = (VariableSymbol<?>) variable;
+        return renderer.render("func_declaration_template", Map.of(
+                        "functionLabel", functionLabel,
+                        "stackAllocationSpace", String.valueOf(-currentOffset),
+                        "raOffset", String.valueOf(4)
+                )
+        );
+    }
 
-			// Assign an offset only if it's not a parameters (they already have an offset assigned previously).
-			if (variableSymbol.isVariable() && !variableSymbol.isFunctionParameter()) {
-				variable.setOffset(currentOffset);
-				currentOffset -= variable.getSizeInBytes();
-			}
-		}
+    private long assignOffset(ScopeNode scope, long currentOffset) {
+        // This is the case for a non-declared ranch function.
+        // A non-existing scope has no variables to assign nor children to search.
+        if (scope == null) return currentOffset;
 
-		// Do the same for all the nested scopes.
-		for (ScopeNode child : scope.getChildren()) {
-			currentOffset = assignOffset(child, currentOffset);
-		}
+        // Search all the variables in the current scope.
+        List<Symbol<?>> variables = new ArrayList<>(scope.getSymbols().values());
+        for (Symbol<?> variable : variables) {
+            VariableSymbol<?> variableSymbol = (VariableSymbol<?>) variable;
 
-		return currentOffset;
-	}
+            // Assign an offset only if it's not a parameters (they already have an offset assigned previously).
+            if (variableSymbol.isVariable() && !variableSymbol.isFunctionParameter()) {
+                variable.setOffset(currentOffset);
+                currentOffset -= variable.getSizeInBytes();
+            }
+        }
 
-	private long assignParametersOffset(long currentOffset, String functionName) {
-		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
-		if (functionSymbol != null && !functionSymbol.isVariable()) {
-			FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+        // Do the same for all the nested scopes.
+        for (ScopeNode child : scope.getChildren()) {
+            currentOffset = assignOffset(child, currentOffset);
+        }
 
-			// Loop through all the parameters (already ordered).
-			for (VariableSymbol<?> parameter : function.getParameters()) {
-				parameter.setOffset(currentOffset);
-				currentOffset -= parameter.getSizeInBytes();
-			}
-		}
+        return currentOffset;
+    }
 
-		return currentOffset;
-	}
+    private long assignParametersOffset(long currentOffset, String functionName) {
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionName);
+        if (functionSymbol != null && !functionSymbol.isVariable()) {
+            FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
 
-	public String beginFunction(String functionSize) {
+            // Loop through all the parameters (already ordered).
+            for (VariableSymbol<?> parameter : function.getParameters()) {
+                parameter.setOffset(currentOffset);
+                currentOffset -= parameter.getSizeInBytes();
+            }
+        }
 
-		// Set the offset for each variable in the function (in all the nested scopes).
-		long currentOffset = 0;
-		currentOffset = assignParametersOffset(currentOffset, currentFunctionName.peek());
-		ScopeNode function = symbolTable.getFunctionScope(currentFunctionName.peek());
-		assignOffset(function, currentOffset);
+        return currentOffset;
+    }
 
-		// Map the parameters passed
-		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
-		if (functionSymbol != null && functionSymbol.isFunction()) {
-			FunctionSymbol<?> declaredFunction = (FunctionSymbol<?>) functionSymbol;
+    public void beginFunction() {
+        // Map the parameters passed
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek().getFunctionName());
+        if (functionSymbol != null && functionSymbol.isFunction()) {
+            FunctionSymbol<?> declaredFunction = (FunctionSymbol<?>) functionSymbol;
 
-			int numParameter = 0;
-			for (VariableSymbol<?> parameter : declaredFunction.getParameters()) {
-				switch(parameter.getDataType()) {
-					case FLOAT -> registerAllocatorFloat.customAllocateRegister(parameter.getOffset() + "(" + FRAME_POINTER + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
-					case INTEGER -> registerAllocatorInteger.customAllocateRegister(parameter.getOffset() + "(" + FRAME_POINTER + ")", PARAMETERS_REGISTER_PREFIX + numParameter);
-				}
-				numParameter++;
-			}
+            int numParameter = 0;
+            for (VariableSymbol<?> parameter : declaredFunction.getParameters()) {
+                switch (parameter.getDataType()) {
+                    case FLOAT ->
+                            registerAllocatorFloat.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAM_PREFIX + numParameter);
+                    case INTEGER ->
+                            registerAllocatorInteger.customAllocateRegister(parameter.getOffset() + "(" + FP + ")", PARAM_PREFIX + numParameter);
+                }
+                numParameter++;
+            }
 
-		}
+        }
+    }
 
-		return 	LINE_INDENTATION + writeComment("Allocate function's memory (in Bytes)") + LINE_SEPARATOR + LINE_INDENTATION +
-				("sub " + STACK_POINTER + ", " + STACK_POINTER + ", -" + functionSize) + " " + LINE_SEPARATOR + LINE_SEPARATOR +
-				LINE_INDENTATION + writeComment("-- Variables code --") + LINE_SEPARATOR;
-	}
 
-	public String returnFunction(String returnValue) {
-		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("Function return's value") + LINE_SEPARATOR;
+    public String returnFunction(String returnValue) {
 
-		// Check if the return value is a symbol in the scope.
-		Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(currentFunctionName.peek());
-		Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, currentFunctionName.peek());
+        // Check if the return value is a symbol in the scope.
+        Symbol<?> functionSymbol = symbolTable.findSymbolGlobally(functionStack.peek().getFunctionName());
+        Symbol<?> variableSymbol = symbolTable.findSymbolInsideFunction(returnValue, functionStack.peek().getFunctionName());
 
-		boolean isLiteral = true;
-		if (variableSymbol != null && variableSymbol.isVariable()) {
-			isLiteral = false;
+        // Determine if the current function is the main function
+        String funcName = functionStack.peek().getFunctionName();
+        boolean isMainFunction = funcName.equals(MAIN_FUNCTION);
 
-			RegisterAllocator registerAllocator;
-			if (functionSymbol.getDataType() == DataType.FLOAT) {
-				registerAllocator = registerAllocatorFloat;
-			}
-			else {
-				registerAllocator = registerAllocatorInteger;
-			}
+        long offset = 0;
+        if (functionSymbol != null && !functionSymbol.isVariable()) {
+            FunctionSymbol<?> function = (FunctionSymbol<?>) functionSymbol;
+            offset = function.getOffset();
+        }
 
-			Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FRAME_POINTER + ")", false);
-			Operand destination = new Operand(true, functionSymbol.getDataType(), RETURN_VALUE_REGISTER, false);
-			Register destionationRegister = registerAllocator.allocateRegister(destination);
-			return text + assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType());
-		}
+        // Select the appropriate template based on the condition
+        String templatePath = isMainFunction ? "end_main_function_template" : "end_regular_function_template";
 
-		return text + LINE_INDENTATION + loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral) + LINE_SEPARATOR;
-	}
+        // Render the template
+        String renderedTemplate = renderer.render(templatePath, Map.of(
+                        "stackAllocationSpace", String.valueOf(-offset),
+                        "raOffset", String.valueOf(4)
+                )
+        );
 
-	public String endFunction() {
-		/*
-			move $sp, $fp       # Restore stack pointer ($sp = $fp) - All current function's memory is overwritten
-			lw $ra, -4($fp)     # Restore return address ($ra = -4($fp))
-			lw $fp, 0($fp)      # Restore frame pointer ($fp = previos $fp).
-			jr $ra              # Return from function
-		 */
+        boolean isLiteral = true;
+        if (variableSymbol != null && variableSymbol.isVariable()) {
 
-		registerAllocatorInteger.freeRegister("test");
+            RegisterAllocator registerAllocator;
+            if (functionSymbol.getDataType() == DataType.FLOAT) {
+                registerAllocator = registerAllocatorFloat;
+            } else {
+                registerAllocator = registerAllocatorInteger;
+            }
 
-		String text = LINE_SEPARATOR + LINE_INDENTATION + writeComment("End of function - Restore stack, return and frame pointer") + LINE_SEPARATOR + LINE_INDENTATION +
-				("move " + STACK_POINTER + ", " + FRAME_POINTER) + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + RETURN_ADDRESS_REGISTER + ", -4(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION +
-				("lw " + FRAME_POINTER + ", 0(" + FRAME_POINTER + ")") + LINE_SEPARATOR + LINE_INDENTATION;
+            Operand operand = new Operand(true, functionSymbol.getDataType(), variableSymbol.getOffset() + "(" + FP + ")", false);
+            Operand destination = new Operand(true, functionSymbol.getDataType(), RETURN_VALUE_REGISTER, false);
+            Register destionationRegister = registerAllocator.allocateRegister(destination);
 
-		// End the program if it's the main or add the return value if it's another function.
-		if (currentFunctionName.peek().equals(MAIN_FUNCTION)) {
-			text += writeComment("End of the main") + LINE_SEPARATOR + LINE_INDENTATION +
-					("li " + FUNCTION_RESULT_REGISTER + ", 10") + LINE_SEPARATOR + LINE_INDENTATION +
-					(END_PROGRAM_INSTRUCTION);
-		}
-		else {
-			text += ("jr " + RETURN_ADDRESS_REGISTER);
-		}
+            return assignmentOperations.registerToRegisterAssignment(destionationRegister, operand, functionSymbol.getDataType()) + renderedTemplate;
+        }
 
-		// Leave the current function.
-		currentFunctionName.pop();
+        String loadVariableToRegisterMipsCode = loadVariableToRegister(returnValue, RETURN_VALUE_REGISTER, functionSymbol.getDataType(), isLiteral);
 
-		return text + LINE_SEPARATOR + LINE_SEPARATOR;
-	}
+        return loadVariableToRegisterMipsCode + renderedTemplate;
+    }
 
-	public String assignFunctionParameter(String parameterValue, String callOperator) {
-		String destinationRegister = PARAMETERS_REGISTER_PREFIX + currentParameterNumber;
+    public String endFunction() {
+        // Leave the current function
 
-		if (currentParameterNumber < MAX_FUNCTION_PARAMETERS) {
-			currentParameterNumber++;
+        functionStack.pop();
+        pendingOperations.clear();
+        registerAllocatorInteger.freeAllRegisters();
+        registerAllocatorFloat.freeAllRegisters();
+        return "";
+    }
 
-			// Save the parameter to see its type when the "call" instruction is received.
-			OperandContainer pushFunctionParameter = new OperandContainer();
-			loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator, false);
-			Operand parameter = new Operand(true, null, parameterValue, false);
-			pushFunctionParameter.setOperand1(parameter);
-			this.pendingOperations.add(pushFunctionParameter);
-		}
+    public String assignFunctionParameter(String parameterValue, String callOperator) {
+        String destinationRegister = PARAM_PREFIX + currentParameterNumber;
 
-		// The assignment internally checks if it's a variable or a normal value.
-		return null;
-	}
+        if (currentParameterNumber < MAX_FUNCTION_PARAMETERS) {
+            currentParameterNumber++;
 
-	public String callFunction(String functionName) {
-		StringBuilder text = new StringBuilder();
-		currentFunctionName.push(functionName);	// Update the new current function.
+            // Save the parameter to see its type when the "call" instruction is received.
+            OperandContainer pushFunctionParameter = new OperandContainer();
+            loadOperands(pushFunctionParameter, destinationRegister, parameterValue, null, callOperator, false);
+            Operand parameter = new Operand(true, null, parameterValue, false);
+            pushFunctionParameter.setOperand1(parameter);
+            this.pendingOperations.add(pushFunctionParameter);
+        }
 
-		int numParameter = 0;
-		// Do all the previous operations.
-		for (OperandContainer operation : this.pendingOperations) {
+        // The assignment internally checks if it's a variable or a normal value.
+        return null;
+    }
 
-			// Make an assignment for the operators to be pushed into the function called.
-			if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
+    public String callFunction(String functionName) {
+        StringBuilder text = new StringBuilder();
+        functionStack.push(new FunctionContext(functionName)); // Update the new current function.
 
-				// Get the current parameter to see the expected type.
-				Symbol<?> function = symbolTable.findSymbolGlobally(currentFunctionName.peek());
-				VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(numParameter);
+        // Do all the previous operations.
+        List<OperandContainer> operations = this.pendingOperations;
+        for (int i = 0; i < operations.size(); i++) {
+            OperandContainer operation = operations.get(i);
+            // Make an assignment for the operators to be pushed into the function called.
+            if (operation.getOperator().equals(FUNCTION_PUSH_PARAMETER_OPERATOR)) {
+                // Get the current parameter to see the expected type.
+                Symbol<?> function = symbolTable.findSymbolGlobally(functionName);
+                VariableSymbol<?> parameter = ((FunctionSymbol<?>) function).getParameters().get(i);
 
-				// Assign the value to an arguments' register.
-				text.append(assignmentOperations.assignValueToRegister(operation.getOperand1().getValue(), operation.getDestination().getValue(), parameter.getDataType(), false));
-				numParameter++;
-			}
-		}
+                // Prepare placeholders for rendering
+                // Assign the value to an arguments' register.
+                text.append(assignmentOperations.assignValueToRegister(operation.getOperand1().getValue(), operation.getDestination().getValue(), parameter.getDataType(), false));
+            }
+        }
 
-		// Clear all the variables mapped.
-		Iterator<Map.Entry<String, String>> iterator = registerAllocatorInteger.getVariableToRegister().entrySet().iterator();
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
-			String key = entry.getKey();
+        // Clear all the variables mapped and load into memory
+        Iterator<Map.Entry<String, String>> iterator = registerAllocatorInteger.getVariableToRegister().entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            String key = entry.getKey();
 
-			// Load all variables into memory.
-			text.append(LINE_INDENTATION).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(LINE_SEPARATOR);
-			iterator.remove();
-		}
+            String variableName = key.startsWith("-") ? key.replaceFirst("-", "") : key;
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "variableName", variableName,
+                    "register", entry.getValue()
+            );
 
-		// Clear all the variables mapped.
-		iterator = registerAllocatorInteger.getVariableToCustomRegister().entrySet().iterator();
-		while (iterator.hasNext()) {
-			Map.Entry<String, String> entry = iterator.next();
-			String key = entry.getKey();
+            if (!key.startsWith("$")) {
+                boolean pairPreviouslyAdded = addPairIfNotPresent(variableName, entry.getValue());
+                // Render the load variable template
+                if (!pairPreviouslyAdded) {
+                    text.append(renderer.render("load_variable_to_memory_template", placeholders));
+                }
+                iterator.remove();
+            }
+//            // Render the load variable template
+//            text.append(renderer.render("load_variable_to_memory_template", placeholders));
+//            iterator.remove();
+        }
 
-			// Load all variables into memory.
-			text.append(LINE_INDENTATION).append(loadVariableToMemory(key, entry.getValue(), DataType.INTEGER)).append(LINE_SEPARATOR);
-			iterator.remove();
-		}
+        this.currentParameterNumber = 0;
+        functionStack.pop(); // Leave the new current function.
+        this.pendingOperations.clear();
 
-		this.currentParameterNumber = 0;
-		currentFunctionName.pop();	// Leave the new current function.
-		this.pendingOperations.clear();
+        // Prepare placeholders for rendering the function call
+        Map<String, String> functionCallPlaceholders = Map.of(
+                "functionName", functionName
+        );
 
-		return text.append(LINE_INDENTATION).append("jal ").append(functionName).append(LINE_SEPARATOR).toString();
-	}
+        // Render the function call template and return the final text
+        return text.append(renderer.render("function_call_template", functionCallPlaceholders)).toString();
+    }
+
+    public String popFunctionParameters() {
+        FunctionContext functionContext = functionStack.peek();
+
+        List<Pair<String, String>> registerAddressPairList = functionContext.getRegisterAddressPairList();
+        StringBuilder targetCode = new StringBuilder();
+        for (Pair<String, String> RegisterAdressPair : registerAddressPairList) {
+            String register = RegisterAdressPair.right();
+            String address = RegisterAdressPair.left();
+
+            // Prepare placeholders for rendering
+            Map<String, String> placeholders = Map.of(
+                    "oldestRegister", register,
+                    "oldestVariable", address
+            );
+
+            // Render the store variable template
+            String storeVariableTemplate = renderer.render("load_integer_variable_template", placeholders);
+
+            // Write the store variable template to the target code
+            targetCode.append(storeVariableTemplate);
+        }
+
+        functionContext.clearRegisterAddressPairList();
+
+        return targetCode.toString();
+    }
 }

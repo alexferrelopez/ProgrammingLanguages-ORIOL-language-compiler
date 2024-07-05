@@ -1,0 +1,14 @@
+miau: ignored2 () {
+    poop 90;
+}
+miau: ignored () {
+    miau b is ignored2();
+    miau a is 3;
+
+    poop b;
+}
+
+miau: ranch() {
+    miau b is ignored();
+    poop 0 ;
+}

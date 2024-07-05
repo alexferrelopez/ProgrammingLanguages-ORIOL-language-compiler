@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class TACGenerator {
-    private TACModule tacModule;
-    private List<Tree<AbstractSymbol>> funcTreeList;
     private final SymbolTableInterface symbolTable;
+    private final TACModule tacModule;
+    private List<Tree<AbstractSymbol>> funcTreeList;
 
     public TACGenerator(TACModule tacModule, SymbolTableInterface symbolTable) {
         this.tacModule = tacModule;
@@ -26,7 +26,7 @@ public class TACGenerator {
         Tree<AbstractSymbol> program = getProgramNode(tree);
         this.funcTreeList = getFunctionNodes(tree);
         // Remove the last element of the list, which is the program node
-        this.funcTreeList.remove(this.funcTreeList.size() - 1);
+        //this.funcTreeList.remove(this.funcTreeList.size() - 1);
 
         // Generate TAC code for each function
         for (Tree<AbstractSymbol> funcTree : this.funcTreeList) {
@@ -47,13 +47,15 @@ public class TACGenerator {
             tacModule.addUnaryInstruction(null, "EndFunc", null);
         }
 
-        String mainFunction = "ranch";
-        tacModule.addFunctionLabel(mainFunction);
-        int bytesNeeded = symbolTable.calculateFunctionSize(mainFunction);
-        tacModule.addUnaryInstruction(null, "BeginFunc", String.valueOf(bytesNeeded));
-        // Generate TAC code for main program
-        generateCode(program);
-        tacModule.addUnaryInstruction(null, "EndFunc", null);
+//        String mainFunction = "ranch";
+//        tacModule.addFunctionLabel(mainFunction);
+//        int bytesNeeded = symbolTable.calculateFunctionSize(mainFunction);
+//        tacModule.addUnaryInstruction(null, "BeginFunc", String.valueOf(bytesNeeded));
+//        // Generate TAC code for main program
+//        generateCode(program);
+//        tacModule.addUnaryInstruction(null, "EndFunc", null);
+
+        //printTAC();
 
         return tacModule.getInstructions();
     }
@@ -112,7 +114,6 @@ public class TACGenerator {
             }
         }
 
-
         for (Tree<AbstractSymbol> child : tree.getChildren()) {
             generateCode(child);
         }
@@ -124,7 +125,7 @@ public class TACGenerator {
         List<Tree<AbstractSymbol>> leafNodes = tree.getLeafNodes(tree);
 
         // Remove "ε" and "COMMA" nodes in leafNodes
-        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon() || ((TerminalSymbol) node.getNode()).getName().equals("COMMA"));
+        leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon() || node.getNode().getName().equals("COMMA"));
 
         // Get the parameters
         List<String> parameters = new ArrayList<>();
@@ -182,7 +183,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-        String tempVar = "";
+        String tempVar;
 
         // Check if the condition is NOT alive or dead
         if (leafNodes.get(0).getNode().getName().equals("NOT")) {
@@ -196,8 +197,7 @@ public class TACGenerator {
             // Convert the operand to a number
             tempVar = convertLogicOperand(tempVar);
 
-        }
-        else {
+        } else {
             Expression expr = generateExpressionCode(condition_expr);
             tempVar = tacModule.addBinaryInstruction(expr.getOperator(), expr.getLeftOperand(), expr.getRightOperand());
         }
@@ -205,7 +205,6 @@ public class TACGenerator {
 
         // Labels
         String labelFalse = tacModule.createLabel();
-        String labelTrue = tacModule.createLabel();
         String labelEnd = tacModule.createLabel();
 
         // Jump instructions
@@ -214,18 +213,20 @@ public class TACGenerator {
         // True block
         Tree<AbstractSymbol> func_body = tree.getChildren().get(1).getChildren().get(3);
         generateCode(func_body);
-        tacModule.addUnconditionalJump(labelEnd);
 
         // 'else' block
-        tacModule.addLabel(labelFalse);
         Tree<AbstractSymbol> elseBlock = tree.getChildren().get(2);
         // Check if there is an else block
-        if (elseBlock.getChildren().get(0).getNode().getName() != "ε") {
-            generateCode(elseBlock);
-        }
+        if (!Objects.equals(elseBlock.getChildren().get(0).getNode().getName(), "ε")) {
+            tacModule.addUnconditionalJump(labelEnd);
 
-        // End label for the if statement
-        tacModule.addLabel(labelEnd);
+            tacModule.addLabel(labelFalse);
+            generateCode(elseBlock);
+            // End label for the if statement
+            tacModule.addLabel(labelEnd);
+        } else {
+            tacModule.addLabel(labelFalse);
+        }
     }
 
     private String handleNotAliveDead(List<Tree<AbstractSymbol>> leafNodes) {
@@ -356,8 +357,7 @@ public class TACGenerator {
 
             String tempVar = tacModule.addBinaryInstruction(expr.getOperator(), leftOperand, rightOperand);
             tacModule.addConditionalJump(tempVar, labelEnd);
-        }
-        else {
+        } else {
             String operand = expr.getLeftOperand();
             operand = convertLogicOperand(operand);
             tacModule.addConditionalJump(operand, labelEnd);
@@ -378,7 +378,7 @@ public class TACGenerator {
         // Remove "ε" nodes in leafNodes
         leafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).isEpsilon());
 
-        if (leafNodes.size() == 3) {
+        if (leafNodes.get(1).getNode().getName().equals("IS") && leafNodes.size() == 3) {
             // We have a simple assignment
             Expression expr = generateExpressionCode(tree);
 
@@ -443,8 +443,7 @@ public class TACGenerator {
             tempLeafNodes.remove(0);
 
             // Remove "is" and "NOT" nodes
-            tempLeafNodes.removeIf(node -> ((TerminalSymbol) node.getNode()).getName().equals("IS") || ((TerminalSymbol) node.getNode()).getName().equals("NOT"));
-
+            tempLeafNodes.removeIf(node -> node.getNode().getName().equals("IS") || node.getNode().getName().equals("NOT"));
 
             tempVar = handleNotAliveDead(tempLeafNodes);
         } else {

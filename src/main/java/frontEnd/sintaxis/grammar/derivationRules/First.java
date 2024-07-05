@@ -5,7 +5,7 @@ import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class First {
      * @return the production
      */
     private static Map<NonTerminalSymbol, List<AbstractSymbol>> generateProduction(NonTerminalSymbol nt, List<AbstractSymbol> productionSymbols) {
-        Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new HashMap<>();
+        Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new LinkedHashMap<>();
         productionParser.put(nt, productionSymbols);
         return productionParser;
     }

@@ -1,0 +1,6 @@
+# load_float_literal_template
+# MIPS load float literal template
+# Parameters: tempFloatRegister, floatNumber, oldestRegister
+
+    li {{ tempFloatRegister }}, {{ floatNumber }}
+    mtc1 {{ tempFloatRegister }}, {{ oldestRegister }}

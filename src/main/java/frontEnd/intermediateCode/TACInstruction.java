@@ -1,15 +1,16 @@
 package frontEnd.intermediateCode;
 
 public class TACInstruction {
-    private String operator;  // Operator like +, -, *, /
-    private String operand1;  // First operand
-    private String operand2;  // Second operand (null if unary operation)
-    private String result;    // Result of the operation or variable to assign
+    private final String operator;  // Operator like +, -, *, /
+    private final String operand1;  // First operand
+    private final String operand2;  // Second operand (null if unary operation)
+    private final String result;    // Result of the operation or variable to assign
 
 
     /**
      * Constructor for binary operations
-     * @param result Result of the operation
+     *
+     * @param result   Result of the operation
      * @param operator Operator of the operation
      * @param operand1 First operand
      * @param operand2 Second operand
@@ -31,6 +32,7 @@ public class TACInstruction {
 
     /**
      * Method to generate and return all the accumulated TAC code as a String
+     *
      * @return the operator
      */
     @Override

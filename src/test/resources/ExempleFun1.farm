@@ -1,23 +1,5 @@
-oink : sumRange2 ( miau numA , oink numB , oink increment ) {
-    oink result is 0.0 ;
-    oink result2 is 0.0 ;
-    oink result3 is 0.0 ;
-    oink result4 is 0.0 ;
-    poop increment ;
-}
-
-oink : sumRange ( oink numA , oink numB , oink increment ) {
-    oink result is 0.0 ;
-    miau pepe is 3 ;
-    oink pepito is 0 ;
-    miau pepita is 4 ;
-
-    poop increment ;
-}
-
 miau : ranch ( ) {
-    oink a is 3.23 ;
-    oink b is 4.5 ;
-    oink c is 0.2 ;
+    miau result is 0;
+    miau test is result sum 1;
     poop 0 ;
 }

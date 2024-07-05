@@ -1,0 +1,4 @@
+# integer_operation_sum_template.asm
+# Parameters: destinationRegister, operand1Register, operand2Register
+
+    add {{ destinationRegister }}, {{ operand1Register }}, {{ operand2Register }}

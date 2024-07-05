@@ -1,0 +1,4 @@
+# float_operation_mul_template.asm
+# Parameters: destinationRegister, operand1Register, operand2Register
+
+    mul.s {{ destinationRegister }}, {{ operand1Register }}, {{ operand2Register }}

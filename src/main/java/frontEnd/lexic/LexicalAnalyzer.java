@@ -67,6 +67,9 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
      * @throws InvalidTokenException if the token is not valid.
      */
     public Token getNextToken() throws InvalidTokenException {
+        if (eof) {
+            return EOF;
+        }
         // Check if the previous character was a separator from the previous token. Usually happens with cases like:
         // "miau a;" -> "miau" is a token, "a" is a token, ";" is the separator and the token.
         if (separatorFound) {
@@ -98,7 +101,7 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
 
         // The column is decremented by 1 because the column is incremented after reading the last character that
         // is a separator, it is also decremented by the length of the word to point to the first character of the word.
-        return getTokenRead(String.valueOf(word), line, column - 1 - word.length());
+        return getTokenRead(String.valueOf(word), line, column - word.length() - 1);
     }
 
     /**
@@ -114,6 +117,7 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
         do {
             try {
                 character = codeReader.read();
+                column++;
                 char c = (char) character;
                 //Check if the end of the file has been reached.
                 if (character == -1) {
@@ -140,7 +144,6 @@ public class LexicalAnalyzer implements LexicalAnalyzerInterface {
                     return stringBuilder.toString().trim();
                     // If the character is not a separator, we add it to the word.
                 } else {
-                    column++;
                     stringBuilder.append(c);
                 }
             } catch (IOException e) {

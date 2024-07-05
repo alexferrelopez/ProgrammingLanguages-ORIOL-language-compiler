@@ -6,5 +6,5 @@ import frontEnd.intermediateCode.TACInstruction;
 import java.util.List;
 
 public interface TargetCodeGeneratorInterface {
-	void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException;
+    void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException;
 }

@@ -9,22 +9,22 @@ public class Tree<T> {
     private final List<Tree<T>> children;
     private Tree<T> parent;
 
-    public Tree(T node){
+    public Tree(T node) {
         this.node = node;
         children = new LinkedList<>();
         parent = null;
     }
 
-    public Tree(Tree<T> t){
+    public Tree(Tree<T> t) {
         this.node = t.node;
         children = new LinkedList<>();
         parent = t.parent;
-        for (var c : t.children){
+        for (var c : t.children) {
             children.add(new Tree<>(c));
         }
     }
 
-    public Tree<T> addChild(T child){
+    public Tree<T> addChild(T child) {
         var c = new Tree<T>(child);
         children.add(c);
         c.parent = this;
@@ -49,6 +49,7 @@ public class Tree<T> {
 
     /**
      * Recoge todos los nodos hoja de un árbol dado.
+     *
      * @param node El nodo desde el cual comenzar la búsqueda.
      * @return Una lista de todos los nodos hoja bajo el nodo dado.
      */
@@ -60,7 +61,8 @@ public class Tree<T> {
 
     /**
      * Método auxiliar recursivo para recoger nodos hoja.
-     * @param node El nodo actual en la recursión.
+     *
+     * @param node   El nodo actual en la recursión.
      * @param leaves La lista acumulativa de nodos hoja.
      */
     private void collectLeafNodes(Tree<T> node, List<Tree<T>> leaves) {

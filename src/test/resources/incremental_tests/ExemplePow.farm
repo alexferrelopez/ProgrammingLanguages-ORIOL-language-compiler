@@ -1,0 +1,18 @@
+miau: pow(miau base, miau exponent) {
+    check (exponent equals 0) {
+        poop 1;
+    }
+    else {
+        miau lower_exponent is exponent minus 1;
+        miau power is pow(base, lower_exponent);
+        miau result is base times power;
+        poop result;
+    }
+}
+
+miau: ranch() {
+    miau a is 4;
+    miau d is pow(a, 2);
+
+    poop d;
+}

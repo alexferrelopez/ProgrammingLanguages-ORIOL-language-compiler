@@ -1,0 +1,9 @@
+# end_main_function_template
+# MIPS end main function template
+
+    move $sp, $fp        # Restore stack pointer to the frame pointer
+    lw $fp, {{ stackAllocationSpace }}($sp)       # Restore the old frame pointer
+    addi $sp, $sp, {{ stackAllocationSpace }}     # Deallocate stack space
+
+    li $v0, 10          # End of the main
+    syscall             # End program

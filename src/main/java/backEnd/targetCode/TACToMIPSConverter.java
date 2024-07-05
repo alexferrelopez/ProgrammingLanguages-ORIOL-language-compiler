@@ -13,108 +13,126 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-
-import static backEnd.targetCode.MIPSOperations.LINE_INDENTATION;
-import static backEnd.targetCode.MIPSOperations.LINE_SEPARATOR;
+import java.util.Map;
+import java.util.Optional;
 
 public class TACToMIPSConverter implements TargetCodeGeneratorInterface {
-	private static final String TARGET_FILE = "target/farm.asm";
-	private BufferedWriter targetCode;
-	private final FunctionOperations functionOperations;
-	private final AssignmentOperations assignmentOperations;
+    private static final String TARGET_FILE = "target/farm.asm";
+    private final FunctionOperations functionOperations;
+    private final AssignmentOperations assignmentOperations;
+    private final MIPSRenderer renderer;
+    private BufferedWriter targetCode;
 
-	public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
-		assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat);
-		functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, assignmentOperations);
-	}
 
-	private void createAssemblyFile() throws FailedFileCreationException {
-		// Generate a "farm.asm" file as target code inside /target folder.
-		// Write the MIPS code to the file.
-		File code = new File(TARGET_FILE);
-		try {
-			// Use FileWriter and BufferedWriter to write to the file
-			FileWriter writer = new FileWriter(code, false);
-			targetCode = new BufferedWriter(writer);
-		} catch (IOException e) {
-			throw new FailedFileCreationException("Error creating file: " + TARGET_FILE);
-		}
-	}
+    public TACToMIPSConverter(SymbolTableInterface symbolTable, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, MIPSRenderer mipsRenderer) {
+        assignmentOperations = new AssignmentOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, mipsRenderer);
+        functionOperations = new FunctionOperations(symbolTable, registerAllocatorInteger, registerAllocatorFloat, assignmentOperations, mipsRenderer);
+        renderer = mipsRenderer;
+    }
 
-	@Override
-	public void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException {
-		createAssemblyFile();
+    private void createAssemblyFile() throws FailedFileCreationException {
+        // Generate a "farm.asm" file as target code inside /target folder.
+        // Write the MIPS code to the file.
+        File code = new File(TARGET_FILE);
+        try {
+            // Use FileWriter and BufferedWriter to write to the file
+            FileWriter writer = new FileWriter(code, false);
+            targetCode = new BufferedWriter(writer);
+        } catch (IOException e) {
+            throw new FailedFileCreationException("Error creating file: " + TARGET_FILE);
+        }
+    }
 
-		// Write the jump to the "main" function.
-		try {
-			targetCode.write("j ranch" + LINE_SEPARATOR + LINE_SEPARATOR);
-		} catch (IOException e) {
-			throw new FailedFileCreationException(e.getMessage());
-		}
+    @Override
+    public void generateMIPS(List<TACInstruction> instructions) throws TargetCodeException {
+        createAssemblyFile();
 
-		for (TACInstruction instruction : instructions) {
-			try {
-				String instructionCode = convertTACInstruction(instruction);
-				if (instructionCode != null) {
-					targetCode.write(instructionCode);
-				}
-			} catch (IOException e) {
-				throw new FailedFileCreationException(e.getMessage());
-			}
-		}
+        // Write the jump to the "main" function.
+        try {
+            targetCode.write("j ranch" + System.lineSeparator());
+        } catch (IOException e) {
+            throw new FailedFileCreationException(e.getMessage());
+        }
 
-		try {
-			targetCode.close();
-		} catch (IOException e) {
-			throw new FailedFileCreationException("Error writing to file: " + TARGET_FILE, e);
-		}
-	}
+        for (TACInstruction instruction : instructions) {
+            try {
+                String instructionCode = convertTACInstruction(instruction);
+                if (instructionCode != null) {
+                    targetCode.write(instructionCode);
+                }
+            } catch (IOException e) {
+                throw new FailedFileCreationException(e.getMessage());
+            }
+        }
 
-	private String convertTACInstruction(TACInstruction instruction) throws IOException {
-		return switch (instruction.getOperator()) {
-			// ** Functions ** //
-			case "function" -> functionOperations.funcDeclaration(instruction.getResult());
-			case "Return" -> functionOperations.returnFunction(instruction.getOperand1());
-			case "BeginFunc" -> functionOperations.beginFunction(instruction.getOperand1());
-			case "PushParam" -> showOperation(instruction, functionOperations.assignFunctionParameter(instruction.getOperand1(), instruction.getOperator()));
-			case "EndFunc" -> functionOperations.endFunction();
-			case "LCall" -> functionOperations.callFunction(instruction.getResult());
+        try {
+            targetCode.close();
+        } catch (IOException e) {
+            throw new FailedFileCreationException("Error writing to file: " + TARGET_FILE, e);
+        }
+    }
 
-			// ** Assignments
-			case "=" -> showOperation(instruction, assignmentOperations.assignmentOperation(instruction.getOperand1(), instruction.getResult()));
+    private String convertTACInstruction(TACInstruction instruction) throws IOException {
+        String operator = instruction.getOperator();
+        final String result = instruction.getResult();
+        final String operand1 = instruction.getOperand1();
 
-			// *** Binary Operations ***
-			case "GT", "LT", "EQ", "NEQ", "OR", "AND" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
+        return switch (operator) {
+            // ** Functions ** //
+            case "function" -> functionOperations.funcDeclaration(result);
+            case "Return" -> functionOperations.returnFunction(operand1);
+            //case "BeginFunc" -> functionOperations.beginFunction(operand1);
+            case "PushParam" ->
+                    showOperation(instruction, functionOperations.assignFunctionParameter(operand1, operator));
+            case "EndFunc" -> functionOperations.endFunction();
+            case "LCall" -> functionOperations.callFunction(result);
 
-			// *** Conditional ***
-			case "IfZ" -> showOperation(instruction, assignmentOperations.addPendingLogicalOperation(instruction.getOperand1(), null, instruction.getResult(), instruction.getOperator()));
+            // ** Assignments
+            case "=" -> showOperation(instruction, assignmentOperations.assignmentOperation(operand1, result));
 
-			// When we arrive at a conditional, we have to store the result of the previous operation in a register.
-			case "Goto" ->  showOperation(instruction, assignmentOperations.conditionalJump(instruction.getResult(), instruction.getOperator()));
+            // *** Binary Operations ***
+            case "GT", "LT", "EQ", "NEQ", "OR", "AND" ->
+                    showOperation(instruction, assignmentOperations.addPendingLogicalOperation(operand1, instruction.getOperand2(), result, operator));
 
-			// *** Labels ***
-			case "label" -> showOperation(instruction, assignmentOperations.createLabel(instruction.getResult()));
+            // *** Conditional ***
+            case "IfZ" ->
+                    showOperation(instruction, assignmentOperations.addPendingLogicalOperation(operand1, null, result, operator));
 
-			// *** Arithmetic Operations ***
-			case "SUM", "SUB", "MUL", "DIV" -> showOperation(instruction, assignmentOperations.addPendingOperation(instruction.getOperand1(), instruction.getOperand2(), instruction.getResult(), instruction.getOperator()));
+            // When we arrive at a conditional, we have to store the result of the previous operation in a register.
+            case "Goto" -> showOperation(instruction, assignmentOperations.conditionalJump(result, operator));
 
-			default -> null;
-		};
-	}
+            // *** Labels ***
+            case "label" -> showOperation(instruction, assignmentOperations.createLabel(result));
 
-	private String showOperation(TACInstruction instruction, String codeMIPS) {
-		String commentCode;
+            // *** Arithmetic Operations ***
+            case "SUM", "SUB", "MUL", "DIV" ->
+                    showOperation(instruction, assignmentOperations.addPendingOperation(operand1, instruction.getOperand2(), result, operator));
 
-		// Change the comment if there is no result value (it's not an assignment nor operation, it's a tag).
-		if (instruction.getResult() == null || instruction.getResult().isEmpty()) {
-			commentCode = instruction.getOperator() + " " + instruction.getOperand1();
-		}
-		else {
-			commentCode = instruction.toString();
-		}
+            case "PopParams" -> functionOperations.popFunctionParameters();
 
-		return 	LINE_SEPARATOR + LINE_INDENTATION +
-				assignmentOperations.writeComment("TAC: " + commentCode) +
-				((codeMIPS == null) ? "" : LINE_SEPARATOR + codeMIPS) + LINE_SEPARATOR;
-	}
+            default -> null;
+        };
+    }
+
+    private String showOperation(TACInstruction instruction, String codeMIPS) {
+        String commentCode;
+        String templatePath;
+        Map<String, String> placeholders;
+
+        // Change the comment if there is no result value (it's not an assignment nor operation, it's a tag).
+        if (instruction.getResult() == null || instruction.getResult().isEmpty()) {
+            commentCode = instruction.getOperator() + " " + instruction.getOperand1();
+            templatePath = "show_operation_without_result_template";
+            placeholders = Map.of("commentCode", commentCode);
+        } else {
+            commentCode = instruction.toString();
+            templatePath = "show_operation_with_result_template";
+
+            placeholders = Map.of("commentCode", commentCode, "codeMIPS", Optional.ofNullable(codeMIPS).orElse(""));
+        }
+
+        // Render the template
+        return renderer.render(templatePath, placeholders);
+    }
+
 }
