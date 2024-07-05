@@ -1,0 +1,4 @@
+# load_integer_variable_template
+# Parameters: oldestRegister, oldestVariable
+
+    lw {{ oldestRegister }}, {{ oldestVariable }}

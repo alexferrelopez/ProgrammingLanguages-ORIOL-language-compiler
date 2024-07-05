@@ -1,0 +1,15 @@
+miau: ignored2 (miau c) {
+    miau d is c sum 4;
+    poop d;
+}
+
+miau: ignored (miau a) {
+    miau b is ignored2(a);
+    b is b sum 2;
+    poop b;
+}
+
+miau: ranch() {
+    miau e is ignored(2);
+    poop 0 ;
+}

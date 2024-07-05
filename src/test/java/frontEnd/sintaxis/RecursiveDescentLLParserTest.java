@@ -10,7 +10,9 @@ import frontEnd.semantics.SemanticAnalyzerInterface;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.SymbolTableTree;
 import jdk.jfr.Description;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class RecursiveDescentLLParserTest {
 
@@ -121,7 +123,7 @@ class RecursiveDescentLLParserTest {
     @DisplayName("Check conditionals.")
     @Description("Test that checks if the for loops are accepted syntactically.")
     public void test_conditionals() {
-        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "loops/ExempleFor.farm");
         compileCode();
     }
 
@@ -130,7 +132,7 @@ class RecursiveDescentLLParserTest {
     @DisplayName("Check for loops.")
     @Description("Test that checks if the for loops are accepted syntactically.")
     public void test_forLoops() {
-        setupCompiler(FOR_LOOPS_FILE_FOLDER + "ExempleFor.farm");
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + "loops/ExempleFor.farm");
         compileCode();
     }
 
@@ -151,4 +153,50 @@ class RecursiveDescentLLParserTest {
         setupCompiler(TEST_FILE_FOLDER + "ExempleFibonacci.farm");
         compileCode();
     }
+
+    // ** Declaracions amb moltes sumes  ** //
+    @Test
+    @DisplayName("Check sumDecl code.")
+    @Description("Test that checks if the declaracins amb moltes sumes is accepted syntactically.")
+    public void test_sumesDecl() {
+        setupCompiler(DECLARATIONS_FILE_FOLDER + "TestSumesDeclaraio.farm");
+        compileCode();
+    }
+
+    // ** ran ** //
+    @Test
+    @DisplayName("Check rand code.")
+    @Description("Test that checks if the random is accepted syntactically.")
+    public void randomParser() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + TEST_FILE_FOLDER + DECLARATIONS_FILE_FOLDER + "RandomParser.farm");
+        compileCode();
+    }
+
+    // ** Fact facilet ** //
+    @Test
+    @DisplayName("Check factorial facilet code.")
+    @Description("Test that checks if the fact facilet is accepted syntactically.")
+    public void factFacilet() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + TEST_FILE_FOLDER + DECLARATIONS_FILE_FOLDER + "FactFacilet.farm");
+        compileCode();
+    }
+
+    // ** Iffor ** //
+    @Test
+    @DisplayName("Check ifyfor facilet code.")
+    @Description("Test that checks if the fact ifyfor is accepted syntactically.")
+    public void IFyFor() {
+        setupCompiler(FOR_LOOPS_FILE_FOLDER + TEST_FILE_FOLDER + DECLARATIONS_FILE_FOLDER + "IfYFor.farm");
+        compileCode();
+    }
+
+    // ** Factorial ** //
+    @Test
+    @DisplayName("Check Factorial facilet code.")
+    @Description("Test that checks if the fact Factorial is accepted syntactically.")
+    public void Facts() {
+        setupCompiler(TEST_FILE_FOLDER + "Factorial.farm");
+        compileCode();
+    }
+
 }

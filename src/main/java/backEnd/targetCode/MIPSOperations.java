@@ -10,38 +10,38 @@ import frontEnd.lexic.dictionary.tokenEnums.ValueSymbol;
 import frontEnd.semantics.symbolTable.SymbolTableInterface;
 import frontEnd.semantics.symbolTable.symbol.Symbol;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class MIPSOperations {
-    protected static final String LINE_SEPARATOR = System.lineSeparator();
-    protected static final String LINE_INDENTATION = "\t";
-    protected static final String COMMENT_WORD = "#";
-
-    protected static final String FRAME_POINTER = "$fp";
-    protected static final String STACK_POINTER = "$sp";
-    protected static final String RETURN_ADDRESS_REGISTER = "$ra";
+    protected static final String NL = System.lineSeparator(); // New line
+    protected static final String FP = "$fp";   // Frame pointer
+    protected static final String PARAM_PREFIX = "$a";   // Stack pointer
     protected static final String RETURN_VALUE_REGISTER = "$v0";
-    protected static final String END_PROGRAM_INSTRUCTION = "syscall";
-    protected static final String FUNCTION_RESULT_REGISTER = "$v0";
-
-    protected final SymbolTableInterface symbolTable;
     protected final static String MAIN_FUNCTION = "ranch";
-    protected static Stack<String> currentFunctionName = new Stack<>();
+    protected static Stack<FunctionContext> functionStack = new Stack<>();
     protected static RegisterAllocator registerAllocatorInteger;
     protected static RegisterAllocator registerAllocatorFloat;
+    protected final SymbolTableInterface symbolTable;
+    protected final MIPSRenderer renderer;
     protected List<OperandContainer> pendingOperations = new LinkedList<>();
     protected List<OperandContainer> pendingLogicalOperations = new LinkedList<>();
 
-    public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat) {
+    public MIPSOperations(SymbolTableInterface symbolTableInterface, RegisterAllocator registerAllocatorInteger, RegisterAllocator registerAllocatorFloat, MIPSRenderer mipsRenderer) {
         this.symbolTable = symbolTableInterface;
         MIPSOperations.registerAllocatorInteger = registerAllocatorInteger;
         MIPSOperations.registerAllocatorFloat = registerAllocatorFloat;
+        this.renderer = mipsRenderer;
     }
 
-    protected String writeComment(String comment) {
-        return (COMMENT_WORD + " " + comment);
+    /**
+     * Convert a float value to a hexadecimal string.
+     *
+     * @param value The float value to convert.
+     * @return The hexadecimal string.
+     */
+    public static String floatToHex(float value) {
+        int intBits = Float.floatToIntBits(value);
+        return "0x" + Integer.toHexString(intBits);
     }
 
     protected ValueSymbol getOperandType(String operandValue) {
@@ -56,42 +56,61 @@ public class MIPSOperations {
         if (dataType == DataType.FLOAT) {
             return "swc1 " + oldestRegister + ", " + oldestVariable;
         } else {
-            return "sw " + oldestRegister + ", " + oldestVariable;
+            Map<String, String> placeholders = new HashMap<>();
+
+            placeholders.put("register", oldestRegister);
+            placeholders.put("variableName", oldestVariable.startsWith("-") ? oldestVariable.replaceFirst("-", "") : oldestVariable);
+
+            String templatePath = "load_variable_to_memory_template";
+
+            return renderer.render(templatePath, placeholders);
+
         }
     }
 
     protected String loadVariableToRegister(String oldestVariable, String oldestRegister, DataType dataType, boolean isLiteral) {
+        Map<String, String> placeholders = new HashMap<>();
+        String templatePath;
+        String strippedRelativeOffset = oldestVariable.startsWith("-") ? oldestVariable.replaceFirst("-", "") : oldestVariable;
 
-        // We have to check if the variable is a float or an integer due to the different instructions.
-        if (dataType == DataType.FLOAT) {
-            // Also, we have to check if it's a literal or a variable because the instruction changes.
-            if (isLiteral) {
-                String floatNumber = floatToHex(Float.parseFloat(oldestVariable));
-                Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
-                Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
+        return switch (dataType) {
+            case FLOAT -> {
+                if (isLiteral) {
+                    String floatNumber = floatToHex(Float.parseFloat(oldestVariable));
+                    Operand tempFloatOperand = new Operand(true, DataType.FLOAT, floatNumber, true);
+                    Register tempFloatRegister = registerAllocatorInteger.allocateRegister(tempFloatOperand);
 
-                String text = ("li " + tempFloatRegister.getNotNullRegister()+ ", " + floatNumber) + LINE_SEPARATOR;
+                    placeholders.put("tempFloatRegister", tempFloatRegister.getNotNullRegister());
+                    placeholders.put("floatNumber", floatNumber);
+                    placeholders.put("oldestRegister", oldestRegister);
 
-                // Pass from $tX to $fX
-                text += LINE_INDENTATION +
-                        ("mtc1 " + tempFloatRegister.getNotNullRegister() + ", " + oldestRegister) + LINE_SEPARATOR;
-
-                // Free register
-                registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
-
-                return text;
+                    templatePath = "load_float_literal_template";
+                    String renderedTemplate = renderer.render(templatePath, placeholders);
+                    registerAllocatorInteger.freeRegister(tempFloatRegister.getRegisterName());
+                    yield renderedTemplate;
+                } else {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", strippedRelativeOffset);
+                    //placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_float_variable_template";
+                    yield renderer.render(templatePath, placeholders);
+                }
             }
-            else {
-                return "lwc1 " + oldestRegister + ", " + oldestVariable;
+            case INTEGER -> {
+                if (isLiteral) {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_integer_literal_template";
+                } else {
+                    placeholders.put("oldestRegister", oldestRegister);
+                    placeholders.put("oldestVariable", strippedRelativeOffset);
+                    //placeholders.put("oldestVariable", oldestVariable);
+                    templatePath = "load_integer_variable_template";
+                }
+                yield renderer.render(templatePath, placeholders);
             }
-        } else {
-            if (isLiteral) {
-                return "li " + oldestRegister + ", " + oldestVariable;
-            }
-            else {
-                return "lw " + oldestRegister + ", " + oldestVariable;
-            }
-        }
+            default -> "";
+        };
     }
 
     protected Operand loadSingleOperand(String operandValue, boolean mainReturn) {
@@ -104,22 +123,21 @@ public class MIPSOperations {
 
         // Check if it's a variable (check its type in the symbols table).
         if (operandValueSymbol == ValueSymbol.VARIABLE) {
-            String currentFunction = currentFunctionName.peek();
+            String currentFunction = functionStack.peek().getFunctionName();
 
             // Get the previous function name if trying to return value from main.
-            if (mainReturn && currentFunctionName.size() > 1) {
-                currentFunction = currentFunctionName.get(currentFunctionName.size() - 2);
+            if (mainReturn && functionStack.size() > 1) {
+                currentFunction = functionStack.get(functionStack.size() - 2).getFunctionName();
             }
 
             // Check if it's a function (assign the value to the return register).
             Symbol<?> function = symbolTable.findSymbolGlobally(operandValue);
             if (function != null && function.isFunction()) {
                 operand = new Operand(true, function.getDataType(), RETURN_VALUE_REGISTER, false);
-            }
-            else {
+            } else {
                 // It's a variable.
                 Symbol<?> variable = symbolTable.findSymbolInsideFunction(operandValue, currentFunction);
-                String variableRegister = variable.getOffset() + "(" + FRAME_POINTER + ")";
+                String variableRegister = variable.getOffset() + "(" + FP + ")";
                 operand = new Operand(true, variable.getDataType(), variableRegister, false);
             }
 
@@ -146,14 +164,17 @@ public class MIPSOperations {
         operandContainer.setOperator(operatorStr);
     }
 
+    public boolean addPairIfNotPresent(String memoryAddress, String value) {
+        int max = Math.max(functionStack.size() - 2, 0);
+        FunctionContext functionContext = functionStack.get(max);
 
-    /**
-     * Convert a float value to a hexadecimal string.
-     * @param value The float value to convert.
-     * @return The hexadecimal string.
-     */
-    public static String floatToHex(float value) {
-        int intBits = Float.floatToIntBits(value);
-        return "0x" + Integer.toHexString(intBits);
+        for (Pair<String, String> stringStringPair : functionContext.getRegisterAddressPairList()) {
+            if (stringStringPair.left().equals(memoryAddress)) {
+                return true;
+            }
+        }
+
+        functionContext.getRegisterAddressPairList().add(new Pair<>(memoryAddress, value));
+        return false;
     }
 }

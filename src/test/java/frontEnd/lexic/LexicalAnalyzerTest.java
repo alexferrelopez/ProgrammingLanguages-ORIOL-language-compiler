@@ -56,14 +56,14 @@ class LexicalAnalyzerTest {
                 // Conditional statement
                 Arguments.of(
                         """
-                                	check (num module 2 eq 0 ) {
+                                	check (num times 2 eq 0 ) {
                                 		 poop 0 ;
                                 	}
                                 """, new Token[]{
                                 new Token(ReservedSymbol.IF),
                                 new Token(SpecialSymbol.PO),
                                 new Token(ValueSymbol.VARIABLE, "num"),
-                                new Token(MathOperator.MOD, "module"),
+                                new Token(MathOperator.MUL, "times"),
                                 new Token(ValueSymbol.VALUE_INT, "2"),
                                 new Token(BinaryOperator.EQ, "eq"),
                                 new Token(ValueSymbol.VALUE_INT, "0"),

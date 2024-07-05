@@ -1,0 +1,12 @@
+
+
+miau : ranch ( ) {
+
+    miau b is 5;
+
+    feed (miau i is 1 to b, i is i sum 1 ) {
+        i is i ;
+    }
+
+    poop 0 ;
+}

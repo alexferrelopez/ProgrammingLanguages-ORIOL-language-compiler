@@ -5,7 +5,7 @@ import frontEnd.lexic.dictionary.Token;
 import frontEnd.lexic.dictionary.Tokenizer;
 import frontEnd.sintaxis.grammar.AbstractSymbol;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +53,7 @@ public class Follow {
      * @return A map of a production
      */
     private static Map<NonTerminalSymbol, List<AbstractSymbol>> generateProduction(NonTerminalSymbol nt, List<AbstractSymbol> tint) {
-        Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new HashMap<>();
+        Map<NonTerminalSymbol, List<AbstractSymbol>> productionParser = new LinkedHashMap<>();
         productionParser.put(nt, tint);
         return productionParser;
     }
@@ -163,13 +163,14 @@ public class Follow {
 
     /**
      * Method for checking if a token is in the list of follows
-     * @param follows list of follows
+     *
+     * @param follows     list of follows
      * @param stringToken token to be checked
      * @return true if the token is in the list of follows, false if not
      */
     public static boolean containsToken(List<TerminalSymbol> follows, String stringToken) {
-        for(TerminalSymbol ts: follows){
-            if(ts.getName().equals(stringToken)){
+        for (TerminalSymbol ts : follows) {
+            if (ts.getName().equals(stringToken)) {
                 return true;
             }
         }

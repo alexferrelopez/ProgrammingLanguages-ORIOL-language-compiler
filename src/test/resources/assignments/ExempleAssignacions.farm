@@ -5,7 +5,7 @@ miau: ranch() {
     d is c minus 1;
     e is d times 2;
     f is e div 2;
-    g is f mod 2;
+    g is f sum 2;
     h is alive;
     i is dead;
     j is alive or dead;

@@ -1,0 +1,5 @@
+# load_integer_literal_template
+# MIPS load integer literal template
+# Parameters: oldestRegister, oldestVariable
+
+    li {{ oldestRegister }}, {{ oldestVariable }}

@@ -1,0 +1,4 @@
+# integer_register_assignment_template.asm
+# Parameters: destinationRegister, sourceRegister
+
+    move {{ destinationRegister }}, {{ sourceRegister }}

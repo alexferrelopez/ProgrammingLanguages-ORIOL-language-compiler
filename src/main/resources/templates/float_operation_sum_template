@@ -1,0 +1,4 @@
+# float_operation_sum_template.asm
+# Parameters: destinationRegister, operand1Register, operand2Register
+
+    add.s {{ destinationRegister }}, {{ operand1Register }}, {{ operand2Register }}

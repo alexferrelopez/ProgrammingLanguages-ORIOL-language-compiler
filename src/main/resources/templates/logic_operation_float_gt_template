@@ -1,0 +1,5 @@
+# logic_operation_float_gt_template.asm
+# Parameters: operand1Register, operand2Register, label
+
+    c.lt.s {{ operand2Register }}, {{ operand1Register }}
+    bc1f {{ label }}

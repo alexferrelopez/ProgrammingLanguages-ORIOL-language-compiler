@@ -1,0 +1,5 @@
+# show_operation_with_result_template.asm
+# Parameters: commentCode, codeMIPS
+
+    # TAC: {{ commentCode }}
+{{ codeMIPS }}

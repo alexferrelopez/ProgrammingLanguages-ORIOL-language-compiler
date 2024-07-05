@@ -1,23 +1,58 @@
 miau: ranch() {
-    miau a is 1;
-    miau b is a;
+    miau a1 is 1;
+    miau b1 is 2;
+    miau c1 is 2;
+    miau d1 is 3;
+    miau e1 is 4;
+    miau f1 is 5;
+    miau g1 is 6;
+    miau h1 is 7;
+    miau i1 is 8;
+    miau j1 is 9;
+    miau k1 is 10;
+    miau l1 is 11;
+    miau m1 is 12;
+    miau n1 is 13;
+    miau o1 is 14;
+    miau p1 is 15;
+    miau q1 is 16;
+    miau r1 is 17;
+    miau s1 is 18;
+    miau t1 is 19;
+    miau u1 is 20;
+    miau v1 is 21;
+    miau w1 is 22;
+    miau x1 is 23;
+    miau y1 is 24;
+    miau z1 is 25;
+    miau a2 is 26;
+    miau b2 is 27;
+    miau c2 is 28;
+    miau d2 is 29;
+    miau e2 is 30;
+    miau f2 is 31;
+    miau g2 is 32;
+    miau h2 is 33;
+    miau i2 is 34;
+    miau j2 is 35;
+    miau k2 is 36;
+    miau l2 is 37;
+    miau m2 is 38;
+    miau n2 is 39;
+    miau o2 is 40;
+    miau p2 is 41;
+    miau q2 is 42;
+    miau r2 is 43;
+    miau s2 is 44;
+    miau t2 is 45;
+    miau u2 is 46;
+    miau v2 is 47;
+    miau w2 is 48;
+    miau x2 is 49;
+    miau y2 is 50;
+    miau z2 is 51;
 
-    miau c is a sum b;
-    miau d is c minus 1;
-    miau e is d times 2;
-    miau f is e div 2;
-    miau g is f mod 2;
-
-    status h is alive;
-    status i is dead;
-    status j is alive or dead;
-    status k is alive and dead;
-    status l is not alive;
-
-    status m is 1 smaller 2;
-    status n is 1 bigger 2;
-    status o is true equals false;
-    status p is true diff false;
+    miau i is a1 sum n1;
 
     poop 0;
 }

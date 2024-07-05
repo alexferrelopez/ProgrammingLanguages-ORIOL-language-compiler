@@ -1,0 +1,9 @@
+# func_declaration_template.asm
+# MIPS function declaration template
+# Parameters: functionLabel
+
+{{ functionLabel }}:
+    addi $sp, $sp, -{{ stackAllocationSpace }}    # Allocate {{ stackAllocationSpace }} bytes of space on the stack
+    sw $fp, {{ stackAllocationSpace }}($sp)       # Save the old frame pointer
+    move $fp, $sp        # Set the new frame pointer
+    sw $ra, {{ raOffset }}($fp)       # Save the return address at a negative offset from the frame pointer

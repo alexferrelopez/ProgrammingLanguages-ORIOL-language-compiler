@@ -8,6 +8,7 @@ import frontEnd.semantics.symbolTable.symbol.Symbol;
 public interface SymbolTableInterface {
     /**
      * Add a scope to the tree
+     *
      * @param scopeType the type of the scope to add (function or conditional-loop).
      */
     void addScope(ScopeType scopeType);
@@ -20,21 +21,24 @@ public interface SymbolTableInterface {
 
     /**
      * Add a symbol at the current scope of the tree.
-     * @param symbol    symbol (variable or function) to add in the scope.
+     *
+     * @param symbol symbol (variable or function) to add in the scope.
      */
     void addSymbol(Symbol<?> symbol);
 
     /**
      * Find a symbol in the scope.
-     * @param symbolName	the name of the symbol.
-     * @return	the symbol with the given name, or null if the symbol is not in the scope.
+     *
+     * @param symbolName the name of the symbol.
+     * @return the symbol with the given name, or null if the symbol is not in the scope.
      */
     Symbol<?> findSymbol(String symbolName);
 
     /**
      * Find a symbol globally in all the scopes.
-     * @param symbolName	the name of the symbol.
-     * @return	the symbol with the given name, or null if the symbol is not in the scope.
+     *
+     * @param symbolName the name of the symbol.
+     * @return the symbol with the given name, or null if the symbol is not in the scope.
      */
     Symbol<?> findSymbolGlobally(String symbolName);
 
@@ -81,8 +85,9 @@ public interface SymbolTableInterface {
 
     /**
      * Calculate all the Bytes required for a function (given its parameters and all the local variables declared).
-     * @param functionName  name of the function to get its size
-     * @return  number of Bytes required to allocate the whole function.
+     *
+     * @param functionName name of the function to get its size
+     * @return number of Bytes required to allocate the whole function.
      */
     int calculateFunctionSize(String functionName);
 

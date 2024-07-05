@@ -1,9 +1,9 @@
 package frontEnd.intermediateCode;
 
 public class Expression {
-    private String leftOperand;
-    private String operator;
-    private String rightOperand;
+    private final String leftOperand;
+    private final String operator;
+    private final String rightOperand;
 
     public Expression(String leftOperand, String operator, String rightOperand) {
         this.leftOperand = leftOperand;

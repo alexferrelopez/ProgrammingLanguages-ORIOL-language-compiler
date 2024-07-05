@@ -1,27 +1,20 @@
 miau : ranch ( ) {
-    feed (miau i is 1 to 5, i is i sum 1) {
-        miau a is 2;
+    miau b is 5;
+    fibo(a, b, hola());
+    a is fibo();
+    miau a is fibo();
+
+    feed ( miau i is 1 to b, i is i sum 1 ) {
+        miau a is 2 ;
     }
+    feed ( i is 1 to 5, i is i sum 1 ) {
+            miau a is 2 ;
+        }
 
-    feed (i is 0 to 1, i is i minus 1) {
-        miau a is 2;
-    }
-
-    feed (i is 1 to 5, i is i times 1) {
-            miau a is 2;
-    }
-
-    feed (oink i is 1.0 to 5.0, i is i minus 1.0) {
-        miau a is 2;
-    }
-
-    feed (miau i is 1 to 5, i is i pow 1) {
-        miau a is 2;
-    }
-
-   feed (i is 1 to 5, i is i mod 2) {
-        miau a is 2;
-   }
-
+        check ( numA bigger numB ) {
+                oink tmp is numA ;
+                numA is numB ;
+                numB is tmp ;
+            }
     poop 0 ;
 }

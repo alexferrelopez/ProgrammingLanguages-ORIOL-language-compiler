@@ -3,8 +3,6 @@ GRUP 1: Llenguatges de Programació 2023-2024
 Integrants: Oriol González      oriol.gg
             Alèxia Cabrera      alexia.cabrera
             Àlex Ferré          alex.fl
-            Aaron Fort          aaron.fort
-            Gemma Yebra         gemma.yebra
 
 Versió de JDK utilitzada: 19.0+
 

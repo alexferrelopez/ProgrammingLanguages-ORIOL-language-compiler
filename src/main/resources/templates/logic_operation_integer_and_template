@@ -1,0 +1,5 @@
+# logic_operation_integer_and_template.asm
+# Parameters: destinationRegister, operand1Register, operand2Register, label
+
+    and {{ destinationRegister }}, {{ operand1Register }}, {{ operand2Register }}
+    beq {{ destinationRegister }}, , {{ label }}
